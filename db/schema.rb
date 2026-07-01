@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -199,6 +199,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.index ["slug"], name: "index_brands_on_slug", unique: true
   end
 
+  create_table "cart_items", force: :cascade do |t|
+    t.bigint "added_by_id"
+    t.bigint "cart_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.bigint "listing_id", null: false
+    t.text "notes"
+    t.integer "quantity", default: 1, null: false
+    t.decimal "unit_price", precision: 12, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["added_by_id"], name: "index_cart_items_on_added_by_id"
+    t.index ["cart_id", "listing_id"], name: "index_cart_items_on_cart_and_listing", unique: true
+    t.index ["cart_id"], name: "index_cart_items_on_cart_id"
+    t.index ["listing_id"], name: "index_cart_items_on_listing_id"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_cart_items_currency"
+    t.check_constraint "quantity > 0", name: "chk_cart_items_quantity"
+    t.check_constraint "unit_price >= 0::numeric", name: "chk_cart_items_unit_price"
+  end
+
+  create_table "carts", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.datetime "discarded_at"
+    t.datetime "expires_at"
+    t.text "notes"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_carts_on_account_id"
+    t.index ["account_id"], name: "index_carts_one_active_per_account", unique: true, where: "((status = 0) AND (discarded_at IS NULL))"
+    t.index ["created_by_id"], name: "index_carts_on_created_by_id"
+    t.index ["discarded_at"], name: "index_carts_on_discarded_at", where: "(discarded_at IS NOT NULL)"
+    t.index ["expires_at"], name: "index_carts_on_expires_at", where: "(expires_at IS NOT NULL)"
+    t.index ["status"], name: "index_carts_on_status"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_carts_currency"
+  end
+
   create_table "categories", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "ancestry"
@@ -337,6 +375,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.check_constraint "discount_type <> 0 OR discount_value > 0::numeric AND discount_value <= 100::numeric", name: "chk_coupons_percentage_range"
     t.check_constraint "discount_value > 0::numeric", name: "chk_coupons_discount_value"
     t.check_constraint "redemptions_count >= 0", name: "chk_coupons_redemptions_count"
+  end
+
+  create_table "currencies", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", limit: 3, null: false
+    t.datetime "created_at", null: false
+    t.decimal "exchange_rate", precision: 18, scale: 8, default: "1.0", null: false
+    t.datetime "exchange_rate_updated_at"
+    t.boolean "is_default", default: false, null: false
+    t.string "name", null: false
+    t.string "symbol", limit: 10, null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_currencies_active", where: "(active = true)"
+    t.index ["code"], name: "index_currencies_on_code", unique: true
+    t.index ["is_default"], name: "index_currencies_on_default_unique", unique: true, where: "(is_default = true)"
+    t.check_constraint "code::text ~ '^[A-Z]{3}$'::text", name: "chk_currencies_code"
+    t.check_constraint "exchange_rate > 0::numeric", name: "chk_currencies_exchange_rate"
   end
 
   create_table "favorites", force: :cascade do |t|
@@ -526,6 +581,115 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_offers_currency_format"
   end
 
+  create_table "order_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.decimal "discount_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.bigint "listing_id"
+    t.jsonb "listing_snapshot"
+    t.bigint "order_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.bigint "seller_account_id"
+    t.decimal "tax_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "tax_rate_applied", precision: 8, scale: 6, default: "0.0", null: false
+    t.decimal "total", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "unit_price", precision: 12, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_id"], name: "index_order_items_on_listing_id"
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+    t.index ["seller_account_id"], name: "index_order_items_on_seller_account_id"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_order_items_currency"
+    t.check_constraint "discount_amount >= 0::numeric", name: "chk_order_items_discount"
+    t.check_constraint "quantity > 0", name: "chk_order_items_quantity"
+    t.check_constraint "tax_amount >= 0::numeric", name: "chk_order_items_tax_amount"
+    t.check_constraint "total >= 0::numeric", name: "chk_order_items_total"
+    t.check_constraint "unit_price >= 0::numeric", name: "chk_order_items_unit_price"
+  end
+
+  create_table "order_status_histories", force: :cascade do |t|
+    t.bigint "changed_by_id"
+    t.datetime "created_at", null: false
+    t.integer "from_status"
+    t.text "note"
+    t.bigint "order_id", null: false
+    t.string "source", limit: 50, default: "system", null: false
+    t.integer "to_status", null: false
+    t.index ["changed_by_id"], name: "index_order_status_histories_on_changed_by_id"
+    t.index ["order_id", "created_at"], name: "index_order_status_histories_on_order_and_time"
+    t.index ["order_id"], name: "index_order_status_histories_on_order_id"
+    t.check_constraint "source::text = ANY (ARRAY['system'::character varying, 'user'::character varying, 'webhook'::character varying, 'admin'::character varying]::text[])", name: "chk_order_status_histories_source"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "billing_address_id"
+    t.jsonb "billing_address_snapshot"
+    t.bigint "buyer_account_id", null: false
+    t.text "cancellation_reason"
+    t.datetime "cancelled_at"
+    t.bigint "cancelled_by_id"
+    t.datetime "completed_at"
+    t.datetime "confirmed_at"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.datetime "delivered_at"
+    t.decimal "discount_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.text "internal_notes"
+    t.jsonb "metadata"
+    t.text "notes"
+    t.string "order_number", null: false
+    t.datetime "paid_at"
+    t.bigint "seller_account_id", null: false
+    t.datetime "shipped_at"
+    t.bigint "shipping_address_id"
+    t.jsonb "shipping_address_snapshot"
+    t.decimal "shipping_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.integer "status", default: 0, null: false
+    t.decimal "subtotal", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "tax_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "total", precision: 12, scale: 2, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.index ["billing_address_id"], name: "index_orders_on_billing_address", where: "(billing_address_id IS NOT NULL)"
+    t.index ["buyer_account_id", "status"], name: "index_orders_on_buyer_and_status"
+    t.index ["buyer_account_id"], name: "index_orders_on_buyer_account_id"
+    t.index ["created_at"], name: "index_orders_on_created_at"
+    t.index ["created_by_id"], name: "index_orders_on_created_by_id"
+    t.index ["order_number"], name: "index_orders_on_order_number", unique: true
+    t.index ["paid_at"], name: "index_orders_on_paid_at", where: "(paid_at IS NOT NULL)"
+    t.index ["seller_account_id", "status"], name: "index_orders_on_seller_and_status"
+    t.index ["seller_account_id"], name: "index_orders_on_seller_account_id"
+    t.index ["shipping_address_id"], name: "index_orders_on_shipping_address", where: "(shipping_address_id IS NOT NULL)"
+    t.index ["status"], name: "index_orders_on_status"
+    t.check_constraint "buyer_account_id <> seller_account_id", name: "chk_orders_buyer_seller_different"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_orders_currency"
+    t.check_constraint "discount_amount >= 0::numeric", name: "chk_orders_discount_amount"
+    t.check_constraint "shipping_amount >= 0::numeric", name: "chk_orders_shipping_amount"
+    t.check_constraint "subtotal >= 0::numeric", name: "chk_orders_subtotal"
+    t.check_constraint "tax_amount >= 0::numeric", name: "chk_orders_tax_amount"
+    t.check_constraint "total >= 0::numeric", name: "chk_orders_total"
+  end
+
+  create_table "payment_transactions", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.string "gateway", limit: 50, null: false
+    t.text "gateway_message"
+    t.jsonb "gateway_response"
+    t.string "gateway_transaction_id", limit: 255
+    t.bigint "payment_id", null: false
+    t.datetime "processed_at"
+    t.integer "status", default: 0, null: false
+    t.string "transaction_type", limit: 30, null: false
+    t.datetime "updated_at", null: false
+    t.index ["gateway", "gateway_transaction_id"], name: "index_payment_transactions_on_gateway_txn_id", unique: true, where: "(gateway_transaction_id IS NOT NULL)"
+    t.index ["payment_id"], name: "index_payment_transactions_on_payment_id"
+    t.index ["status"], name: "index_payment_transactions_on_status"
+    t.check_constraint "amount > 0::numeric", name: "chk_payment_transactions_amount"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_payment_transactions_currency"
+    t.check_constraint "transaction_type::text = ANY (ARRAY['charge'::character varying, 'authorize'::character varying, 'capture'::character varying, 'refund'::character varying, 'void'::character varying]::text[])", name: "chk_payment_transactions_type"
+  end
+
   create_table "payments", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.decimal "amount", precision: 12, scale: 2, null: false
@@ -534,7 +698,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.text "failure_reason"
     t.bigint "invoice_id"
     t.jsonb "metadata", default: {}, null: false
+    t.bigint "order_id"
     t.datetime "paid_at"
+    t.integer "payment_context", default: 0, null: false
     t.string "payment_method"
     t.string "payment_provider"
     t.string "provider_payment_id"
@@ -543,7 +709,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.index ["account_id", "status"], name: "index_payments_on_account_and_status"
     t.index ["account_id"], name: "index_payments_on_account_id"
     t.index ["invoice_id"], name: "index_payments_on_invoice_id"
+    t.index ["order_id"], name: "index_payments_on_order_id"
     t.index ["paid_at"], name: "index_payments_on_paid_at", where: "(paid_at IS NOT NULL)"
+    t.index ["payment_context"], name: "index_payments_on_payment_context"
     t.index ["provider_payment_id"], name: "index_payments_on_provider_payment_id", unique: true, where: "(provider_payment_id IS NOT NULL)"
     t.check_constraint "amount > 0::numeric", name: "chk_payments_amount"
     t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_payments_currency"
@@ -633,6 +801,45 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.index ["filters"], name: "index_saved_searches_on_filters_gin", using: :gin
     t.index ["user_id"], name: "index_saved_searches_on_user_id"
     t.index ["user_id"], name: "index_saved_searches_on_user_id_alerts", where: "(alert_enabled = true)"
+  end
+
+  create_table "shipment_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_item_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.bigint "shipment_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_item_id"], name: "index_shipment_items_on_order_item_id"
+    t.index ["shipment_id", "order_item_id"], name: "index_shipment_items_on_shipment_and_order_item", unique: true
+    t.index ["shipment_id"], name: "index_shipment_items_on_shipment_id"
+    t.check_constraint "quantity > 0", name: "chk_shipment_items_quantity"
+  end
+
+  create_table "shipments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "carrier", limit: 100
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD"
+    t.datetime "delivered_at"
+    t.datetime "estimated_delivery_at"
+    t.jsonb "metadata"
+    t.text "notes"
+    t.bigint "order_id", null: false
+    t.datetime "shipped_at"
+    t.decimal "shipping_cost", precision: 12, scale: 2
+    t.integer "status", default: 0, null: false
+    t.string "tracking_number", limit: 100
+    t.datetime "updated_at", null: false
+    t.decimal "weight", precision: 10, scale: 3
+    t.string "weight_unit", limit: 5, default: "kg"
+    t.index ["account_id", "status"], name: "index_shipments_on_account_and_status"
+    t.index ["account_id"], name: "index_shipments_on_account_id"
+    t.index ["order_id"], name: "index_shipments_on_order_id"
+    t.index ["status"], name: "index_shipments_on_status"
+    t.index ["tracking_number"], name: "index_shipments_on_tracking_number", unique: true, where: "(tracking_number IS NOT NULL)"
+    t.check_constraint "shipping_cost IS NULL OR shipping_cost >= 0::numeric", name: "chk_shipments_shipping_cost"
+    t.check_constraint "weight IS NULL OR weight > 0::numeric", name: "chk_shipments_weight"
+    t.check_constraint "weight_unit::text = ANY (ARRAY['kg'::character varying, 'lb'::character varying, 'oz'::character varying, 'g'::character varying]::text[])", name: "chk_shipments_weight_unit"
   end
 
   create_table "solid_cache_entries", force: :cascade do |t|
@@ -820,6 +1027,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
     t.check_constraint "quantity >= 0::numeric", name: "chk_subscription_usages_quantity"
   end
 
+  create_table "tax_rates", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "country_code", limit: 2, null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.decimal "rate", precision: 8, scale: 6, null: false
+    t.string "state_code", limit: 10
+    t.integer "tax_type", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_code", "state_code", "active"], name: "index_tax_rates_on_country_state_active"
+    t.index ["country_code", "state_code", "tax_type"], name: "index_tax_rates_unique_active", unique: true, where: "(active = true)"
+    t.check_constraint "country_code::text ~ '^[A-Z]{2}$'::text", name: "chk_tax_rates_country_code"
+    t.check_constraint "rate >= 0::numeric AND rate <= 1::numeric", name: "chk_tax_rates_rate"
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "role_id", null: false
@@ -864,6 +1087,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
   add_foreign_key "addresses", "cities", on_delete: :restrict
   add_foreign_key "addresses", "countries", on_delete: :restrict
   add_foreign_key "addresses", "states", on_delete: :restrict
+  add_foreign_key "cart_items", "carts", on_delete: :cascade
+  add_foreign_key "cart_items", "listings", on_delete: :cascade
+  add_foreign_key "cart_items", "users", column: "added_by_id", on_delete: :nullify
+  add_foreign_key "carts", "accounts", on_delete: :cascade
+  add_foreign_key "carts", "users", column: "created_by_id", on_delete: :cascade
   add_foreign_key "cities", "states", on_delete: :restrict
   add_foreign_key "companies", "accounts", on_delete: :restrict
   add_foreign_key "companies", "users", column: "created_by_id", on_delete: :nullify
@@ -897,8 +1125,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
   add_foreign_key "offers", "users", column: "buyer_id", on_delete: :restrict
   add_foreign_key "offers", "users", column: "proposed_by_id", on_delete: :restrict
   add_foreign_key "offers", "users", column: "seller_id", on_delete: :restrict
+  add_foreign_key "order_items", "accounts", column: "seller_account_id", on_delete: :nullify
+  add_foreign_key "order_items", "listings", on_delete: :nullify
+  add_foreign_key "order_items", "orders", on_delete: :cascade
+  add_foreign_key "order_status_histories", "orders", on_delete: :cascade
+  add_foreign_key "order_status_histories", "users", column: "changed_by_id", on_delete: :nullify
+  add_foreign_key "orders", "accounts", column: "buyer_account_id", on_delete: :restrict
+  add_foreign_key "orders", "accounts", column: "seller_account_id", on_delete: :restrict
+  add_foreign_key "orders", "addresses", column: "billing_address_id", on_delete: :nullify
+  add_foreign_key "orders", "addresses", column: "shipping_address_id", on_delete: :nullify
+  add_foreign_key "orders", "users", column: "cancelled_by_id", on_delete: :nullify
+  add_foreign_key "orders", "users", column: "created_by_id", on_delete: :restrict
+  add_foreign_key "payment_transactions", "payments", on_delete: :cascade
   add_foreign_key "payments", "accounts", on_delete: :restrict
   add_foreign_key "payments", "invoices", on_delete: :nullify
+  add_foreign_key "payments", "orders", on_delete: :nullify
   add_foreign_key "plan_features", "subscription_plans", on_delete: :cascade
   add_foreign_key "printer_models", "brands", on_delete: :restrict
   add_foreign_key "printer_models", "categories", on_delete: :nullify
@@ -907,6 +1148,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
   add_foreign_key "reviews", "users", column: "reviewee_id", on_delete: :restrict
   add_foreign_key "reviews", "users", column: "reviewer_id", on_delete: :restrict
   add_foreign_key "saved_searches", "users", on_delete: :cascade
+  add_foreign_key "shipment_items", "order_items", on_delete: :restrict
+  add_foreign_key "shipment_items", "shipments", on_delete: :cascade
+  add_foreign_key "shipments", "accounts", on_delete: :restrict
+  add_foreign_key "shipments", "orders", on_delete: :restrict
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

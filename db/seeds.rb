@@ -829,3 +829,47 @@ else
 end
 
 puts "\n── Seeding complete ─────────────────────────────────────────\n\n"
+
+# ── Currencies ────────────────────────────────────────────────────────────────
+puts "\n  Seeding currencies..."
+
+SEED_CURRENCIES = [
+  { code: "USD", name: "US Dollar",          symbol: "$",   exchange_rate: 1.0,    is_default: true,  active: true },
+  { code: "PKR", name: "Pakistani Rupee",    symbol: "₨",   exchange_rate: 278.5,  is_default: false, active: true },
+  { code: "AED", name: "UAE Dirham",         symbol: "د.إ", exchange_rate: 3.67,   is_default: false, active: true },
+  { code: "GBP", name: "British Pound",      symbol: "£",   exchange_rate: 0.79,   is_default: false, active: true },
+  { code: "EUR", name: "Euro",               symbol: "€",   exchange_rate: 0.92,   is_default: false, active: true },
+  { code: "SAR", name: "Saudi Riyal",        symbol: "ر.س", exchange_rate: 3.75,   is_default: false, active: false },
+].freeze
+
+SEED_CURRENCIES.each do |attrs|
+  currency = Currency.find_or_initialize_by(code: attrs[:code])
+  if currency.new_record?
+    currency.assign_attributes(attrs)
+    currency.save!
+    puts "  [created] Currency: #{attrs[:code]} — #{attrs[:name]}"
+  else
+    puts "  [exists]  Currency: #{attrs[:code]}"
+  end
+end
+
+# ── Tax Rates ─────────────────────────────────────────────────────────────────
+puts "\n  Seeding tax rates..."
+
+SEED_TAX_RATES = [
+  { name: "Pakistan GST",       country_code: "PK", state_code: nil,  tax_type: :gst,       rate: 0.17,  active: true,  description: "Standard GST rate for Pakistan" },
+  { name: "Pakistan Sales Tax", country_code: "PK", state_code: "SD", tax_type: :sales_tax, rate: 0.175, active: true,  description: "Sindh Sales Tax (SST)" },
+  { name: "US No Tax",          country_code: "US", state_code: nil,  tax_type: :sales_tax, rate: 0.0,   active: true,  description: "Default zero tax — US state tax varies" },
+  { name: "UAE VAT",            country_code: "AE", state_code: nil,  tax_type: :vat,       rate: 0.05,  active: true,  description: "UAE standard VAT rate" },
+  { name: "UK VAT",             country_code: "GB", state_code: nil,  tax_type: :vat,       rate: 0.20,  active: true,  description: "UK standard VAT rate" },
+].freeze
+
+SEED_TAX_RATES.each do |attrs|
+  existing = TaxRate.find_by(country_code: attrs[:country_code], state_code: attrs[:state_code], tax_type: TaxRate.tax_types[attrs[:tax_type]])
+  if existing
+    puts "  [exists]  TaxRate: #{attrs[:name]}"
+  else
+    TaxRate.create!(attrs)
+    puts "  [created] TaxRate: #{attrs[:name]}"
+  end
+end

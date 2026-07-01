@@ -2,7 +2,17 @@ class Listing < ApplicationRecord
   extend FriendlyId
   friendly_id :title, use: :slugged
 
+  include PgSearch::Model
+
+  pg_search_scope :search,
+                  against: { title: "A", description: "B" },
+                  using: {
+                    tsearch:  { prefix: true, any_word: true, dictionary: "english" },
+                    trigram:  { threshold: 0.1 }
+                  }
+
   belongs_to :user
+  belongs_to :account, optional: true
   belongs_to :category
   belongs_to :brand
   belongs_to :printer_model, optional: true
@@ -17,6 +27,9 @@ class Listing < ApplicationRecord
   has_many :conversations, dependent: :nullify
   has_many :offers,        dependent: :restrict_with_error
   has_many :reviews,       dependent: :restrict_with_error
+  has_many :cart_items,  dependent: :destroy
+  has_many :order_items, dependent: :nullify
+  has_many :carts,       through: :cart_items
 
   enum :listing_type, { sale: 0, rental: 1, service: 2, wanted: 3 }, prefix: true
   enum :condition,    { brand_new: 0, like_new: 1, good: 2, fair: 3, poor: 4 }, prefix: true
