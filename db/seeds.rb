@@ -437,4 +437,141 @@ SAMPLE_LISTINGS.each do |attrs|
   puts "  [created] Listing: #{attrs[:title]}"
 end
 
+# ── Interaction Layer ─────────────────────────────────────────────────────────
+puts "\n  Seeding interaction layer..."
+
+# Seed buyer user
+seed_buyer = User.find_or_initialize_by(email: "buyer@printershub.com")
+if seed_buyer.new_record?
+  seed_buyer.password              = "SeedUser123!"
+  seed_buyer.password_confirmation = "SeedUser123!"
+  seed_buyer.skip_confirmation!
+  seed_buyer.save!
+  puts "  [created] Seed Buyer: buyer@printershub.com"
+else
+  puts "  [exists]  Seed Buyer: buyer@printershub.com"
+end
+
+hp_listing = Listing.find_by!(title: "HP LaserJet Pro M404n - Excellent Condition")
+canon_listing = Listing.find_by!(title: "Canon PIXMA G6020 MegaTank - Barely Used")
+
+# ── Favorites ────────────────────────────────────────────────────────────────
+[hp_listing, canon_listing].each do |listing|
+  unless Favorite.exists?(user: seed_buyer, listing: listing)
+    Favorite.create!(user: seed_buyer, listing: listing)
+    puts "  [created] Favorite: #{seed_buyer.email} → #{listing.title[0..40]}"
+  else
+    puts "  [exists]  Favorite: #{seed_buyer.email} → #{listing.title[0..40]}"
+  end
+end
+
+# ── Saved Searches ────────────────────────────────────────────────────────────
+saved_search_attrs = [
+  {
+    name:          "HP Laser Printers Under 50k PKR",
+    filters:       { "brand_id" => hp_listing.brand_id, "listing_type" => "sale",
+                     "price_max" => 50_000, "currency" => "PKR" },
+    alert_enabled: true
+  },
+  {
+    name:          "Any Canon Printer",
+    filters:       { "brand_id" => Brand.find_by!(name: "Canon").id },
+    alert_enabled: false
+  }
+]
+
+saved_search_attrs.each do |attrs|
+  unless SavedSearch.exists?(user: seed_buyer, name: attrs[:name])
+    SavedSearch.create!(user: seed_buyer, **attrs)
+    puts "  [created] SavedSearch: #{attrs[:name]}"
+  else
+    puts "  [exists]  SavedSearch: #{attrs[:name]}"
+  end
+end
+
+# ── Conversation & Messages ───────────────────────────────────────────────────
+conv = Conversation.joins(:conversation_participants)
+         .where(listing: hp_listing)
+         .where(conversation_participants: { user_id: seed_buyer.id })
+         .first
+
+if conv.nil?
+  conv = Conversation.between(
+    initiator: seed_buyer,
+    recipient: seed_user,
+    listing:   hp_listing,
+    subject:   "Inquiry about HP LaserJet Pro M404n"
+  )
+  puts "  [created] Conversation ##{conv.id}: #{conv.subject}"
+else
+  puts "  [exists]  Conversation ##{conv.id}: #{conv.subject}"
+end
+
+seed_messages = [
+  { user: seed_buyer, body: "Hi! I'm interested in the HP LaserJet. Is the price negotiable?" },
+  { user: seed_user,  body: "Hello! Yes, I can consider reasonable offers. What did you have in mind?" },
+  { user: seed_buyer, body: "Could you do 40,000 PKR? I can pick it up this weekend." },
+]
+
+seed_messages.each do |msg_attrs|
+  unless Message.exists?(conversation: conv, user: msg_attrs[:user], body: msg_attrs[:body])
+    msg = conv.messages.create!(user: msg_attrs[:user], body: msg_attrs[:body])
+    puts "  [created] Message from #{msg_attrs[:user].email}: #{msg_attrs[:body][0..40]}..."
+  else
+    puts "  [exists]  Message from #{msg_attrs[:user].email}"
+  end
+end
+
+# ── Offer ─────────────────────────────────────────────────────────────────────
+unless Offer.exists?(listing: hp_listing, buyer: seed_buyer)
+  offer = Offer.create!(
+    listing:     hp_listing,
+    buyer:       seed_buyer,
+    seller:      seed_user,
+    proposed_by: seed_buyer,
+    amount:      40_000,
+    currency:    "PKR",
+    message:     "Willing to pay 40,000 PKR and collect in person this weekend.",
+    expires_at:  7.days.from_now
+  )
+  puts "  [created] Offer ##{offer.id}: #{offer.amount} #{offer.currency} on #{hp_listing.title[0..30]}"
+else
+  puts "  [exists]  Offer on #{hp_listing.title[0..40]}"
+end
+
+# ── Notifications ─────────────────────────────────────────────────────────────
+offer = Offer.find_by!(listing: hp_listing, buyer: seed_buyer)
+
+unless Notification.exists?(user: seed_user, notification_type: "offer_received",
+                             notifiable: offer)
+  Notification.deliver(
+    user:       seed_user,
+    type:       "offer_received",
+    title:      "New offer on #{hp_listing.title[0..40]}",
+    body:       "#{seed_buyer.email} offered #{offer.amount} #{offer.currency}",
+    data:       { offer_id: offer.id, amount: offer.amount.to_s, currency: offer.currency,
+                  listing_id: hp_listing.id, buyer_email: seed_buyer.email },
+    notifiable: offer
+  )
+  puts "  [created] Notification: offer_received for #{seed_user.email}"
+else
+  puts "  [exists]  Notification: offer_received for #{seed_user.email}"
+end
+
+# ── Review ────────────────────────────────────────────────────────────────────
+unless Review.exists?(listing: hp_listing, reviewer: seed_buyer)
+  Review.create!(
+    listing:  hp_listing,
+    reviewer: seed_buyer,
+    reviewee: seed_user,
+    rating:   5,
+    body:     "Excellent seller! The printer was exactly as described, well packaged, " \
+              "and the transaction was smooth. Would definitely buy from again.",
+    status:   :published
+  )
+  puts "  [created] Review: #{seed_buyer.email} reviewed #{seed_user.email} (5★)"
+else
+  puts "  [exists]  Review: #{seed_buyer.email} on #{hp_listing.title[0..40]}"
+end
+
 puts "\n── Seeding complete ─────────────────────────────────────────\n\n"

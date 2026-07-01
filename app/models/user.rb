@@ -22,6 +22,29 @@ class User < ApplicationRecord
   # Personal addresses (home, billing, etc.) separate from company addresses
   has_many :addresses, as: :addressable, dependent: :destroy
 
+  # ── Interaction layer ────────────────────────────────────────────────────────
+  has_many :favorites, dependent: :destroy
+  has_many :favorited_listings, through: :favorites, source: :listing
+
+  has_many :saved_searches, dependent: :destroy
+
+  # Conversation membership via join table — user appears in many conversations
+  has_many :conversation_participants, dependent: :destroy
+  has_many :conversations, through: :conversation_participants
+
+  has_many :sent_messages, class_name: "Message", dependent: :restrict_with_error
+
+  # Offers where this user is the buyer (made the offer)
+  has_many :offers_made, class_name: "Offer", foreign_key: :buyer_id, dependent: :restrict_with_error
+  # Offers where this user is the seller (received the offer)
+  has_many :offers_received, class_name: "Offer", foreign_key: :seller_id, dependent: :restrict_with_error
+
+  # Reviews written and received
+  has_many :reviews_given,    class_name: "Review", foreign_key: :reviewer_id, dependent: :restrict_with_error
+  has_many :reviews_received, class_name: "Review", foreign_key: :reviewee_id, dependent: :restrict_with_error
+
+  has_many :notifications, dependent: :destroy
+
   # Convenience predicates — avoids `user.roles.map(&:name).include?("buyer")` callsites
   def role?(role_name)
     roles.exists?(name: role_name.to_s.downcase)

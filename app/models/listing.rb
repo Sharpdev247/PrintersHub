@@ -11,6 +11,13 @@ class Listing < ApplicationRecord
   has_many_attached :images
   has_many_attached :documents
 
+  # Interaction layer reverse associations
+  has_many :favorites,     dependent: :destroy
+  has_many :favorited_by,  through: :favorites, source: :user
+  has_many :conversations, dependent: :nullify
+  has_many :offers,        dependent: :restrict_with_error
+  has_many :reviews,       dependent: :restrict_with_error
+
   enum :listing_type, { sale: 0, rental: 1, service: 2, wanted: 3 }, prefix: true
   enum :condition,    { brand_new: 0, like_new: 1, good: 2, fair: 3, poor: 4 }, prefix: true
   enum :status,       { draft: 0, published: 1, sold: 2, archived: 3 }, prefix: true

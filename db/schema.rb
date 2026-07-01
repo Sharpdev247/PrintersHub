@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -169,6 +169,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
     t.check_constraint "verified = false AND verified_at IS NULL OR verified = true AND verified_at IS NOT NULL", name: "chk_companies_verified_at_consistency"
   end
 
+  create_table "conversation_participants", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "joined_at", null: false
+    t.bigint "last_read_message_id"
+    t.datetime "left_at"
+    t.integer "role", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["conversation_id", "user_id"], name: "index_conv_participants_on_conv_and_user", unique: true
+    t.index ["conversation_id"], name: "index_conversation_participants_on_conversation_id"
+    t.index ["last_read_message_id"], name: "index_conv_participants_on_last_read_message", where: "(last_read_message_id IS NOT NULL)"
+    t.index ["user_id"], name: "index_conv_participants_on_user_id"
+    t.index ["user_id"], name: "index_conversation_participants_on_user_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "listing_id"
+    t.string "subject", limit: 255
+    t.datetime "updated_at", null: false
+    t.index ["listing_id"], name: "index_conversations_on_listing_id"
+    t.index ["listing_id"], name: "index_conversations_on_listing_id_present", where: "(listing_id IS NOT NULL)"
+    t.index ["updated_at"], name: "index_conversations_on_updated_at"
+  end
+
   create_table "countries", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "continent"
@@ -193,6 +219,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
     t.check_constraint "continent IS NULL OR (continent::text = ANY (ARRAY['Africa'::character varying, 'Antarctica'::character varying, 'Asia'::character varying, 'Europe'::character varying, 'North America'::character varying, 'Oceania'::character varying, 'South America'::character varying]::text[]))", name: "chk_countries_continent"
     t.check_constraint "iso2::text ~ '^[A-Z]{2}$'::text", name: "chk_countries_iso2_format"
     t.check_constraint "iso3::text ~ '^[A-Z]{3}$'::text", name: "chk_countries_iso3_format"
+  end
+
+  create_table "favorites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "listing_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["listing_id"], name: "index_favorites_on_listing_id"
+    t.index ["user_id", "listing_id"], name: "index_favorites_on_user_and_listing", unique: true
+    t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -250,6 +286,63 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
     t.check_constraint "quantity >= 0", name: "chk_listings_quantity_non_negative"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.text "body", null: false
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.datetime "edited_at"
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["conversation_id", "created_at"], name: "index_messages_on_conversation_and_created_at"
+    t.index ["conversation_id", "read_at"], name: "index_messages_on_conversation_id_unread", where: "(read_at IS NULL)"
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+    t.index ["user_id"], name: "index_messages_on_user_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.jsonb "data", default: {}, null: false
+    t.bigint "notifiable_id"
+    t.string "notifiable_type"
+    t.string "notification_type", null: false
+    t.datetime "read_at"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["data"], name: "index_notifications_on_data_gin", using: :gin
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable", where: "(notifiable_type IS NOT NULL)"
+    t.index ["user_id", "created_at"], name: "index_notifications_on_user_and_created_at"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_unread", where: "(read_at IS NULL)"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "offers", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.bigint "buyer_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.datetime "expires_at"
+    t.bigint "listing_id", null: false
+    t.text "message"
+    t.bigint "parent_offer_id"
+    t.bigint "proposed_by_id", null: false
+    t.bigint "seller_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["buyer_id", "status"], name: "index_offers_on_buyer_and_status"
+    t.index ["expires_at"], name: "index_offers_on_expires_at_pending", where: "((expires_at IS NOT NULL) AND (status = 0))"
+    t.index ["listing_id", "status"], name: "index_offers_on_listing_and_status"
+    t.index ["listing_id"], name: "index_offers_on_listing_id"
+    t.index ["parent_offer_id"], name: "index_offers_on_parent_offer_id", where: "(parent_offer_id IS NOT NULL)"
+    t.index ["seller_id", "status"], name: "index_offers_on_seller_and_status"
+    t.check_constraint "amount > 0::numeric", name: "chk_offers_amount_positive"
+    t.check_constraint "buyer_id <> seller_id", name: "chk_offers_buyer_not_seller"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_offers_currency_format"
+  end
+
   create_table "printer_models", force: :cascade do |t|
     t.bigint "brand_id", null: false
     t.bigint "category_id"
@@ -283,6 +376,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
   end
 
+  create_table "reviews", force: :cascade do |t|
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.bigint "listing_id", null: false
+    t.integer "rating", null: false
+    t.bigint "reviewee_id", null: false
+    t.bigint "reviewer_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_id", "reviewer_id"], name: "index_reviews_on_listing_and_reviewer", unique: true
+    t.index ["listing_id"], name: "index_reviews_on_listing_id"
+    t.index ["reviewee_id", "status"], name: "index_reviews_on_reviewee_and_status"
+    t.index ["status"], name: "index_reviews_on_status"
+    t.check_constraint "rating >= 1 AND rating <= 5", name: "chk_reviews_rating_range"
+    t.check_constraint "reviewer_id <> reviewee_id", name: "chk_reviews_no_self_review"
+  end
+
   create_table "roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
@@ -291,6 +401,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_roles_on_name", unique: true
     t.index ["slug"], name: "index_roles_on_slug", unique: true
+  end
+
+  create_table "saved_searches", force: :cascade do |t|
+    t.boolean "alert_enabled", default: false, null: false
+    t.datetime "created_at", null: false
+    t.jsonb "filters", default: {}, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["filters"], name: "index_saved_searches_on_filters_gin", using: :gin
+    t.index ["user_id"], name: "index_saved_searches_on_user_id"
+    t.index ["user_id"], name: "index_saved_searches_on_user_id_alerts", where: "(alert_enabled = true)"
   end
 
   create_table "solid_cache_entries", force: :cascade do |t|
@@ -480,14 +602,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
   add_foreign_key "addresses", "states", on_delete: :restrict
   add_foreign_key "cities", "states", on_delete: :restrict
   add_foreign_key "companies", "users", on_delete: :restrict
+  add_foreign_key "conversation_participants", "conversations", on_delete: :cascade
+  add_foreign_key "conversation_participants", "messages", column: "last_read_message_id", on_delete: :nullify
+  add_foreign_key "conversation_participants", "users", on_delete: :cascade
+  add_foreign_key "conversations", "listings", on_delete: :nullify
+  add_foreign_key "favorites", "listings", on_delete: :cascade
+  add_foreign_key "favorites", "users", on_delete: :cascade
   add_foreign_key "listings", "brands", on_delete: :restrict
   add_foreign_key "listings", "categories", on_delete: :restrict
   add_foreign_key "listings", "cities", column: "location_city_id", on_delete: :nullify
   add_foreign_key "listings", "printer_models", on_delete: :nullify
   add_foreign_key "listings", "users", on_delete: :restrict
+  add_foreign_key "messages", "conversations", on_delete: :cascade
+  add_foreign_key "messages", "users", on_delete: :restrict
+  add_foreign_key "notifications", "users", on_delete: :cascade
+  add_foreign_key "offers", "listings", on_delete: :restrict
+  add_foreign_key "offers", "offers", column: "parent_offer_id", on_delete: :nullify
+  add_foreign_key "offers", "users", column: "buyer_id", on_delete: :restrict
+  add_foreign_key "offers", "users", column: "proposed_by_id", on_delete: :restrict
+  add_foreign_key "offers", "users", column: "seller_id", on_delete: :restrict
   add_foreign_key "printer_models", "brands", on_delete: :restrict
   add_foreign_key "printer_models", "categories", on_delete: :nullify
   add_foreign_key "profiles", "users", on_delete: :cascade
+  add_foreign_key "reviews", "listings", on_delete: :restrict
+  add_foreign_key "reviews", "users", column: "reviewee_id", on_delete: :restrict
+  add_foreign_key "reviews", "users", column: "reviewer_id", on_delete: :restrict
+  add_foreign_key "saved_searches", "users", on_delete: :cascade
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
