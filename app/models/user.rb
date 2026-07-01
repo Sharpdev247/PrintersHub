@@ -17,6 +17,7 @@ class User < ApplicationRecord
 
   # A user can own multiple business entities
   has_many :companies, dependent: :restrict_with_error
+  has_many :listings, dependent: :restrict_with_error
 
   # Personal addresses (home, billing, etc.) separate from company addresses
   has_many :addresses, as: :addressable, dependent: :destroy

@@ -6,6 +6,8 @@ class PrinterModel < ApplicationRecord
   # optional: true reflects the nullable FK — categorisation can happen later
   belongs_to :category, optional: true
 
+  has_many :listings, dependent: :nullify
+
   validates :name,         presence: true, length: { maximum: 150 }
   validates :slug,         presence: true, uniqueness: true
   validates :model_number, length: { maximum: 100 }, allow_blank: true

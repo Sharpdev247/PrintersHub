@@ -3,6 +3,7 @@ class Brand < ApplicationRecord
   friendly_id :name, use: :slugged
 
   has_many :printer_models, dependent: :restrict_with_error
+  has_many :listings, dependent: :restrict_with_error
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 100 }
   validates :slug, presence: true, uniqueness: true

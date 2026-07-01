@@ -6,6 +6,7 @@ class Category < ApplicationRecord
   has_ancestry orphan_strategy: :restrict
 
   has_many :printer_models, foreign_key: :category_id, dependent: :nullify
+  has_many :listings, dependent: :restrict_with_error
 
   validates :name,     presence: true, length: { maximum: 100 }
   validates :slug,     presence: true, uniqueness: true

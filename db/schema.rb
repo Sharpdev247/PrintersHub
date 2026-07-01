@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_135654) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_141448) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_trgm"
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.bigint "author_id"
@@ -26,6 +27,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_135654) do
     t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
     t.index ["namespace"], name: "index_active_admin_comments_on_namespace"
     t.index ["resource_type", "resource_id"], name: "index_active_admin_comments_on_resource"
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
   create_table "addresses", force: :cascade do |t|
@@ -175,6 +204,50 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_135654) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "listings", force: :cascade do |t|
+    t.bigint "brand_id", null: false
+    t.bigint "category_id", null: false
+    t.integer "condition", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.text "description", null: false
+    t.boolean "featured", default: false, null: false
+    t.integer "listing_type", default: 0, null: false
+    t.bigint "location_city_id"
+    t.decimal "price", precision: 12, scale: 2, null: false
+    t.boolean "price_negotiable", default: false, null: false
+    t.bigint "printer_model_id"
+    t.datetime "published_at"
+    t.integer "quantity", default: 1, null: false
+    t.string "slug", null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "views_count", default: 0, null: false
+    t.integer "year"
+    t.index ["brand_id", "status"], name: "index_listings_on_brand_and_status"
+    t.index ["brand_id"], name: "index_listings_on_brand_id"
+    t.index ["category_id", "status"], name: "index_listings_on_category_and_status"
+    t.index ["category_id"], name: "index_listings_on_category_id"
+    t.index ["featured"], name: "index_listings_on_featured"
+    t.index ["listing_type", "status"], name: "index_listings_on_type_and_status"
+    t.index ["location_city_id", "status"], name: "index_listings_on_city_and_status", where: "(location_city_id IS NOT NULL)"
+    t.index ["location_city_id"], name: "index_listings_on_location_city_id", where: "(location_city_id IS NOT NULL)"
+    t.index ["price"], name: "index_listings_on_price"
+    t.index ["printer_model_id"], name: "index_listings_on_printer_model_id", where: "(printer_model_id IS NOT NULL)"
+    t.index ["published_at"], name: "index_listings_on_published_at", where: "(published_at IS NOT NULL)"
+    t.index ["slug"], name: "index_listings_on_slug", unique: true
+    t.index ["status"], name: "index_listings_on_status"
+    t.index ["title"], name: "index_listings_on_title_trigram", opclass: :gin_trgm_ops, using: :gin
+    t.index ["user_id", "status"], name: "index_listings_on_user_and_status"
+    t.index ["user_id"], name: "index_listings_on_user_id"
+    t.check_constraint "(status <> ALL (ARRAY[1, 2])) OR published_at IS NOT NULL", name: "chk_listings_published_at_when_live"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_listings_currency_format"
+    t.check_constraint "price > 0::numeric", name: "chk_listings_price_positive"
+    t.check_constraint "quantity >= 0", name: "chk_listings_quantity_non_negative"
   end
 
   create_table "printer_models", force: :cascade do |t|
@@ -400,11 +473,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_135654) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "addresses", "cities", on_delete: :restrict
   add_foreign_key "addresses", "countries", on_delete: :restrict
   add_foreign_key "addresses", "states", on_delete: :restrict
   add_foreign_key "cities", "states", on_delete: :restrict
   add_foreign_key "companies", "users", on_delete: :restrict
+  add_foreign_key "listings", "brands", on_delete: :restrict
+  add_foreign_key "listings", "categories", on_delete: :restrict
+  add_foreign_key "listings", "cities", column: "location_city_id", on_delete: :nullify
+  add_foreign_key "listings", "printer_models", on_delete: :nullify
+  add_foreign_key "listings", "users", on_delete: :restrict
   add_foreign_key "printer_models", "brands", on_delete: :restrict
   add_foreign_key "printer_models", "categories", on_delete: :nullify
   add_foreign_key "profiles", "users", on_delete: :cascade

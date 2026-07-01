@@ -326,4 +326,115 @@ seed_city(state: ae_dubai, name: "Dubai",         latitude: 25.2048,  longitude:
 seed_city(state: ae_abu,   name: "Abu Dhabi",     latitude: 24.4539,  longitude: 54.3773)
 seed_city(state: ae_sharj, name: "Sharjah",       latitude: 25.3462,  longitude: 55.4211)
 
+# ── Sample Listings ───────────────────────────────────────────────────────────
+puts "\n  Seeding sample listings..."
+
+# Grab references needed for listings
+seed_user = User.find_or_initialize_by(email: "seller@printershub.com")
+if seed_user.new_record?
+  seed_user.password              = "SeedUser123!"
+  seed_user.password_confirmation = "SeedUser123!"
+  seed_user.skip_confirmation!
+  seed_user.save!
+  puts "  [created] Seed User: seller@printershub.com"
+else
+  puts "  [exists]  Seed User: seller@printershub.com"
+end
+
+hp     = Brand.find_by!(name: "HP")
+canon  = Brand.find_by!(name: "Canon")
+epson  = Brand.find_by!(name: "Epson")
+
+printers_cat  = Category.find_by!(name: "Printers")
+toner_cat     = Category.find_by(name: "Ink & Toner") || Category.find_by!(name: "Printers")
+
+lahore_city = City.joins(:state).find_by(name: "Lahore")
+karachi_city = City.joins(:state).find_by(name: "Karachi")
+
+hp_laserjet = PrinterModel.find_by(name: "LaserJet Pro M404n")
+
+SAMPLE_LISTINGS = [
+  {
+    title:        "HP LaserJet Pro M404n - Excellent Condition",
+    description:  "Selling my HP LaserJet Pro M404n laser printer. Purchased 18 months ago, lightly used in a home office. Print speed up to 40 ppm, duplex printing, USB and Ethernet connectivity. Comes with original box and a nearly full toner cartridge. Perfect for small business or home office use.",
+    listing_type: :sale,
+    condition:    :like_new,
+    price:        45_000,
+    currency:     "PKR",
+    quantity:     1,
+    year:         2023,
+    status:       :published,
+    featured:     true,
+    brand:        hp,
+    category:     printers_cat,
+    printer_model: hp_laserjet,
+    location_city: lahore_city,
+  },
+  {
+    title:        "Canon PIXMA G6020 MegaTank - Barely Used",
+    description:  "Canon PIXMA G6020 MegaTank all-in-one printer for sale. Wireless, high-capacity ink tank system. Barely used — only 200 pages printed. Ideal for home users who print frequently. All ink tanks are full. Print, scan, and copy functionality. Excellent colour output quality.",
+    listing_type: :sale,
+    condition:    :brand_new,
+    price:        35_000,
+    currency:     "PKR",
+    quantity:     1,
+    year:         2024,
+    status:       :published,
+    featured:     false,
+    brand:        canon,
+    category:     printers_cat,
+    printer_model: nil,
+    location_city: karachi_city,
+  },
+  {
+    title:        "Epson EcoTank ET-4760 - Good Working Condition",
+    description:  "Epson EcoTank ET-4760 wireless all-in-one supertank printer. Good working condition with minor cosmetic scratches on the lid. All four ink tanks are approximately 50% full. Print, copy, scan, and fax. Auto document feeder included. Priced to sell quickly.",
+    listing_type: :sale,
+    condition:    :good,
+    price:        28_000,
+    currency:     "PKR",
+    quantity:     1,
+    year:         2022,
+    status:       :draft,
+    featured:     false,
+    brand:        epson,
+    category:     printers_cat,
+    printer_model: nil,
+    location_city: lahore_city,
+  },
+].freeze
+
+SAMPLE_LISTINGS.each do |attrs|
+  existing = Listing.find_by(title: attrs[:title])
+  if existing
+    puts "  [exists]  Listing: #{attrs[:title]}"
+    next
+  end
+
+  listing = Listing.new(
+    user:          seed_user,
+    title:         attrs[:title],
+    description:   attrs[:description],
+    listing_type:  attrs[:listing_type],
+    condition:     attrs[:condition],
+    price:         attrs[:price],
+    currency:      attrs[:currency],
+    quantity:      attrs[:quantity],
+    year:          attrs[:year],
+    status:        attrs[:status],
+    featured:      attrs[:featured],
+    brand:         attrs[:brand],
+    category:      attrs[:category],
+    printer_model: attrs[:printer_model],
+    location_city: attrs[:location_city],
+  )
+
+  if attrs[:status] == :published
+    listing.published_at = Time.current
+  end
+
+  listing.save!
+  puts "  [created] Listing: #{attrs[:title]}"
+end
+
 puts "\n── Seeding complete ─────────────────────────────────────────\n\n"
