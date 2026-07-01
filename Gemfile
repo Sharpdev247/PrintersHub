@@ -32,6 +32,12 @@ gem "solid_cable"
 # Administration panel
 gem "activeadmin", "~> 3.5"
 
+# Friendly URL slugs — handles generation, uniqueness conflicts, and future history tracking
+gem "friendly_id", "~> 5.5"
+
+# Nested category tree — stores full ancestry path in a single indexed column
+gem "ancestry", "~> 4.0"
+
 # Sass compiler for ActiveAdmin stylesheets (Propshaft serves compiled CSS)
 gem "dartsass-rails", "~> 0.5"
 

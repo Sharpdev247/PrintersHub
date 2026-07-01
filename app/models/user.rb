@@ -1,10 +1,28 @@
 class User < ApplicationRecord
-  devise :database_authenticatable,  # Core: stores hashed password, handles sign-in
-         :registerable,              # Users can sign up, edit and delete their accounts
-         :recoverable,               # Password reset via email token
-         :rememberable,              # "Remember me" long-lived cookie
-         :validatable,               # Email format + password length validation
-         :confirmable,               # Requires email confirmation before first sign-in
-         :lockable,                  # Locks account after failed attempts (brute-force protection)
-         :trackable                  # Records sign-in count, timestamps, and IPs
+  devise :database_authenticatable,
+         :registerable,
+         :recoverable,
+         :rememberable,
+         :validatable,
+         :confirmable,
+         :lockable,
+         :trackable
+
+  # Profile is the extended identity — destroyed when user is destroyed (mirrors DB cascade)
+  has_one :profile, dependent: :destroy
+
+  # Many-to-many roles — a user can be buyer, seller, dealer, vendor, service_provider simultaneously
+  has_many :user_roles, dependent: :destroy
+  has_many :roles, through: :user_roles
+
+  # A user can own multiple business entities
+  has_many :companies, dependent: :restrict_with_error
+
+  # Personal addresses (home, billing, etc.) separate from company addresses
+  has_many :addresses, as: :addressable, dependent: :destroy
+
+  # Convenience predicates — avoids `user.roles.map(&:name).include?("buyer")` callsites
+  def role?(role_name)
+    roles.exists?(name: role_name.to_s.downcase)
+  end
 end

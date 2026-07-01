@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  addressable: one
+  addressable_type: Addressable
+  label: MyString
+  address_type: MyString
+  line1: MyString
+  line2: MyString
+  city: MyString
+  state: MyString
+  postal_code: MyString
+  country_code: MyString
+  latitude: 9.99
+  longitude: 9.99
+  is_primary: false
+
+two:
+  addressable: two
+  addressable_type: Addressable
+  label: MyString
+  address_type: MyString
+  line1: MyString
+  line2: MyString
+  city: MyString
+  state: MyString
+  postal_code: MyString
+  country_code: MyString
+  latitude: 9.99
+  longitude: 9.99
+  is_primary: false
