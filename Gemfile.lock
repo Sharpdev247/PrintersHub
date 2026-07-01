@@ -96,6 +96,9 @@ GEM
       activesupport (>= 3.0.0)
       ruby2_keywords (>= 0.0.2)
     ast (2.4.3)
+    audited (5.8.0)
+      activerecord (>= 5.2, < 8.2)
+      activesupport (>= 5.2, < 8.2)
     base64 (0.3.0)
     bcrypt (3.1.22)
     bcrypt_pbkdf (1.1.2)
@@ -141,6 +144,8 @@ GEM
       railties (>= 7.0)
       responders
       warden (~> 1.2.3)
+    discard (1.4.0)
+      activerecord (>= 4.2, < 9.0)
     dotenv (3.2.0)
     dotenv-rails (3.2.0)
       dotenv (= 3.2.0)
@@ -308,6 +313,9 @@ GEM
     pg (1.6.3-arm64-darwin)
     pg (1.6.3-x86_64-linux)
     pg (1.6.3-x86_64-linux-musl)
+    pg_search (2.3.7)
+      activerecord (>= 6.1)
+      activesupport (>= 6.1)
     pp (0.6.4)
       prettyprint
     prettyprint (0.2.0)
@@ -515,6 +523,7 @@ DEPENDENCIES
   activeadmin (~> 3.5)
   ancestry (~> 4.0)
   annotate
+  audited (~> 5.7)
   bcrypt (~> 3.1)
   bootsnap
   brakeman
@@ -524,6 +533,7 @@ DEPENDENCIES
   dartsass-rails (~> 0.5)
   debug
   devise (~> 5.0)
+  discard (~> 1.4)
   dotenv-rails
   faker
   friendly_id (~> 5.5)
@@ -532,6 +542,7 @@ DEPENDENCIES
   kamal
   letter_opener
   pg (~> 1.1)
+  pg_search (~> 2.3)
   propshaft
   pry-rails
   puma (>= 5.0)
@@ -566,6 +577,7 @@ CHECKSUMS
   annotate (2.6.5) sha256=14dc2adae397080ee14bf6e3fd6f1d8de81aa1d28c4ca670e734d11bf6b97d26
   arbre (1.7.0) sha256=20c76c26390924422407aa8eb849ae859b903a95bb9c19eb2f8e05fe1e40c83d
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
+  audited (5.8.0) sha256=35cd63f9ee1eb2a1f773e7abf5915bb4e870b6338173e27c31e0e604e353f371
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bcrypt (3.1.22) sha256=1f0072e88c2d705d94aff7f2c5cb02eb3f1ec4b8368671e19112527489f29032
   bcrypt_pbkdf (1.1.2) sha256=c2414c23ce66869b3eb9f643d6a3374d8322dfb5078125c82792304c10b94cf6
@@ -587,6 +599,7 @@ CHECKSUMS
   date (3.5.1) sha256=750d06384d7b9c15d562c76291407d89e368dda4d4fff957eb94962d325a0dc0
   debug (1.11.1) sha256=2e0b0ac6119f2207a6f8ac7d4a73ca8eb4e440f64da0a3136c30343146e952b6
   devise (5.0.4) sha256=d605f2b85854e74e56ee789e2d398702bc2d06e6bcd894717a670a3199c74cc1
+  discard (1.4.0) sha256=6efcd2a53ddf96781f81b825d398f1c88ab88c0faa84e131bea6e16ef95d65d0
   dotenv (3.2.0) sha256=e375b83121ea7ca4ce20f214740076129ab8514cd81378161f11c03853fe619d
   dotenv-rails (3.2.0) sha256=657e25554ba622ffc95d8c4f1670286510f47f2edda9f68293c3f661b303beab
   drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
@@ -666,6 +679,7 @@ CHECKSUMS
   pg (1.6.3-arm64-darwin) sha256=7240330b572e6355d7c75a7de535edb5dfcbd6295d9c7777df4d9dddfb8c0e5f
   pg (1.6.3-x86_64-linux) sha256=5d9e188c8f7a0295d162b7b88a768d8452a899977d44f3274d1946d67920ae8d
   pg (1.6.3-x86_64-linux-musl) sha256=9c9c90d98c72f78eb04c0f55e9618fe55d1512128e411035fe229ff427864009
+  pg_search (2.3.7) sha256=27868941844961e593526b835da20e48995e9b846515e91856084c5bd9ab4f35
   pp (0.6.4) sha256=dfcb0fce700c41456265922884f9fe195d7fbb0674a3578e6c0f69588e82b570
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85

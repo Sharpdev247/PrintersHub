@@ -39,6 +39,18 @@ module PrintersHub
       "--silence-deprecation=global-builtin"
     ]
 
+    # Allow serialized YAML columns (used by audited gem) to round-trip Ruby date/time
+    # types that Psych 4 blocks by default in safe-load mode.
+    config.active_record.yaml_column_permitted_classes = [
+      ActiveSupport::TimeWithZone,
+      ActiveSupport::TimeZone,
+      Time,
+      Date,
+      DateTime,
+      Symbol,
+      BigDecimal
+    ]
+
     # Configuration for the application, engines, and railties goes here.
     #
     # config.time_zone = "Central Time (US & Canada)"

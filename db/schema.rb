@@ -10,10 +10,67 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_144736) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
+
+  create_table "account_subscriptions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "billing_interval", default: "monthly", null: false
+    t.datetime "cancelled_at"
+    t.bigint "coupon_redemption_id"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.datetime "current_period_end"
+    t.datetime "current_period_start"
+    t.decimal "current_price", precision: 10, scale: 2, default: "0.0", null: false
+    t.datetime "discarded_at"
+    t.datetime "expires_at"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "payment_provider"
+    t.string "provider_subscription_id"
+    t.integer "status", default: 0, null: false
+    t.bigint "subscription_plan_id", null: false
+    t.datetime "trial_ends_at"
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_account_subscriptions_on_account_and_status"
+    t.index ["account_id"], name: "index_account_subscriptions_on_account_active", unique: true, where: "((status = ANY (ARRAY[0, 1, 2])) AND (discarded_at IS NULL))"
+    t.index ["account_id"], name: "index_account_subscriptions_on_account_id"
+    t.index ["coupon_redemption_id"], name: "index_account_subscriptions_on_coupon_redemption", where: "(coupon_redemption_id IS NOT NULL)"
+    t.index ["expires_at"], name: "index_account_subscriptions_on_expires_at_active", where: "((expires_at IS NOT NULL) AND (status = ANY (ARRAY[0, 1])))"
+    t.index ["provider_subscription_id"], name: "index_account_subscriptions_on_provider_id", unique: true, where: "(provider_subscription_id IS NOT NULL)"
+    t.index ["subscription_plan_id"], name: "index_account_subscriptions_on_subscription_plan_id"
+    t.check_constraint "billing_interval::text = ANY (ARRAY['monthly'::character varying, 'yearly'::character varying]::text[])", name: "chk_account_subscriptions_billing_interval"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_account_subscriptions_currency"
+    t.check_constraint "current_price >= 0::numeric", name: "chk_account_subscriptions_price"
+  end
+
+  create_table "accounts", force: :cascade do |t|
+    t.integer "account_type", default: 0, null: false
+    t.text "bio"
+    t.datetime "created_at", null: false
+    t.datetime "discarded_at"
+    t.string "email", limit: 255
+    t.string "name", null: false
+    t.string "phone", limit: 30
+    t.string "provider_customer_id"
+    t.jsonb "settings", default: {}, null: false
+    t.string "slug", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.boolean "verified", default: false, null: false
+    t.datetime "verified_at"
+    t.string "website", limit: 255
+    t.index ["account_type"], name: "index_accounts_on_account_type"
+    t.index ["discarded_at"], name: "index_accounts_on_discarded_at", where: "(discarded_at IS NOT NULL)"
+    t.index ["provider_customer_id"], name: "index_accounts_on_provider_customer_id", unique: true, where: "(provider_customer_id IS NOT NULL)"
+    t.index ["settings"], name: "index_accounts_on_settings_gin", using: :gin
+    t.index ["slug"], name: "index_accounts_on_slug", unique: true
+    t.index ["status"], name: "index_accounts_on_status"
+    t.index ["verified"], name: "index_accounts_on_verified"
+    t.check_constraint "length(name::text) >= 2", name: "chk_accounts_name_length"
+  end
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.bigint "author_id"
@@ -107,6 +164,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.index ["unlock_token"], name: "index_admin_users_on_unlock_token", unique: true
   end
 
+  create_table "audits", force: :cascade do |t|
+    t.string "action"
+    t.integer "associated_id"
+    t.string "associated_type"
+    t.integer "auditable_id"
+    t.string "auditable_type"
+    t.text "audited_changes"
+    t.string "comment"
+    t.datetime "created_at"
+    t.string "remote_address"
+    t.string "request_uuid"
+    t.integer "user_id"
+    t.string "user_type"
+    t.string "username"
+    t.integer "version", default: 0
+    t.index ["associated_type", "associated_id"], name: "associated_index"
+    t.index ["auditable_type", "auditable_id", "version"], name: "auditable_index"
+    t.index ["created_at"], name: "index_audits_on_created_at"
+    t.index ["request_uuid"], name: "index_audits_on_request_uuid"
+    t.index ["user_id", "user_type"], name: "user_index"
+  end
+
   create_table "brands", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -150,8 +229,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
   end
 
   create_table "companies", force: :cascade do |t|
+    t.bigint "account_id"
     t.integer "company_type", default: 0, null: false
     t.datetime "created_at", null: false
+    t.bigint "created_by_id"
     t.text "description"
     t.string "email"
     t.string "name", null: false
@@ -163,6 +244,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.boolean "verified", default: false, null: false
     t.datetime "verified_at"
     t.string "website"
+    t.index ["account_id"], name: "index_companies_on_account_id"
+    t.index ["created_by_id"], name: "index_companies_on_created_by_id", where: "(created_by_id IS NOT NULL)"
     t.index ["slug"], name: "index_companies_on_slug", unique: true
     t.index ["user_id"], name: "index_companies_on_user_id"
     t.index ["verified"], name: "index_companies_on_verified_true", where: "(verified = true)"
@@ -221,6 +304,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.check_constraint "iso3::text ~ '^[A-Z]{3}$'::text", name: "chk_countries_iso3_format"
   end
 
+  create_table "coupon_redemptions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "coupon_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "discount_applied", precision: 12, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coupon_redemptions_on_account_id"
+    t.index ["coupon_id", "account_id"], name: "index_coupon_redemptions_on_coupon_and_account", unique: true
+    t.index ["coupon_id"], name: "index_coupon_redemptions_on_coupon_id"
+    t.check_constraint "discount_applied > 0::numeric", name: "chk_coupon_redemptions_discount"
+  end
+
+  create_table "coupons", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3
+    t.text "description"
+    t.integer "discount_type", default: 0, null: false
+    t.decimal "discount_value", precision: 10, scale: 2, null: false
+    t.datetime "expires_at"
+    t.integer "max_redemptions"
+    t.string "name", null: false
+    t.integer "redemptions_count", default: 0, null: false
+    t.bigint "subscription_plan_id"
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_coupons_on_active"
+    t.index ["code"], name: "index_coupons_on_code", unique: true
+    t.index ["expires_at"], name: "index_coupons_on_expires_at", where: "(expires_at IS NOT NULL)"
+    t.index ["subscription_plan_id"], name: "index_coupons_on_subscription_plan_id", where: "(subscription_plan_id IS NOT NULL)"
+    t.check_constraint "discount_type <> 0 OR discount_value > 0::numeric AND discount_value <= 100::numeric", name: "chk_coupons_percentage_range"
+    t.check_constraint "discount_value > 0::numeric", name: "chk_coupons_discount_value"
+    t.check_constraint "redemptions_count >= 0", name: "chk_coupons_redemptions_count"
+  end
+
   create_table "favorites", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "listing_id", null: false
@@ -242,7 +360,55 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
+  create_table "invoice_items", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.string "description", null: false
+    t.bigint "invoice_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.decimal "unit_price", precision: 12, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["invoice_id"], name: "index_invoice_items_on_invoice_id"
+    t.check_constraint "amount >= 0::numeric", name: "chk_invoice_items_amount"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_invoice_items_currency"
+    t.check_constraint "quantity > 0", name: "chk_invoice_items_quantity"
+    t.check_constraint "unit_price >= 0::numeric", name: "chk_invoice_items_unit_price"
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "account_subscription_id"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.decimal "discount_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.datetime "due_at"
+    t.string "invoice_number", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.text "notes"
+    t.datetime "paid_at"
+    t.string "provider_invoice_id"
+    t.integer "status", default: 0, null: false
+    t.bigint "subscription_plan_id"
+    t.decimal "subtotal", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "tax_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "total", precision: 12, scale: 2, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_invoices_on_account_and_status"
+    t.index ["account_id"], name: "index_invoices_on_account_id"
+    t.index ["account_subscription_id"], name: "index_invoices_on_account_subscription_id", where: "(account_subscription_id IS NOT NULL)"
+    t.index ["due_at"], name: "index_invoices_on_due_at_open", where: "((due_at IS NOT NULL) AND (status = 1))"
+    t.index ["invoice_number"], name: "index_invoices_on_invoice_number", unique: true
+    t.index ["provider_invoice_id"], name: "index_invoices_on_provider_invoice_id", unique: true, where: "(provider_invoice_id IS NOT NULL)"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_invoices_currency"
+    t.check_constraint "discount_amount >= 0::numeric", name: "chk_invoices_discount"
+    t.check_constraint "subtotal >= 0::numeric", name: "chk_invoices_subtotal"
+    t.check_constraint "tax_amount >= 0::numeric", name: "chk_invoices_tax"
+    t.check_constraint "total >= 0::numeric", name: "chk_invoices_total"
+  end
+
   create_table "listings", force: :cascade do |t|
+    t.bigint "account_id"
     t.bigint "brand_id", null: false
     t.bigint "category_id", null: false
     t.integer "condition", default: 0, null: false
@@ -264,6 +430,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.bigint "user_id", null: false
     t.integer "views_count", default: 0, null: false
     t.integer "year"
+    t.index ["account_id", "status"], name: "index_listings_on_account_and_status", where: "(account_id IS NOT NULL)"
     t.index ["brand_id", "status"], name: "index_listings_on_brand_and_status"
     t.index ["brand_id"], name: "index_listings_on_brand_id"
     t.index ["category_id", "status"], name: "index_listings_on_category_and_status"
@@ -284,6 +451,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_listings_currency_format"
     t.check_constraint "price > 0::numeric", name: "chk_listings_price_positive"
     t.check_constraint "quantity >= 0", name: "chk_listings_quantity_non_negative"
+  end
+
+  create_table "memberships", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "discarded_at"
+    t.integer "role", default: 0, null: false
+    t.string "title", limit: 100
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["account_id", "role"], name: "index_memberships_on_account_and_role"
+    t.index ["account_id", "user_id"], name: "index_memberships_on_account_and_user_active", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["account_id"], name: "index_memberships_on_account_id"
+    t.index ["discarded_at"], name: "index_memberships_on_discarded_at", where: "(discarded_at IS NOT NULL)"
+    t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -341,6 +524,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.check_constraint "amount > 0::numeric", name: "chk_offers_amount_positive"
     t.check_constraint "buyer_id <> seller_id", name: "chk_offers_buyer_not_seller"
     t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_offers_currency_format"
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.text "failure_reason"
+    t.bigint "invoice_id"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "paid_at"
+    t.string "payment_method"
+    t.string "payment_provider"
+    t.string "provider_payment_id"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_payments_on_account_and_status"
+    t.index ["account_id"], name: "index_payments_on_account_id"
+    t.index ["invoice_id"], name: "index_payments_on_invoice_id"
+    t.index ["paid_at"], name: "index_payments_on_paid_at", where: "(paid_at IS NOT NULL)"
+    t.index ["provider_payment_id"], name: "index_payments_on_provider_payment_id", unique: true, where: "(provider_payment_id IS NOT NULL)"
+    t.check_constraint "amount > 0::numeric", name: "chk_payments_amount"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_payments_currency"
+  end
+
+  create_table "plan_features", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "display_name", null: false
+    t.string "feature_key", null: false
+    t.string "feature_type", default: "boolean", null: false
+    t.bigint "subscription_plan_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "value", null: false
+    t.index ["subscription_plan_id", "feature_key"], name: "index_plan_features_on_plan_and_key", unique: true
+    t.index ["subscription_plan_id"], name: "index_plan_features_on_subscription_plan_id"
+    t.check_constraint "feature_type::text = ANY (ARRAY['boolean'::character varying, 'limit'::character varying, 'string'::character varying]::text[])", name: "chk_plan_features_feature_type"
   end
 
   create_table "printer_models", force: :cascade do |t|
@@ -559,6 +779,47 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.index ["name"], name: "index_states_on_name"
   end
 
+  create_table "subscription_plans", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.text "description"
+    t.jsonb "metadata", default: {}, null: false
+    t.decimal "monthly_price", precision: 10, scale: 2, default: "0.0", null: false
+    t.string "name", null: false
+    t.integer "plan_type", default: 0, null: false
+    t.integer "priority", default: 0, null: false
+    t.string "slug", null: false
+    t.integer "trial_days", default: 0, null: false
+    t.boolean "trial_eligible", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.decimal "yearly_price", precision: 10, scale: 2, default: "0.0", null: false
+    t.index ["active"], name: "index_subscription_plans_on_active"
+    t.index ["priority"], name: "index_subscription_plans_on_priority"
+    t.index ["slug"], name: "index_subscription_plans_on_slug", unique: true
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_subscription_plans_currency"
+    t.check_constraint "monthly_price >= 0::numeric", name: "chk_subscription_plans_monthly_price"
+    t.check_constraint "priority >= 0", name: "chk_subscription_plans_priority"
+    t.check_constraint "trial_days >= 0", name: "chk_subscription_plans_trial_days"
+    t.check_constraint "yearly_price >= 0::numeric", name: "chk_subscription_plans_yearly_price"
+  end
+
+  create_table "subscription_usages", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "account_subscription_id", null: false
+    t.datetime "created_at", null: false
+    t.string "feature_key", null: false
+    t.date "period_end"
+    t.date "period_start", null: false
+    t.decimal "quantity", precision: 15, scale: 3, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "feature_key", "period_start"], name: "index_subscription_usages_on_account_feature_period", unique: true
+    t.index ["account_id", "period_start"], name: "index_subscription_usages_on_account_and_period"
+    t.index ["account_id"], name: "index_subscription_usages_on_account_id"
+    t.index ["account_subscription_id"], name: "index_subscription_usages_on_account_subscription_id"
+    t.check_constraint "quantity >= 0::numeric", name: "chk_subscription_usages_quantity"
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "role_id", null: false
@@ -595,24 +856,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "account_subscriptions", "accounts", on_delete: :restrict
+  add_foreign_key "account_subscriptions", "coupon_redemptions", on_delete: :nullify
+  add_foreign_key "account_subscriptions", "subscription_plans", on_delete: :restrict
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "addresses", "cities", on_delete: :restrict
   add_foreign_key "addresses", "countries", on_delete: :restrict
   add_foreign_key "addresses", "states", on_delete: :restrict
   add_foreign_key "cities", "states", on_delete: :restrict
+  add_foreign_key "companies", "accounts", on_delete: :restrict
+  add_foreign_key "companies", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "companies", "users", on_delete: :restrict
   add_foreign_key "conversation_participants", "conversations", on_delete: :cascade
   add_foreign_key "conversation_participants", "messages", column: "last_read_message_id", on_delete: :nullify
   add_foreign_key "conversation_participants", "users", on_delete: :cascade
   add_foreign_key "conversations", "listings", on_delete: :nullify
+  add_foreign_key "coupon_redemptions", "accounts", on_delete: :restrict
+  add_foreign_key "coupon_redemptions", "coupons", on_delete: :restrict
+  add_foreign_key "coupons", "subscription_plans", on_delete: :nullify
   add_foreign_key "favorites", "listings", on_delete: :cascade
   add_foreign_key "favorites", "users", on_delete: :cascade
+  add_foreign_key "invoice_items", "invoices", on_delete: :cascade
+  add_foreign_key "invoices", "account_subscriptions", on_delete: :nullify
+  add_foreign_key "invoices", "accounts", on_delete: :restrict
+  add_foreign_key "invoices", "subscription_plans", on_delete: :nullify
+  add_foreign_key "listings", "accounts", on_delete: :restrict
   add_foreign_key "listings", "brands", on_delete: :restrict
   add_foreign_key "listings", "categories", on_delete: :restrict
   add_foreign_key "listings", "cities", column: "location_city_id", on_delete: :nullify
   add_foreign_key "listings", "printer_models", on_delete: :nullify
   add_foreign_key "listings", "users", on_delete: :restrict
+  add_foreign_key "memberships", "accounts", on_delete: :cascade
+  add_foreign_key "memberships", "users", on_delete: :cascade
   add_foreign_key "messages", "conversations", on_delete: :cascade
   add_foreign_key "messages", "users", on_delete: :restrict
   add_foreign_key "notifications", "users", on_delete: :cascade
@@ -621,6 +897,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
   add_foreign_key "offers", "users", column: "buyer_id", on_delete: :restrict
   add_foreign_key "offers", "users", column: "proposed_by_id", on_delete: :restrict
   add_foreign_key "offers", "users", column: "seller_id", on_delete: :restrict
+  add_foreign_key "payments", "accounts", on_delete: :restrict
+  add_foreign_key "payments", "invoices", on_delete: :nullify
+  add_foreign_key "plan_features", "subscription_plans", on_delete: :cascade
   add_foreign_key "printer_models", "brands", on_delete: :restrict
   add_foreign_key "printer_models", "categories", on_delete: :nullify
   add_foreign_key "profiles", "users", on_delete: :cascade
@@ -635,6 +914,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_142505) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "states", "countries", on_delete: :restrict
+  add_foreign_key "subscription_usages", "account_subscriptions", on_delete: :cascade
+  add_foreign_key "subscription_usages", "accounts", on_delete: :cascade
   add_foreign_key "user_roles", "roles", on_delete: :cascade
   add_foreign_key "user_roles", "users", on_delete: :cascade
 end

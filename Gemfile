@@ -53,6 +53,16 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# Soft deletes — explicit discard/undiscard without overriding default_scope
+gem "discard", "~> 1.4"
+
+# Immutable audit trail — records every create/update/destroy to an audits table
+# audited is Rails 8.x compatible; PaperTrail 16 does not yet support AR 8.1
+gem "audited", "~> 5.7"
+
+# PostgreSQL full-text search — tsearch (ranked FTS) + trigram (fuzzy)
+gem "pg_search", "~> 2.3"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

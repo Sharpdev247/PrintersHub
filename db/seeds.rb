@@ -574,4 +574,258 @@ else
   puts "  [exists]  Review: #{seed_buyer.email} on #{hp_listing.title[0..40]}"
 end
 
+# ── Subscription Plans ───────────────────────────────────────────────────────
+puts "\n  Seeding subscription plans..."
+
+SUBSCRIPTION_PLANS = [
+  {
+    name: "Free",
+    plan_type: :free,
+    monthly_price: 0,
+    yearly_price: 0,
+    trial_days: 0,
+    priority: 0,
+    active: true,
+    description: "Get started with the basics. No credit card required.",
+    features: {
+      max_listings:             { type: "limit",   value: "5",         display_name: "Max Listings" },
+      featured_listings:        { type: "limit",   value: "0",         display_name: "Featured Listings" },
+      max_team_members:         { type: "limit",   value: "1",         display_name: "Team Members" },
+      api_access:               { type: "boolean", value: "false",     display_name: "API Access" },
+      analytics:                { type: "boolean", value: "false",     display_name: "Analytics" },
+      crm_module:               { type: "boolean", value: "false",     display_name: "CRM Module" },
+      warehouse_module:         { type: "boolean", value: "false",     display_name: "Warehouse Module" },
+      repair_module:            { type: "boolean", value: "false",     display_name: "Repair Module" },
+      priority_notifications:   { type: "boolean", value: "false",     display_name: "Priority Notifications" },
+      storage_gb:               { type: "limit",   value: "1",         display_name: "Storage (GB)" },
+      max_api_requests_per_day: { type: "limit",   value: "0",         display_name: "API Requests / Day" },
+      messages_per_day:         { type: "limit",   value: "20",        display_name: "Messages / Day" },
+      support_level:            { type: "string",  value: "community", display_name: "Support Level" }
+    }
+  },
+  {
+    name: "Silver",
+    plan_type: :paid,
+    monthly_price: 2_990,
+    yearly_price: 29_900,
+    trial_days: 14,
+    priority: 1,
+    active: true,
+    description: "For growing businesses ready to list more and sell faster.",
+    features: {
+      max_listings:             { type: "limit",   value: "50",    display_name: "Max Listings" },
+      featured_listings:        { type: "limit",   value: "5",     display_name: "Featured Listings" },
+      max_team_members:         { type: "limit",   value: "3",     display_name: "Team Members" },
+      api_access:               { type: "boolean", value: "false", display_name: "API Access" },
+      analytics:                { type: "boolean", value: "true",  display_name: "Analytics" },
+      crm_module:               { type: "boolean", value: "false", display_name: "CRM Module" },
+      warehouse_module:         { type: "boolean", value: "false", display_name: "Warehouse Module" },
+      repair_module:            { type: "boolean", value: "false", display_name: "Repair Module" },
+      priority_notifications:   { type: "boolean", value: "false", display_name: "Priority Notifications" },
+      storage_gb:               { type: "limit",   value: "10",    display_name: "Storage (GB)" },
+      max_api_requests_per_day: { type: "limit",   value: "0",     display_name: "API Requests / Day" },
+      messages_per_day:         { type: "limit",   value: "100",   display_name: "Messages / Day" },
+      support_level:            { type: "string",  value: "email", display_name: "Support Level" }
+    }
+  },
+  {
+    name: "Gold",
+    plan_type: :paid,
+    monthly_price: 7_990,
+    yearly_price: 79_900,
+    trial_days: 14,
+    priority: 2,
+    active: true,
+    description: "For established dealers needing team access, CRM, and API.",
+    features: {
+      max_listings:             { type: "limit",   value: "500",      display_name: "Max Listings" },
+      featured_listings:        { type: "limit",   value: "20",       display_name: "Featured Listings" },
+      max_team_members:         { type: "limit",   value: "10",       display_name: "Team Members" },
+      api_access:               { type: "boolean", value: "true",     display_name: "API Access" },
+      analytics:                { type: "boolean", value: "true",     display_name: "Analytics" },
+      crm_module:               { type: "boolean", value: "true",     display_name: "CRM Module" },
+      warehouse_module:         { type: "boolean", value: "false",    display_name: "Warehouse Module" },
+      repair_module:            { type: "boolean", value: "true",     display_name: "Repair Module" },
+      priority_notifications:   { type: "boolean", value: "true",     display_name: "Priority Notifications" },
+      storage_gb:               { type: "limit",   value: "50",       display_name: "Storage (GB)" },
+      max_api_requests_per_day: { type: "limit",   value: "5000",     display_name: "API Requests / Day" },
+      messages_per_day:         { type: "limit",   value: "-1",       display_name: "Messages / Day" },
+      support_level:            { type: "string",  value: "priority", display_name: "Support Level" }
+    }
+  },
+  {
+    name: "Platinum",
+    plan_type: :paid,
+    monthly_price: 19_990,
+    yearly_price: 199_900,
+    trial_days: 30,
+    priority: 3,
+    active: true,
+    description: "Enterprise-grade: unlimited listings, full module suite, dedicated support.",
+    features: {
+      max_listings:             { type: "limit",   value: "-1",        display_name: "Max Listings" },
+      featured_listings:        { type: "limit",   value: "-1",        display_name: "Featured Listings" },
+      max_team_members:         { type: "limit",   value: "-1",        display_name: "Team Members" },
+      api_access:               { type: "boolean", value: "true",      display_name: "API Access" },
+      analytics:                { type: "boolean", value: "true",      display_name: "Analytics" },
+      crm_module:               { type: "boolean", value: "true",      display_name: "CRM Module" },
+      warehouse_module:         { type: "boolean", value: "true",      display_name: "Warehouse Module" },
+      repair_module:            { type: "boolean", value: "true",      display_name: "Repair Module" },
+      priority_notifications:   { type: "boolean", value: "true",      display_name: "Priority Notifications" },
+      storage_gb:               { type: "limit",   value: "-1",        display_name: "Storage (GB)" },
+      max_api_requests_per_day: { type: "limit",   value: "-1",        display_name: "API Requests / Day" },
+      messages_per_day:         { type: "limit",   value: "-1",        display_name: "Messages / Day" },
+      support_level:            { type: "string",  value: "dedicated", display_name: "Support Level" }
+    }
+  }
+].freeze
+
+SUBSCRIPTION_PLANS.each do |plan_attrs|
+  plan = SubscriptionPlan.find_or_initialize_by(name: plan_attrs[:name])
+  if plan.new_record?
+    plan.assign_attributes(plan_attrs.except(:features))
+    plan.save!
+    puts "  [created] SubscriptionPlan: #{plan.name}"
+  else
+    puts "  [exists]  SubscriptionPlan: #{plan.name}"
+  end
+
+  plan_attrs[:features].each do |feature_key, feature_attrs|
+    pf = PlanFeature.find_or_initialize_by(subscription_plan: plan, feature_key: feature_key.to_s)
+    if pf.new_record?
+      pf.feature_type  = feature_attrs[:type]
+      pf.value         = feature_attrs[:value]
+      pf.display_name  = feature_attrs[:display_name]
+      pf.save!
+    end
+  end
+end
+
+# ── Coupons ───────────────────────────────────────────────────────────────────
+puts "\n  Seeding coupons..."
+
+SEED_COUPONS = [
+  {
+    code:            "LAUNCH25",
+    name:            "Launch Discount 25%",
+    discount_type:   :percentage,
+    discount_value:  25,
+    currency:        "USD",
+    max_redemptions: 500,
+    expires_at:      6.months.from_now,
+    active:          true
+  },
+  {
+    code:            "FREETRIAL30",
+    name:            "30 Day Free Trial Extension",
+    discount_type:   :free_trial_days,
+    discount_value:  30,
+    currency:        "USD",
+    max_redemptions: 100,
+    expires_at:      3.months.from_now,
+    active:          true
+  }
+].freeze
+
+SEED_COUPONS.each do |attrs|
+  coupon = Coupon.find_or_initialize_by(code: attrs[:code].upcase)
+  if coupon.new_record?
+    coupon.assign_attributes(attrs)
+    coupon.save!
+    puts "  [created] Coupon: #{attrs[:code]}"
+  else
+    puts "  [exists]  Coupon: #{attrs[:code]}"
+  end
+end
+
+# ── Accounts & Memberships ────────────────────────────────────────────────────
+puts "\n  Seeding accounts and memberships..."
+
+free_plan     = SubscriptionPlan.find_by!(name: "Free")
+silver_plan   = SubscriptionPlan.find_by!(name: "Silver")
+
+# Seller account
+seller_account = Account.find_or_initialize_by(name: "PrintersPro Lahore")
+if seller_account.new_record?
+  seller_account.assign_attributes(
+    account_type: :dealer,
+    status:       :active,
+    email:        "seller@printershub.com",
+    verified:     true,
+    verified_at:  Time.current
+  )
+  seller_account.save!
+  puts "  [created] Account: #{seller_account.name}"
+else
+  puts "  [exists]  Account: #{seller_account.name}"
+end
+
+unless Membership.exists?(account: seller_account, user: seed_user)
+  Membership.create!(account: seller_account, user: seed_user, role: :owner)
+  puts "  [created] Membership: #{seed_user.email} → #{seller_account.name} (owner)"
+else
+  puts "  [exists]  Membership: #{seed_user.email} → #{seller_account.name}"
+end
+
+# Buyer account
+buyer_account = Account.find_or_initialize_by(name: "KarachiPrints")
+if buyer_account.new_record?
+  buyer_account.assign_attributes(
+    account_type: :individual,
+    status:       :active,
+    email:        "buyer@printershub.com",
+    verified:     false
+  )
+  buyer_account.save!
+  puts "  [created] Account: #{buyer_account.name}"
+else
+  puts "  [exists]  Account: #{buyer_account.name}"
+end
+
+unless Membership.exists?(account: buyer_account, user: seed_buyer)
+  Membership.create!(account: buyer_account, user: seed_buyer, role: :owner)
+  puts "  [created] Membership: #{seed_buyer.email} → #{buyer_account.name} (owner)"
+else
+  puts "  [exists]  Membership: #{seed_buyer.email} → #{buyer_account.name}"
+end
+
+# Link listings to seller account (idempotent)
+Listing.where(user: seed_user, account_id: nil).update_all(account_id: seller_account.id)
+
+# ── Account Subscriptions ─────────────────────────────────────────────────────
+puts "\n  Seeding account subscriptions..."
+
+# Seller on Silver (active paid subscription)
+unless AccountSubscription.exists?(account: seller_account, status: AccountSubscription.statuses[:active])
+  AccountSubscription.create!(
+    account:              seller_account,
+    subscription_plan:    silver_plan,
+    status:               :active,
+    billing_interval:     "monthly",
+    current_price:        silver_plan.monthly_price,
+    currency:             "USD",
+    current_period_start: 1.month.ago,
+    current_period_end:   1.month.from_now
+  )
+  puts "  [created] AccountSubscription: #{seller_account.name} → Silver (active)"
+else
+  puts "  [exists]  AccountSubscription: #{seller_account.name} → Silver"
+end
+
+# Buyer on Free
+unless AccountSubscription.exists?(account: buyer_account)
+  AccountSubscription.create!(
+    account:              buyer_account,
+    subscription_plan:    free_plan,
+    status:               :active,
+    billing_interval:     "monthly",
+    current_price:        0,
+    currency:             "USD",
+    current_period_start: Time.current
+  )
+  puts "  [created] AccountSubscription: #{buyer_account.name} → Free (active)"
+else
+  puts "  [exists]  AccountSubscription: #{buyer_account.name} → Free"
+end
+
 puts "\n── Seeding complete ─────────────────────────────────────────\n\n"
