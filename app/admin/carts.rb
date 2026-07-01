@@ -33,9 +33,9 @@ ActiveAdmin.register Cart do
   show do
     attributes_table do
       row :id
-      row :account { |c| link_to c.account&.name, admin_account_path(c.account) if c.account }
-      row :created_by { |c| c.created_by&.email }
-      row :status { |c| status_tag c.status.humanize }
+      row(:account) { |c| link_to c.account&.name, admin_account_path(c.account) if c.account }
+      row(:created_by) { |c| c.created_by&.email }
+      row(:status) { |c| status_tag c.status.humanize }
       row :currency
       row :expires_at
       row :notes

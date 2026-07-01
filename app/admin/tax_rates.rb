@@ -39,9 +39,9 @@ ActiveAdmin.register TaxRate do
       row :country_code
       row :state_code
       row :tax_type
-      row :rate { |tr| "#{tr.rate_percentage}%" }
+      row(:rate) { |tr| "#{tr.rate_percentage}%" }
       row :description
-      row :active { |tr| status_tag tr.active? ? "Active" : "Inactive" }
+      row(:active) { |tr| status_tag tr.active? ? "Active" : "Inactive" }
       row :created_at
       row :updated_at
     end

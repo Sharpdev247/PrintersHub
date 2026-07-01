@@ -39,18 +39,18 @@ ActiveAdmin.register Shipment do
   show do
     attributes_table do
       row :id
-      row :order do |s|
+      row(:order) do |s|
         link_to s.order&.order_number, admin_order_path(s.order) if s.order
       end
-      row :account do |s|
+      row(:account) do |s|
         link_to s.account&.name, admin_account_path(s.account) if s.account
       end
       row :tracking_number
       row :carrier
-      row :status { |s| status_tag s.status.humanize }
+      row(:status) { |s| status_tag s.status.humanize }
       row :weight
       row :weight_unit
-      row :shipping_cost do |s|
+      row(:shipping_cost) do |s|
         number_to_currency(s.shipping_cost, unit: (s.currency || "USD") + " ") if s.shipping_cost
       end
       row :currency

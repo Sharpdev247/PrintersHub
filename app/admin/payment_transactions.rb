@@ -39,12 +39,12 @@ ActiveAdmin.register PaymentTransaction do
   show do
     attributes_table do
       row :id
-      row :payment { |pt| link_to "Payment ##{pt.payment_id}", admin_payment_path(pt.payment) }
+      row(:payment) { |pt| link_to "Payment ##{pt.payment_id}", admin_payment_path(pt.payment) }
       row :transaction_type
       row :gateway
       row :gateway_transaction_id
-      row :status { |pt| status_tag pt.status.humanize }
-      row :amount { |pt| number_to_currency(pt.amount, unit: pt.currency + " ") }
+      row(:status) { |pt| status_tag pt.status.humanize }
+      row(:amount) { |pt| number_to_currency(pt.amount, unit: pt.currency + " ") }
       row :currency
       row :gateway_message
       row :processed_at

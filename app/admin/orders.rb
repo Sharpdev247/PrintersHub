@@ -53,15 +53,15 @@ ActiveAdmin.register Order do
     attributes_table do
       row :id
       row :order_number
-      row :buyer_account  { |o| link_to o.buyer_account&.name,  admin_account_path(o.buyer_account)  if o.buyer_account }
-      row :seller_account { |o| link_to o.seller_account&.name, admin_account_path(o.seller_account) if o.seller_account }
-      row :created_by     { |o| o.created_by&.email }
-      row :status         { |o| status_tag o.status.humanize }
-      row :subtotal       { |o| number_to_currency(o.subtotal,        unit: o.currency + " ") }
-      row :tax_amount     { |o| number_to_currency(o.tax_amount,      unit: o.currency + " ") }
-      row :shipping_amount{ |o| number_to_currency(o.shipping_amount, unit: o.currency + " ") }
-      row :discount_amount{ |o| number_to_currency(o.discount_amount, unit: o.currency + " ") }
-      row :total          { |o| number_to_currency(o.total,           unit: o.currency + " ") }
+      row(:buyer_account)  { |o| link_to o.buyer_account&.name,  admin_account_path(o.buyer_account)  if o.buyer_account }
+      row(:seller_account) { |o| link_to o.seller_account&.name, admin_account_path(o.seller_account) if o.seller_account }
+      row(:created_by)     { |o| o.created_by&.email }
+      row(:status)         { |o| status_tag o.status.humanize }
+      row(:subtotal)       { |o| number_to_currency(o.subtotal,        unit: o.currency + " ") }
+      row(:tax_amount)     { |o| number_to_currency(o.tax_amount,      unit: o.currency + " ") }
+      row(:shipping_amount) { |o| number_to_currency(o.shipping_amount, unit: o.currency + " ") }
+      row(:discount_amount) { |o| number_to_currency(o.discount_amount, unit: o.currency + " ") }
+      row(:total)          { |o| number_to_currency(o.total,           unit: o.currency + " ") }
       row :currency
       row :notes
       row :internal_notes
