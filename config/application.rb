@@ -16,10 +16,30 @@ module PrintersHub
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Compile application.scss AND active_admin.scss as separate CSS bundles.
+    # dartsass-rails outputs to app/assets/builds/; Propshaft fingerprints and serves from there.
+    # The gem's SCSS partials are resolved automatically because dartsass includes
+    # config.assets.paths as --load-path flags (which includes gem asset directories).
+    config.dartsass.builds = {
+      "application.scss" => "application.css",
+      "active_admin.scss" => "active_admin.css"
+    }
+
+    # Suppress Dart Sass deprecation warnings from third-party gems (ActiveAdmin uses
+    # legacy @import and lighten()/darken() which are deprecated in Dart Sass 2.x).
+    # These are upstream issues — not errors — and the CSS compiles correctly.
+    # --silence-deprecation=import: ActiveAdmin 3.5.x still uses Sass @import (upstream issue).
+    # This silences the noise without hiding any errors. Remove when ActiveAdmin upgrades to @use.
+    config.dartsass.build_options = [
+      "--style=compressed",
+      "--no-source-map",
+      "--quiet-deps",
+      "--silence-deprecation=import",
+      "--silence-deprecation=color-functions",
+      "--silence-deprecation=global-builtin"
+    ]
+
     # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
