@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_135654) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -32,8 +32,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
     t.string "address_type", default: "default", null: false
     t.bigint "addressable_id", null: false
     t.string "addressable_type", null: false
-    t.string "city", null: false
-    t.string "country_code", limit: 2, default: "US", null: false
+    t.bigint "city_id"
+    t.string "city_name"
+    t.string "country_code", limit: 2, default: "US"
+    t.bigint "country_id"
     t.datetime "created_at", null: false
     t.boolean "is_primary", default: false, null: false
     t.string "label"
@@ -42,12 +44,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
     t.string "line2"
     t.decimal "longitude", precision: 11, scale: 8
     t.string "postal_code", null: false
-    t.string "state", null: false
+    t.bigint "state_id"
+    t.string "state_name"
     t.datetime "updated_at", null: false
     t.index ["addressable_type", "addressable_id", "is_primary"], name: "index_addresses_on_addressable_and_primary"
     t.index ["addressable_type", "addressable_id"], name: "index_addresses_on_addressable"
+    t.index ["city_id"], name: "index_addresses_on_city_id", where: "(city_id IS NOT NULL)"
+    t.index ["country_id"], name: "index_addresses_on_country_id", where: "(country_id IS NOT NULL)"
+    t.index ["state_id"], name: "index_addresses_on_state_id", where: "(state_id IS NOT NULL)"
     t.check_constraint "address_type::text = ANY (ARRAY['billing'::character varying, 'shipping'::character varying, 'default'::character varying, 'other'::character varying]::text[])", name: "chk_addresses_address_type"
-    t.check_constraint "country_code::text ~ '^[A-Z]{2}$'::text", name: "chk_addresses_country_code"
+    t.check_constraint "country_code IS NULL OR country_code::text ~ '^[A-Z]{2}$'::text", name: "chk_addresses_country_code"
+    t.check_constraint "country_id IS NOT NULL OR country_code IS NOT NULL", name: "chk_addresses_has_country"
   end
 
   create_table "admin_users", force: :cascade do |t|
@@ -100,6 +107,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
     t.index ["slug"], name: "index_categories_on_slug", unique: true
   end
 
+  create_table "cities", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "latitude", precision: 10, scale: 8
+    t.decimal "longitude", precision: 11, scale: 8
+    t.string "name", null: false
+    t.bigint "state_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["latitude", "longitude"], name: "index_cities_on_coordinates", where: "((latitude IS NOT NULL) AND (longitude IS NOT NULL))"
+    t.index ["name"], name: "index_cities_on_name"
+    t.index ["state_id", "name"], name: "index_cities_on_state_and_name", unique: true
+    t.index ["state_id"], name: "index_cities_on_state_id"
+  end
+
   create_table "companies", force: :cascade do |t|
     t.integer "company_type", default: 0, null: false
     t.datetime "created_at", null: false
@@ -118,6 +138,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
     t.index ["user_id"], name: "index_companies_on_user_id"
     t.index ["verified"], name: "index_companies_on_verified_true", where: "(verified = true)"
     t.check_constraint "verified = false AND verified_at IS NULL OR verified = true AND verified_at IS NOT NULL", name: "chk_companies_verified_at_consistency"
+  end
+
+  create_table "countries", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "continent"
+    t.datetime "created_at", null: false
+    t.string "currency_code", limit: 3
+    t.string "currency_symbol"
+    t.integer "display_order", default: 999, null: false
+    t.string "flag_emoji", limit: 8
+    t.string "iso2", limit: 2, null: false
+    t.string "iso3", limit: 3, null: false
+    t.string "locale_code"
+    t.string "name", null: false
+    t.string "phone_code"
+    t.string "timezone"
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_countries_on_active"
+    t.index ["continent"], name: "index_countries_on_continent"
+    t.index ["display_order"], name: "index_countries_on_display_order"
+    t.index ["iso2"], name: "index_countries_on_iso2", unique: true
+    t.index ["iso3"], name: "index_countries_on_iso3", unique: true
+    t.index ["name"], name: "index_countries_on_name", unique: true
+    t.check_constraint "continent IS NULL OR (continent::text = ANY (ARRAY['Africa'::character varying, 'Antarctica'::character varying, 'Asia'::character varying, 'Europe'::character varying, 'North America'::character varying, 'Oceania'::character varying, 'South America'::character varying]::text[]))", name: "chk_countries_continent"
+    t.check_constraint "iso2::text ~ '^[A-Z]{2}$'::text", name: "chk_countries_iso2_format"
+    t.check_constraint "iso3::text ~ '^[A-Z]{3}$'::text", name: "chk_countries_iso3_format"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -306,6 +352,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
     t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
   end
 
+  create_table "states", force: :cascade do |t|
+    t.string "code", limit: 10
+    t.bigint "country_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_id", "code"], name: "index_states_on_country_and_code", unique: true, where: "(code IS NOT NULL)"
+    t.index ["country_id", "name"], name: "index_states_on_country_and_name", unique: true
+    t.index ["country_id"], name: "index_states_on_country_id"
+    t.index ["name"], name: "index_states_on_name"
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "role_id", null: false
@@ -342,6 +400,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "addresses", "cities", on_delete: :restrict
+  add_foreign_key "addresses", "countries", on_delete: :restrict
+  add_foreign_key "addresses", "states", on_delete: :restrict
+  add_foreign_key "cities", "states", on_delete: :restrict
   add_foreign_key "companies", "users", on_delete: :restrict
   add_foreign_key "printer_models", "brands", on_delete: :restrict
   add_foreign_key "printer_models", "categories", on_delete: :nullify
@@ -352,6 +414,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_124400) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "states", "countries", on_delete: :restrict
   add_foreign_key "user_roles", "roles", on_delete: :cascade
   add_foreign_key "user_roles", "users", on_delete: :cascade
 end

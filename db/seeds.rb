@@ -158,4 +158,172 @@ PRINTER_MODELS.each do |attrs|
   end
 end
 
+# ── Master Data: Countries, States, Cities ───────────────────────────────────
+#
+# Development seed: Pakistan (primary market) + US + UK + UAE.
+#
+# PRODUCTION BULK IMPORT NOTE:
+#   For full world coverage (250 countries, 5000+ states, 150k+ cities) use the
+#   rake task defined in lib/tasks/data_import.rake (to be created in a future
+#   milestone). It streams from the countries_states_cities JSON dataset using
+#   insert_all for high-throughput upserts without loading all records into memory.
+#   Seeds should stay fast — rake tasks handle bulk data.
+
+def seed_country(attrs)
+  country = Country.find_or_initialize_by(iso2: attrs[:iso2])
+  if country.new_record?
+    country.assign_attributes(attrs)
+    country.save!
+    puts "  [created] Country: #{attrs[:name]} (#{attrs[:iso2]})"
+  else
+    puts "  [exists]  Country: #{attrs[:name]} (#{attrs[:iso2]})"
+  end
+  country
+end
+
+def seed_state(country:, name:, code: nil)
+  state = State.find_or_initialize_by(country: country, name: name)
+  if state.new_record?
+    state.code = code
+    state.save!
+    puts "  [created]   State: #{name}"
+  else
+    puts "  [exists]    State: #{name}"
+  end
+  state
+end
+
+def seed_city(state:, name:, latitude: nil, longitude: nil)
+  city = City.find_or_initialize_by(state: state, name: name)
+  if city.new_record?
+    city.latitude  = latitude
+    city.longitude = longitude
+    city.save!
+    puts "  [created]     City: #{name}"
+  else
+    puts "  [exists]      City: #{name}"
+  end
+  city
+end
+
+# ── Pakistan ──────────────────────────────────────────────────────────────────
+pk = seed_country(
+  name:            "Pakistan",
+  iso2:            "PK",
+  iso3:            "PAK",
+  phone_code:      "+92",
+  currency_code:   "PKR",
+  currency_symbol: "₨",
+  continent:       "Asia",
+  locale_code:     "en-PK",
+  flag_emoji:      "🇵🇰",
+  timezone:        "Asia/Karachi",
+  display_order:   1,
+  active:          true
+)
+
+punjab   = seed_state(country: pk, name: "Punjab",               code: "PB")
+sindh    = seed_state(country: pk, name: "Sindh",                code: "SD")
+kpk      = seed_state(country: pk, name: "Khyber Pakhtunkhwa",   code: "KP")
+baloch   = seed_state(country: pk, name: "Balochistan",          code: "BA")
+_islamabad = seed_state(country: pk, name: "Islamabad Capital Territory", code: "IS")
+
+# Punjab cities
+seed_city(state: punjab, name: "Lahore",       latitude: 31.5204,  longitude: 74.3587)
+seed_city(state: punjab, name: "Faisalabad",   latitude: 31.4504,  longitude: 73.1350)
+seed_city(state: punjab, name: "Rawalpindi",   latitude: 33.5651,  longitude: 73.0169)
+seed_city(state: punjab, name: "Gujranwala",   latitude: 32.1877,  longitude: 74.1945)
+seed_city(state: punjab, name: "Multan",       latitude: 30.1575,  longitude: 71.5249)
+seed_city(state: punjab, name: "Sialkot",      latitude: 32.4945,  longitude: 74.5229)
+seed_city(state: punjab, name: "Bahawalpur",   latitude: 29.3956,  longitude: 71.6722)
+
+# Sindh cities
+seed_city(state: sindh, name: "Karachi",       latitude: 24.8607,  longitude: 67.0011)
+seed_city(state: sindh, name: "Hyderabad",     latitude: 25.3960,  longitude: 68.3578)
+seed_city(state: sindh, name: "Sukkur",        latitude: 27.7052,  longitude: 68.8574)
+
+# KPK cities
+seed_city(state: kpk, name: "Peshawar",        latitude: 34.0150,  longitude: 71.5805)
+seed_city(state: kpk, name: "Abbottabad",      latitude: 34.1463,  longitude: 73.2117)
+
+# Balochistan cities
+seed_city(state: baloch, name: "Quetta",       latitude: 30.1798,  longitude: 66.9750)
+
+# ── United States ──────────────────────────────────────────────────────────────
+us = seed_country(
+  name:            "United States",
+  iso2:            "US",
+  iso3:            "USA",
+  phone_code:      "+1",
+  currency_code:   "USD",
+  currency_symbol: "$",
+  continent:       "North America",
+  locale_code:     "en-US",
+  flag_emoji:      "🇺🇸",
+  timezone:        "America/New_York",
+  display_order:   2,
+  active:          true
+)
+
+us_ca = seed_state(country: us, name: "California",  code: "CA")
+us_ny = seed_state(country: us, name: "New York",     code: "NY")
+us_tx = seed_state(country: us, name: "Texas",        code: "TX")
+us_il = seed_state(country: us, name: "Illinois",     code: "IL")
+us_fl = seed_state(country: us, name: "Florida",      code: "FL")
+
+seed_city(state: us_ca, name: "Los Angeles",   latitude: 34.0522,  longitude: -118.2437)
+seed_city(state: us_ca, name: "San Francisco", latitude: 37.7749,  longitude: -122.4194)
+seed_city(state: us_ny, name: "New York City", latitude: 40.7128,  longitude: -74.0060)
+seed_city(state: us_tx, name: "Houston",       latitude: 29.7604,  longitude: -95.3698)
+seed_city(state: us_tx, name: "Dallas",        latitude: 32.7767,  longitude: -96.7970)
+seed_city(state: us_il, name: "Chicago",       latitude: 41.8781,  longitude: -87.6298)
+seed_city(state: us_fl, name: "Miami",         latitude: 25.7617,  longitude: -80.1918)
+
+# ── United Kingdom ─────────────────────────────────────────────────────────────
+gb = seed_country(
+  name:            "United Kingdom",
+  iso2:            "GB",
+  iso3:            "GBR",
+  phone_code:      "+44",
+  currency_code:   "GBP",
+  currency_symbol: "£",
+  continent:       "Europe",
+  locale_code:     "en-GB",
+  flag_emoji:      "🇬🇧",
+  timezone:        "Europe/London",
+  display_order:   3,
+  active:          true
+)
+
+gb_eng = seed_state(country: gb, name: "England",  code: "ENG")
+gb_sco = seed_state(country: gb, name: "Scotland", code: "SCT")
+
+seed_city(state: gb_eng, name: "London",     latitude: 51.5074,  longitude: -0.1278)
+seed_city(state: gb_eng, name: "Manchester", latitude: 53.4808,  longitude: -2.2426)
+seed_city(state: gb_sco, name: "Edinburgh",  latitude: 55.9533,  longitude: -3.1883)
+
+# ── United Arab Emirates ───────────────────────────────────────────────────────
+ae = seed_country(
+  name:            "United Arab Emirates",
+  iso2:            "AE",
+  iso3:            "ARE",
+  phone_code:      "+971",
+  currency_code:   "AED",
+  currency_symbol: "د.إ",
+  continent:       "Asia",
+  locale_code:     "ar-AE",
+  flag_emoji:      "🇦🇪",
+  timezone:        "Asia/Dubai",
+  display_order:   4,
+  active:          true
+)
+
+ae_dubai  = seed_state(country: ae, name: "Dubai",        code: "DU")
+ae_abu    = seed_state(country: ae, name: "Abu Dhabi",    code: "AZ")
+ae_sharj  = seed_state(country: ae, name: "Sharjah",      code: "SH")
+
+seed_city(state: ae_dubai, name: "Dubai",         latitude: 25.2048,  longitude: 55.2708)
+seed_city(state: ae_abu,   name: "Abu Dhabi",     latitude: 24.4539,  longitude: 54.3773)
+seed_city(state: ae_sharj, name: "Sharjah",       latitude: 25.3462,  longitude: 55.4211)
+
 puts "\n── Seeding complete ─────────────────────────────────────────\n\n"
