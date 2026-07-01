@@ -873,3 +873,292 @@ SEED_TAX_RATES.each do |attrs|
     puts "  [created] TaxRate: #{attrs[:name]}"
   end
 end
+
+# ── Milestone 10: Inventory & Warehouse Management ────────────────────────────
+
+puts "\n── Inventory & Warehouse ───────────────────────────────────\n\n"
+
+# Fetch accounts seeded in Milestone 7
+seller_account = Account.find_by!(slug: "printerspro-lahore")
+buyer_account  = Account.find_by!(slug: "karachiprints")
+
+# ── Warehouses ────────────────────────────────────────────────────────────────
+lahore_wh = Warehouse.find_or_initialize_by(account: seller_account, code: "LHE-MAIN")
+if lahore_wh.new_record?
+  lahore_wh.assign_attributes(
+    name:          "Lahore Main Warehouse",
+    city:          "Lahore",
+    state:         "Punjab",
+    country_code:  "PK",
+    postal_code:   "54000",
+    contact_name:  "Warehouse Manager",
+    is_default:    true,
+    active:        true
+  )
+  lahore_wh.save!
+  puts "  [created] Warehouse: #{lahore_wh.name}"
+else
+  puts "  [exists]  Warehouse: #{lahore_wh.name}"
+end
+
+karachi_wh = Warehouse.find_or_initialize_by(account: buyer_account, code: "KHI-MAIN")
+if karachi_wh.new_record?
+  karachi_wh.assign_attributes(
+    name:          "Karachi Main Warehouse",
+    city:          "Karachi",
+    state:         "Sindh",
+    country_code:  "PK",
+    postal_code:   "75500",
+    contact_name:  "Inventory Team",
+    is_default:    true,
+    active:        true
+  )
+  karachi_wh.save!
+  puts "  [created] Warehouse: #{karachi_wh.name}"
+else
+  puts "  [exists]  Warehouse: #{karachi_wh.name}"
+end
+
+# ── Warehouse Zones ────────────────────────────────────────────────────────────
+[
+  { warehouse: lahore_wh,  code: "A", name: "Aisle A",   zone_type: "storage" },
+  { warehouse: lahore_wh,  code: "R", name: "Receiving", zone_type: "receiving" },
+  { warehouse: karachi_wh, code: "A", name: "Aisle A",   zone_type: "storage" },
+  { warehouse: karachi_wh, code: "R", name: "Receiving", zone_type: "receiving" },
+].each do |z|
+  wz = WarehouseZone.find_or_initialize_by(warehouse: z[:warehouse], code: z[:code])
+  if wz.new_record?
+    wz.assign_attributes(name: z[:name], zone_type: z[:zone_type])
+    wz.save!
+    puts "  [created] WarehouseZone: #{z[:warehouse].code}/#{z[:code]}"
+  else
+    puts "  [exists]  WarehouseZone: #{z[:warehouse].code}/#{z[:code]}"
+  end
+end
+
+# ── Suppliers ─────────────────────────────────────────────────────────────────
+sup1 = Supplier.find_or_initialize_by(account: seller_account, code: "CANON-PK")
+if sup1.new_record?
+  sup1.assign_attributes(
+    name: "Canon Pakistan Distributor",
+    contact_name: "Sales Team",
+    email: "sales@canon-pk.example.com",
+    currency: "PKR",
+    payment_terms: "NET30",
+    lead_time_days: 14,
+    country_code: "PK",
+    active: true
+  )
+  sup1.save!
+  puts "  [created] Supplier: #{sup1.name}"
+else
+  puts "  [exists]  Supplier: #{sup1.name}"
+end
+
+sup2 = Supplier.find_or_initialize_by(account: seller_account, code: "HP-DIST")
+if sup2.new_record?
+  sup2.assign_attributes(
+    name: "HP Official Distributor",
+    contact_name: "B2B Desk",
+    email: "b2b@hp-dist.example.com",
+    currency: "USD",
+    payment_terms: "NET60",
+    lead_time_days: 21,
+    country_code: "PK",
+    active: true
+  )
+  sup2.save!
+  puts "  [created] Supplier: #{sup2.name}"
+else
+  puts "  [exists]  Supplier: #{sup2.name}"
+end
+
+# ── Products ──────────────────────────────────────────────────────────────────
+# Fetch existing catalog records for FK references
+canon_brand = Brand.find_by(name: "Canon")
+hp_brand    = Brand.find_by(name: "HP")
+
+ink_category  = Category.find_by("name ILIKE ?", "%ink%") || Category.first
+toner_category = Category.find_by("name ILIKE ?", "%toner%") || Category.first
+
+prod1 = Product.find_or_initialize_by(account: seller_account, sku: "PRD-CANON-INK-BK")
+if prod1.new_record?
+  prod1.assign_attributes(
+    brand:          canon_brand,
+    category:       ink_category,
+    name:           "Canon PG-745 Black Ink Cartridge",
+    description:    "Original Canon black ink cartridge for PIXMA series",
+    status:         :active,
+    base_cost:      750.00,
+    cost_currency:  "PKR",
+    weight:         0.08,
+    weight_unit:    "kg",
+    has_variants:   false,
+    track_inventory: true
+  )
+  prod1.save!
+  puts "  [created] Product: #{prod1.name}"
+else
+  puts "  [exists]  Product: #{prod1.name}"
+end
+
+prod2 = Product.find_or_initialize_by(account: seller_account, sku: "PRD-HP-TONER-BK")
+if prod2.new_record?
+  prod2.assign_attributes(
+    brand:          hp_brand,
+    category:       toner_category,
+    name:           "HP 85A Black LaserJet Toner",
+    description:    "Genuine HP toner cartridge for LaserJet Pro series",
+    status:         :active,
+    base_cost:      3200.00,
+    cost_currency:  "PKR",
+    weight:         0.65,
+    weight_unit:    "kg",
+    has_variants:   true,
+    track_inventory: true
+  )
+  prod2.save!
+  puts "  [created] Product: #{prod2.name}"
+else
+  puts "  [exists]  Product: #{prod2.name}"
+end
+
+# ── Product Variants ──────────────────────────────────────────────────────────
+var1 = ProductVariant.find_or_initialize_by(product: prod1, variant_sku: "VAR-CANON-INK-BK-STD")
+if var1.new_record?
+  var1.assign_attributes(name: "Standard", options_data: { "type" => "Standard" }, position: 0, active: true)
+  var1.save!
+  puts "  [created] ProductVariant: #{var1.name} (#{prod1.sku})"
+else
+  puts "  [exists]  ProductVariant: #{var1.name}"
+end
+
+var2 = ProductVariant.find_or_initialize_by(product: prod2, variant_sku: "VAR-HP-TONER-BK-STD")
+if var2.new_record?
+  var2.assign_attributes(name: "Standard Yield", options_data: { "yield" => "Standard" }, position: 0, active: true)
+  var2.save!
+  puts "  [created] ProductVariant: #{var2.name} (#{prod2.sku})"
+else
+  puts "  [exists]  ProductVariant: #{var2.name}"
+end
+
+var3 = ProductVariant.find_or_initialize_by(product: prod2, variant_sku: "VAR-HP-TONER-BK-HY")
+if var3.new_record?
+  var3.assign_attributes(
+    name: "High Yield",
+    options_data: { "yield" => "High" },
+    cost_override: 4800.00,
+    position: 1,
+    active: true
+  )
+  var3.save!
+  puts "  [created] ProductVariant: #{var3.name} (#{prod2.sku})"
+else
+  puts "  [exists]  ProductVariant: #{var3.name}"
+end
+
+# ── Inventory Items ───────────────────────────────────────────────────────────
+inv1 = InventoryItem.find_or_initialize_by(product_variant: var1, warehouse: lahore_wh)
+if inv1.new_record?
+  inv1.assign_attributes(
+    quantity_on_hand:  50,
+    reserved_quantity: 0,
+    unit_cost:         750.00,
+    cost_currency:     "PKR",
+    reorder_point:     10,
+    reorder_quantity:  50,
+    allow_backorders:  false,
+    active:            true
+  )
+  inv1.save!
+  puts "  [created] InventoryItem: #{var1.name} @ #{lahore_wh.code} (qty: 50)"
+else
+  puts "  [exists]  InventoryItem: #{var1.name} @ #{lahore_wh.code}"
+end
+
+inv2 = InventoryItem.find_or_initialize_by(product_variant: var2, warehouse: lahore_wh)
+if inv2.new_record?
+  inv2.assign_attributes(
+    quantity_on_hand:  30,
+    reserved_quantity: 0,
+    unit_cost:         3200.00,
+    cost_currency:     "PKR",
+    reorder_point:     5,
+    reorder_quantity:  20,
+    allow_backorders:  false,
+    active:            true
+  )
+  inv2.save!
+  puts "  [created] InventoryItem: #{var2.name} @ #{lahore_wh.code} (qty: 30)"
+else
+  puts "  [exists]  InventoryItem: #{var2.name} @ #{lahore_wh.code}"
+end
+
+inv3 = InventoryItem.find_or_initialize_by(product_variant: var3, warehouse: lahore_wh)
+if inv3.new_record?
+  inv3.assign_attributes(
+    quantity_on_hand:  15,
+    reserved_quantity: 0,
+    unit_cost:         4800.00,
+    cost_currency:     "PKR",
+    reorder_point:     5,
+    reorder_quantity:  20,
+    allow_backorders:  false,
+    active:            true
+  )
+  inv3.save!
+  puts "  [created] InventoryItem: #{var3.name} @ #{lahore_wh.code} (qty: 15)"
+else
+  puts "  [exists]  InventoryItem: #{var3.name} @ #{lahore_wh.code}"
+end
+
+# ── Reorder Rules ─────────────────────────────────────────────────────────────
+[
+  { inventory_item: inv1, supplier: sup1, reorder_point: 10, reorder_quantity: 50 },
+  { inventory_item: inv2, supplier: sup2, reorder_point: 5,  reorder_quantity: 20 },
+  { inventory_item: inv3, supplier: sup2, reorder_point: 5,  reorder_quantity: 20 },
+].each do |rule|
+  rr = ReorderRule.find_or_initialize_by(inventory_item: rule[:inventory_item])
+  if rr.new_record?
+    rr.assign_attributes(
+      supplier:        rule[:supplier],
+      reorder_point:   rule[:reorder_point],
+      reorder_quantity: rule[:reorder_quantity],
+      auto_order:      false,
+      active:          true
+    )
+    rr.save!
+    puts "  [created] ReorderRule: #{rule[:inventory_item].product_variant.name} (point: #{rule[:reorder_point]})"
+  else
+    puts "  [exists]  ReorderRule: #{rule[:inventory_item].product_variant.name}"
+  end
+end
+
+# ── Purchase Order ─────────────────────────────────────────────────────────────
+po = PurchaseOrder.find_or_initialize_by(account: seller_account, po_number: "PO-2026-00001")
+if po.new_record?
+  po.assign_attributes(
+    supplier:      sup1,
+    warehouse:     lahore_wh,
+    status:        :draft,
+    currency:      "PKR",
+    payment_terms: "NET30",
+    expected_at:   30.days.from_now,
+    notes:         "Initial stock replenishment for Canon ink cartridges"
+  )
+  po.save!
+
+  PurchaseOrderItem.create!(
+    purchase_order:   po,
+    product_variant:  var1,
+    quantity_ordered: 100,
+    unit_cost:        700.00,
+    total_cost:       70_000.00
+  )
+  po.recalculate!
+  puts "  [created] PurchaseOrder: #{po.po_number} (Canon ink x100)"
+else
+  puts "  [exists]  PurchaseOrder: #{po.po_number}"
+end
+
+puts "\n── Inventory seeding complete ──────────────────────────────\n\n"

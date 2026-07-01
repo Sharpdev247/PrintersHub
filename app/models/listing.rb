@@ -13,6 +13,8 @@ class Listing < ApplicationRecord
 
   belongs_to :user
   belongs_to :account, optional: true
+  belongs_to :product,        optional: true
+  belongs_to :inventory_item, optional: true
   belongs_to :category
   belongs_to :brand
   belongs_to :printer_model, optional: true

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -415,6 +415,110 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
+  create_table "inventory_count_items", force: :cascade do |t|
+    t.integer "actual_quantity"
+    t.boolean "counted", default: false, null: false
+    t.datetime "counted_at"
+    t.bigint "counted_by_id"
+    t.datetime "created_at", null: false
+    t.integer "expected_quantity", default: 0, null: false
+    t.bigint "inventory_count_id", null: false
+    t.bigint "inventory_item_id", null: false
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.integer "variance"
+    t.index ["counted"], name: "index_inventory_count_items_on_counted"
+    t.index ["inventory_count_id", "inventory_item_id"], name: "index_inventory_count_items_on_count_item", unique: true
+    t.index ["inventory_count_id"], name: "index_inventory_count_items_on_inventory_count_id"
+    t.index ["inventory_item_id"], name: "index_inventory_count_items_on_inventory_item_id"
+    t.check_constraint "actual_quantity IS NULL OR actual_quantity >= 0", name: "chk_inventory_count_items_actual"
+    t.check_constraint "expected_quantity >= 0", name: "chk_inventory_count_items_expected"
+  end
+
+  create_table "inventory_counts", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "completed_at"
+    t.string "count_number", limit: 50, null: false
+    t.string "count_type", limit: 20, default: "full", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.text "notes"
+    t.datetime "started_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "warehouse_id", null: false
+    t.index ["account_id", "status"], name: "index_inventory_counts_on_account_status"
+    t.index ["account_id"], name: "index_inventory_counts_on_account_id"
+    t.index ["count_number"], name: "index_inventory_counts_on_count_number", unique: true
+    t.index ["warehouse_id"], name: "index_inventory_counts_on_warehouse_id"
+    t.check_constraint "count_type::text = ANY (ARRAY['full'::character varying, 'cycle'::character varying, 'spot'::character varying]::text[])", name: "chk_inventory_counts_type"
+    t.check_constraint "status = ANY (ARRAY[0, 1, 2, 3, 4])", name: "chk_inventory_counts_status"
+  end
+
+  create_table "inventory_items", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.boolean "allow_backorders", default: false, null: false
+    t.string "cost_currency", limit: 3, default: "USD"
+    t.datetime "created_at", null: false
+    t.string "location_code", limit: 50
+    t.integer "maximum_quantity"
+    t.jsonb "metadata"
+    t.integer "minimum_quantity", default: 0
+    t.bigint "product_variant_id", null: false
+    t.integer "quantity_on_hand", default: 0, null: false
+    t.integer "reorder_point", default: 0
+    t.integer "reorder_quantity", default: 0
+    t.integer "reserved_quantity", default: 0, null: false
+    t.decimal "unit_cost", precision: 12, scale: 2
+    t.datetime "updated_at", null: false
+    t.bigint "warehouse_id", null: false
+    t.bigint "warehouse_zone_id"
+    t.index ["location_code"], name: "index_inventory_items_on_location_code"
+    t.index ["product_variant_id", "warehouse_id"], name: "index_inventory_items_on_variant_warehouse", unique: true
+    t.index ["product_variant_id"], name: "index_inventory_items_on_product_variant_id"
+    t.index ["quantity_on_hand"], name: "index_inventory_items_on_quantity_on_hand"
+    t.index ["warehouse_id"], name: "index_inventory_items_on_warehouse_id"
+    t.index ["warehouse_zone_id"], name: "index_inventory_items_on_warehouse_zone_id"
+    t.check_constraint "cost_currency::text ~ '^[A-Z]{3}$'::text", name: "chk_inventory_items_cost_currency"
+    t.check_constraint "quantity_on_hand >= 0 OR allow_backorders = true", name: "chk_inventory_items_quantity"
+    t.check_constraint "reorder_point >= 0", name: "chk_inventory_items_reorder_point"
+    t.check_constraint "reserved_quantity <= quantity_on_hand OR allow_backorders = true", name: "chk_inventory_items_reserved_lte_on_hand"
+    t.check_constraint "reserved_quantity >= 0", name: "chk_inventory_items_reserved"
+  end
+
+  create_table "inventory_transactions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "direction", null: false
+    t.bigint "inventory_item_id", null: false
+    t.string "lot_number", limit: 100
+    t.text "notes"
+    t.datetime "performed_at", null: false
+    t.bigint "performed_by_id"
+    t.integer "quantity_after", null: false
+    t.integer "quantity_before", null: false
+    t.integer "quantity_change", null: false
+    t.bigint "reference_id"
+    t.string "reference_type", limit: 50
+    t.string "serial_number", limit: 100
+    t.string "source", limit: 30, default: "system", null: false
+    t.integer "transaction_type", null: false
+    t.decimal "unit_cost", precision: 12, scale: 2
+    t.index ["account_id"], name: "index_inventory_transactions_on_account_id"
+    t.index ["inventory_item_id"], name: "index_inventory_transactions_on_inventory_item_id"
+    t.index ["lot_number"], name: "index_inventory_transactions_on_lot_number", where: "(lot_number IS NOT NULL)"
+    t.index ["performed_at"], name: "index_inventory_transactions_on_performed_at"
+    t.index ["reference_type", "reference_id"], name: "index_inventory_transactions_on_reference"
+    t.index ["transaction_type"], name: "index_inventory_transactions_on_type"
+    t.check_constraint "(quantity_before + quantity_change) = quantity_after", name: "chk_inventory_transactions_ledger"
+    t.check_constraint "direction = ANY (ARRAY[0, 1, 2])", name: "chk_inventory_transactions_direction"
+    t.check_constraint "quantity_change <> 0", name: "chk_inventory_transactions_nonzero"
+    t.check_constraint "source::text = ANY (ARRAY['system'::character varying, 'user'::character varying, 'webhook'::character varying, 'admin'::character varying, 'import'::character varying]::text[])", name: "chk_inventory_transactions_source"
+    t.check_constraint "transaction_type = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])", name: "chk_inventory_transactions_type"
+  end
+
   create_table "invoice_items", force: :cascade do |t|
     t.decimal "amount", precision: 12, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -471,11 +575,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.string "currency", limit: 3, default: "USD", null: false
     t.text "description", null: false
     t.boolean "featured", default: false, null: false
+    t.bigint "inventory_item_id"
     t.integer "listing_type", default: 0, null: false
     t.bigint "location_city_id"
     t.decimal "price", precision: 12, scale: 2, null: false
     t.boolean "price_negotiable", default: false, null: false
     t.bigint "printer_model_id"
+    t.bigint "product_id"
     t.datetime "published_at"
     t.integer "quantity", default: 1, null: false
     t.string "slug", null: false
@@ -491,11 +597,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.index ["category_id", "status"], name: "index_listings_on_category_and_status"
     t.index ["category_id"], name: "index_listings_on_category_id"
     t.index ["featured"], name: "index_listings_on_featured"
+    t.index ["inventory_item_id"], name: "index_listings_on_inventory_item_id"
     t.index ["listing_type", "status"], name: "index_listings_on_type_and_status"
     t.index ["location_city_id", "status"], name: "index_listings_on_city_and_status", where: "(location_city_id IS NOT NULL)"
     t.index ["location_city_id"], name: "index_listings_on_location_city_id", where: "(location_city_id IS NOT NULL)"
     t.index ["price"], name: "index_listings_on_price"
     t.index ["printer_model_id"], name: "index_listings_on_printer_model_id", where: "(printer_model_id IS NOT NULL)"
+    t.index ["product_id"], name: "index_listings_on_product_id"
     t.index ["published_at"], name: "index_listings_on_published_at", where: "(published_at IS NOT NULL)"
     t.index ["slug"], name: "index_listings_on_slug", unique: true
     t.index ["status"], name: "index_listings_on_status"
@@ -749,6 +857,70 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.index ["slug"], name: "index_printer_models_on_slug", unique: true
   end
 
+  create_table "product_variants", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "barcode", limit: 100
+    t.decimal "cost_override", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "discarded_at"
+    t.string "name", limit: 255, null: false
+    t.jsonb "options_data", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "product_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "variant_sku", limit: 100, null: false
+    t.decimal "weight_override", precision: 10, scale: 3
+    t.index ["barcode"], name: "index_product_variants_on_barcode"
+    t.index ["discarded_at"], name: "index_product_variants_on_discarded_at"
+    t.index ["product_id", "position"], name: "index_product_variants_on_product_position"
+    t.index ["product_id", "variant_sku"], name: "index_product_variants_on_product_sku", unique: true
+    t.index ["product_id"], name: "index_product_variants_on_product_id"
+    t.check_constraint "cost_override IS NULL OR cost_override >= 0::numeric", name: "chk_product_variants_cost"
+    t.check_constraint "weight_override IS NULL OR weight_override > 0::numeric", name: "chk_product_variants_weight"
+  end
+
+  create_table "products", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "barcode", limit: 100
+    t.string "barcode_type", limit: 20, default: "EAN13"
+    t.decimal "base_cost", precision: 12, scale: 2
+    t.bigint "brand_id"
+    t.bigint "category_id"
+    t.string "cost_currency", limit: 3, default: "USD"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "dimension_unit", limit: 5, default: "cm"
+    t.datetime "discarded_at"
+    t.boolean "has_variants", default: false, null: false
+    t.decimal "height", precision: 10, scale: 3
+    t.decimal "length", precision: 10, scale: 3
+    t.jsonb "metadata"
+    t.string "name", limit: 255, null: false
+    t.bigint "printer_model_id"
+    t.string "sku", limit: 100, null: false
+    t.integer "status", default: 0, null: false
+    t.boolean "track_inventory", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.decimal "weight", precision: 10, scale: 3
+    t.string "weight_unit", limit: 5, default: "kg"
+    t.decimal "width", precision: 10, scale: 3
+    t.index ["account_id", "sku"], name: "index_products_on_account_sku", unique: true
+    t.index ["account_id"], name: "index_products_on_account_id"
+    t.index ["barcode"], name: "index_products_on_barcode"
+    t.index ["brand_id"], name: "index_products_on_brand_id"
+    t.index ["category_id"], name: "index_products_on_category_id"
+    t.index ["discarded_at"], name: "index_products_on_discarded_at"
+    t.index ["name"], name: "index_products_on_name"
+    t.index ["printer_model_id"], name: "index_products_on_printer_model_id"
+    t.index ["status"], name: "index_products_on_status"
+    t.check_constraint "barcode_type::text = ANY (ARRAY['EAN13'::character varying, 'EAN8'::character varying, 'UPC'::character varying, 'ISBN'::character varying, 'QR'::character varying, 'CODE128'::character varying, 'CODE39'::character varying]::text[])", name: "chk_products_barcode_type"
+    t.check_constraint "base_cost IS NULL OR base_cost >= 0::numeric", name: "chk_products_base_cost"
+    t.check_constraint "cost_currency::text ~ '^[A-Z]{3}$'::text", name: "chk_products_cost_currency"
+    t.check_constraint "dimension_unit::text = ANY (ARRAY['cm'::character varying, 'in'::character varying, 'mm'::character varying]::text[])", name: "chk_products_dimension_unit"
+    t.check_constraint "weight IS NULL OR weight > 0::numeric", name: "chk_products_weight"
+    t.check_constraint "weight_unit::text = ANY (ARRAY['kg'::character varying, 'lb'::character varying, 'oz'::character varying, 'g'::character varying]::text[])", name: "chk_products_weight_unit"
+  end
+
   create_table "profiles", force: :cascade do |t|
     t.text "bio"
     t.datetime "created_at", null: false
@@ -762,6 +934,83 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.bigint "user_id", null: false
     t.index ["phone"], name: "index_profiles_on_phone", where: "(phone IS NOT NULL)"
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
+  end
+
+  create_table "purchase_order_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "inventory_item_id"
+    t.text "notes"
+    t.bigint "product_variant_id", null: false
+    t.bigint "purchase_order_id", null: false
+    t.integer "quantity_ordered", null: false
+    t.integer "quantity_received", default: 0, null: false
+    t.datetime "received_at"
+    t.decimal "total_cost", precision: 12, scale: 2, null: false
+    t.decimal "unit_cost", precision: 12, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["inventory_item_id"], name: "index_purchase_order_items_on_inventory_item_id"
+    t.index ["product_variant_id"], name: "index_purchase_order_items_on_product_variant_id"
+    t.index ["purchase_order_id", "product_variant_id"], name: "index_po_items_on_po_variant", unique: true
+    t.index ["purchase_order_id"], name: "index_purchase_order_items_on_purchase_order_id"
+    t.check_constraint "quantity_ordered > 0", name: "chk_po_items_quantity_ordered"
+    t.check_constraint "quantity_received <= quantity_ordered", name: "chk_po_items_received_lte_ordered"
+    t.check_constraint "quantity_received >= 0", name: "chk_po_items_quantity_received"
+    t.check_constraint "total_cost >= 0::numeric", name: "chk_po_items_total_cost"
+    t.check_constraint "unit_cost >= 0::numeric", name: "chk_po_items_unit_cost"
+  end
+
+  create_table "purchase_orders", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.datetime "discarded_at"
+    t.datetime "expected_at"
+    t.text "internal_notes"
+    t.text "notes"
+    t.string "payment_terms", limit: 50
+    t.string "po_number", limit: 50, null: false
+    t.datetime "received_at"
+    t.decimal "shipping_cost", precision: 12, scale: 2, default: "0.0", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "submitted_at"
+    t.decimal "subtotal", precision: 12, scale: 2, default: "0.0", null: false
+    t.bigint "supplier_id", null: false
+    t.decimal "tax_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "total_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "warehouse_id", null: false
+    t.index ["account_id", "status"], name: "index_purchase_orders_on_account_status"
+    t.index ["account_id"], name: "index_purchase_orders_on_account_id"
+    t.index ["discarded_at"], name: "index_purchase_orders_on_discarded_at"
+    t.index ["po_number"], name: "index_purchase_orders_on_po_number", unique: true
+    t.index ["status"], name: "index_purchase_orders_on_status"
+    t.index ["supplier_id"], name: "index_purchase_orders_on_supplier_id"
+    t.index ["warehouse_id"], name: "index_purchase_orders_on_warehouse_id"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_purchase_orders_currency"
+    t.check_constraint "status = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6])", name: "chk_purchase_orders_status"
+    t.check_constraint "subtotal >= 0::numeric", name: "chk_purchase_orders_subtotal"
+    t.check_constraint "total_amount >= 0::numeric", name: "chk_purchase_orders_total"
+  end
+
+  create_table "reorder_rules", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.boolean "auto_order", default: false, null: false
+    t.datetime "created_at", null: false
+    t.bigint "inventory_item_id", null: false
+    t.datetime "last_triggered_at"
+    t.integer "reorder_point", default: 0, null: false
+    t.integer "reorder_quantity", default: 0, null: false
+    t.bigint "supplier_id"
+    t.datetime "updated_at", null: false
+    t.index ["active", "auto_order"], name: "index_reorder_rules_on_active_auto_order"
+    t.index ["inventory_item_id"], name: "index_reorder_rules_on_inventory_item", unique: true
+    t.index ["inventory_item_id"], name: "index_reorder_rules_on_inventory_item_id"
+    t.index ["supplier_id"], name: "index_reorder_rules_on_supplier_id"
+    t.check_constraint "reorder_point >= 0", name: "chk_reorder_rules_point"
+    t.check_constraint "reorder_quantity > 0", name: "chk_reorder_rules_quantity"
   end
 
   create_table "reviews", force: :cascade do |t|
@@ -986,6 +1235,84 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.index ["name"], name: "index_states_on_name"
   end
 
+  create_table "stock_adjustments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "adjusted_at", null: false
+    t.bigint "adjusted_by_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "inventory_item_id", null: false
+    t.text "notes"
+    t.integer "quantity_change", null: false
+    t.integer "reason_code", default: 0, null: false
+    t.string "reference_number", limit: 100
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_stock_adjustments_on_account_id"
+    t.index ["adjusted_at"], name: "index_stock_adjustments_on_adjusted_at"
+    t.index ["inventory_item_id"], name: "index_stock_adjustments_on_inventory_item_id"
+    t.index ["reason_code"], name: "index_stock_adjustments_on_reason_code"
+    t.check_constraint "quantity_change <> 0", name: "chk_stock_adjustments_nonzero"
+    t.check_constraint "reason_code = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8])", name: "chk_stock_adjustments_reason_code"
+  end
+
+  create_table "stock_reservations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.bigint "inventory_item_id", null: false
+    t.bigint "order_item_id", null: false
+    t.integer "quantity", null: false
+    t.datetime "released_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_stock_reservations_on_expires_at", where: "(expires_at IS NOT NULL)"
+    t.index ["inventory_item_id"], name: "index_stock_reservations_on_inventory_item_id"
+    t.index ["order_item_id", "inventory_item_id"], name: "index_stock_reservations_on_order_item_inventory_item", unique: true
+    t.index ["order_item_id"], name: "index_stock_reservations_on_order_item_id"
+    t.index ["status"], name: "index_stock_reservations_on_status"
+    t.check_constraint "quantity > 0", name: "chk_stock_reservations_quantity"
+  end
+
+  create_table "stock_transfer_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "inventory_item_id", null: false
+    t.text "notes"
+    t.integer "quantity_received", default: 0, null: false
+    t.integer "quantity_requested", null: false
+    t.integer "quantity_shipped", default: 0, null: false
+    t.bigint "stock_transfer_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["inventory_item_id"], name: "index_stock_transfer_items_on_inventory_item_id"
+    t.index ["stock_transfer_id", "inventory_item_id"], name: "index_stock_transfer_items_on_transfer_item", unique: true
+    t.index ["stock_transfer_id"], name: "index_stock_transfer_items_on_stock_transfer_id"
+    t.check_constraint "quantity_received >= 0", name: "chk_stock_transfer_items_received"
+    t.check_constraint "quantity_requested > 0", name: "chk_stock_transfer_items_requested"
+    t.check_constraint "quantity_shipped >= 0", name: "chk_stock_transfer_items_shipped"
+  end
+
+  create_table "stock_transfers", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.bigint "destination_warehouse_id", null: false
+    t.text "notes"
+    t.datetime "received_at"
+    t.datetime "requested_at", null: false
+    t.datetime "shipped_at"
+    t.bigint "source_warehouse_id", null: false
+    t.integer "status", default: 0, null: false
+    t.string "transfer_number", limit: 50, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_stock_transfers_on_account_status"
+    t.index ["account_id"], name: "index_stock_transfers_on_account_id"
+    t.index ["destination_warehouse_id"], name: "index_stock_transfers_on_destination_warehouse_id"
+    t.index ["source_warehouse_id"], name: "index_stock_transfers_on_source_warehouse_id"
+    t.index ["status"], name: "index_stock_transfers_on_status"
+    t.index ["transfer_number"], name: "index_stock_transfers_on_transfer_number", unique: true
+    t.check_constraint "source_warehouse_id <> destination_warehouse_id", name: "chk_stock_transfers_different_warehouses"
+    t.check_constraint "status = ANY (ARRAY[0, 1, 2, 3, 4, 5])", name: "chk_stock_transfers_status"
+  end
+
   create_table "subscription_plans", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -1025,6 +1352,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.index ["account_id"], name: "index_subscription_usages_on_account_id"
     t.index ["account_subscription_id"], name: "index_subscription_usages_on_account_subscription_id"
     t.check_constraint "quantity >= 0::numeric", name: "chk_subscription_usages_quantity"
+  end
+
+  create_table "suppliers", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.boolean "active", default: true, null: false
+    t.string "address_line1", limit: 255
+    t.string "address_line2", limit: 255
+    t.string "city", limit: 100
+    t.string "code", limit: 30, null: false
+    t.string "contact_name", limit: 255
+    t.string "country_code", limit: 2
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD", null: false
+    t.datetime "discarded_at"
+    t.string "email", limit: 255
+    t.integer "lead_time_days", default: 7
+    t.string "name", limit: 255, null: false
+    t.text "notes"
+    t.string "payment_terms", limit: 50, default: "NET30"
+    t.string "phone", limit: 30
+    t.string "postal_code", limit: 20
+    t.string "state", limit: 100
+    t.datetime "updated_at", null: false
+    t.string "website", limit: 255
+    t.index ["account_id", "code"], name: "index_suppliers_on_account_code", unique: true
+    t.index ["account_id"], name: "index_suppliers_on_account_id"
+    t.index ["discarded_at"], name: "index_suppliers_on_discarded_at"
+    t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_suppliers_currency"
+    t.check_constraint "lead_time_days >= 0", name: "chk_suppliers_lead_time"
   end
 
   create_table "tax_rates", force: :cascade do |t|
@@ -1079,6 +1435,45 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  create_table "warehouse_zones", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", limit: 20, null: false
+    t.datetime "created_at", null: false
+    t.string "description", limit: 255
+    t.string "name", limit: 100, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "warehouse_id", null: false
+    t.string "zone_type", limit: 30, default: "storage", null: false
+    t.index ["warehouse_id", "code"], name: "index_warehouse_zones_on_warehouse_code", unique: true
+    t.index ["warehouse_id"], name: "index_warehouse_zones_on_warehouse_id"
+    t.check_constraint "zone_type::text = ANY (ARRAY['storage'::character varying, 'receiving'::character varying, 'dispatch'::character varying, 'quarantine'::character varying, 'returns'::character varying]::text[])", name: "chk_warehouse_zones_zone_type"
+  end
+
+  create_table "warehouses", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.boolean "active", default: true, null: false
+    t.string "address_line1", limit: 255
+    t.string "address_line2", limit: 255
+    t.string "city", limit: 100
+    t.string "code", limit: 20, null: false
+    t.string "contact_name", limit: 255
+    t.string "country_code", limit: 2
+    t.datetime "created_at", null: false
+    t.datetime "discarded_at"
+    t.string "email", limit: 255
+    t.boolean "is_default", default: false, null: false
+    t.jsonb "metadata"
+    t.string "name", limit: 255, null: false
+    t.string "phone", limit: 30
+    t.string "postal_code", limit: 20
+    t.string "state", limit: 100
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "code"], name: "index_warehouses_on_account_code", unique: true
+    t.index ["account_id", "is_default"], name: "index_warehouses_one_default_per_account", where: "(is_default = true)"
+    t.index ["account_id"], name: "index_warehouses_on_account_id"
+    t.index ["discarded_at"], name: "index_warehouses_on_discarded_at"
+  end
+
   add_foreign_key "account_subscriptions", "accounts", on_delete: :restrict
   add_foreign_key "account_subscriptions", "coupon_redemptions", on_delete: :nullify
   add_foreign_key "account_subscriptions", "subscription_plans", on_delete: :restrict
@@ -1105,6 +1500,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
   add_foreign_key "coupons", "subscription_plans", on_delete: :nullify
   add_foreign_key "favorites", "listings", on_delete: :cascade
   add_foreign_key "favorites", "users", on_delete: :cascade
+  add_foreign_key "inventory_count_items", "inventory_counts", on_delete: :cascade
+  add_foreign_key "inventory_count_items", "inventory_items", on_delete: :restrict
+  add_foreign_key "inventory_counts", "accounts", on_delete: :restrict
+  add_foreign_key "inventory_counts", "warehouses", on_delete: :restrict
+  add_foreign_key "inventory_items", "product_variants", on_delete: :restrict
+  add_foreign_key "inventory_items", "warehouse_zones", on_delete: :nullify
+  add_foreign_key "inventory_items", "warehouses", on_delete: :restrict
+  add_foreign_key "inventory_transactions", "accounts", on_delete: :restrict
+  add_foreign_key "inventory_transactions", "inventory_items", on_delete: :restrict
   add_foreign_key "invoice_items", "invoices", on_delete: :cascade
   add_foreign_key "invoices", "account_subscriptions", on_delete: :nullify
   add_foreign_key "invoices", "accounts", on_delete: :restrict
@@ -1113,7 +1517,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
   add_foreign_key "listings", "brands", on_delete: :restrict
   add_foreign_key "listings", "categories", on_delete: :restrict
   add_foreign_key "listings", "cities", column: "location_city_id", on_delete: :nullify
+  add_foreign_key "listings", "inventory_items", on_delete: :nullify
   add_foreign_key "listings", "printer_models", on_delete: :nullify
+  add_foreign_key "listings", "products", on_delete: :nullify
   add_foreign_key "listings", "users", on_delete: :restrict
   add_foreign_key "memberships", "accounts", on_delete: :cascade
   add_foreign_key "memberships", "users", on_delete: :cascade
@@ -1143,7 +1549,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
   add_foreign_key "plan_features", "subscription_plans", on_delete: :cascade
   add_foreign_key "printer_models", "brands", on_delete: :restrict
   add_foreign_key "printer_models", "categories", on_delete: :nullify
+  add_foreign_key "product_variants", "products", on_delete: :cascade
+  add_foreign_key "products", "accounts", on_delete: :restrict
+  add_foreign_key "products", "brands", on_delete: :nullify
+  add_foreign_key "products", "categories", on_delete: :nullify
+  add_foreign_key "products", "printer_models", on_delete: :nullify
   add_foreign_key "profiles", "users", on_delete: :cascade
+  add_foreign_key "purchase_order_items", "inventory_items", on_delete: :nullify
+  add_foreign_key "purchase_order_items", "product_variants", on_delete: :restrict
+  add_foreign_key "purchase_order_items", "purchase_orders", on_delete: :cascade
+  add_foreign_key "purchase_orders", "accounts", on_delete: :restrict
+  add_foreign_key "purchase_orders", "suppliers", on_delete: :restrict
+  add_foreign_key "purchase_orders", "warehouses", on_delete: :restrict
+  add_foreign_key "reorder_rules", "inventory_items", on_delete: :cascade
+  add_foreign_key "reorder_rules", "suppliers", on_delete: :nullify
   add_foreign_key "reviews", "listings", on_delete: :restrict
   add_foreign_key "reviews", "users", column: "reviewee_id", on_delete: :restrict
   add_foreign_key "reviews", "users", column: "reviewer_id", on_delete: :restrict
@@ -1159,8 +1578,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_155010) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "states", "countries", on_delete: :restrict
+  add_foreign_key "stock_adjustments", "accounts", on_delete: :restrict
+  add_foreign_key "stock_adjustments", "inventory_items", on_delete: :restrict
+  add_foreign_key "stock_reservations", "inventory_items", on_delete: :restrict
+  add_foreign_key "stock_reservations", "order_items", on_delete: :cascade
+  add_foreign_key "stock_transfer_items", "inventory_items", on_delete: :restrict
+  add_foreign_key "stock_transfer_items", "stock_transfers", on_delete: :cascade
+  add_foreign_key "stock_transfers", "accounts", on_delete: :restrict
+  add_foreign_key "stock_transfers", "warehouses", column: "destination_warehouse_id", on_delete: :restrict
+  add_foreign_key "stock_transfers", "warehouses", column: "source_warehouse_id", on_delete: :restrict
   add_foreign_key "subscription_usages", "account_subscriptions", on_delete: :cascade
   add_foreign_key "subscription_usages", "accounts", on_delete: :cascade
+  add_foreign_key "suppliers", "accounts", on_delete: :restrict
   add_foreign_key "user_roles", "roles", on_delete: :cascade
   add_foreign_key "user_roles", "users", on_delete: :cascade
+  add_foreign_key "warehouse_zones", "warehouses", on_delete: :cascade
+  add_foreign_key "warehouses", "accounts", on_delete: :restrict
 end

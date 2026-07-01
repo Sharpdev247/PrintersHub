@@ -14,6 +14,16 @@ class Account < ApplicationRecord
 
   # Marketplace assets
   has_many :listings, dependent: :restrict_with_error
+
+  # Inventory & warehouse
+  has_many :warehouses,         dependent: :restrict_with_error
+  has_many :suppliers,          dependent: :restrict_with_error
+  has_many :products,           dependent: :restrict_with_error
+  has_many :purchase_orders,    dependent: :restrict_with_error
+  has_many :inventory_counts,   dependent: :restrict_with_error
+  has_many :stock_transfers,    dependent: :restrict_with_error
+  has_many :stock_adjustments,  dependent: :restrict_with_error
+  has_many :inventory_transactions, dependent: :restrict_with_error
   has_many :carts,           dependent: :destroy
   has_many :orders_as_buyer,  class_name: "Order", foreign_key: :buyer_account_id,
            dependent: :restrict_with_error, inverse_of: :buyer_account
