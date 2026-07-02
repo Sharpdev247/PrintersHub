@@ -118,6 +118,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # Activity Logs
+    resources :activity_logs, only: [:index]
+
     # Settings
     namespace :settings do
       resource  :profile,     only: [:show, :update], controller: "profiles"

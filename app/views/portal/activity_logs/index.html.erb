@@ -1,0 +1,157 @@
+<% content_for :title, "Activity Log — PrintersHub" %>
+
+<%
+  ACTION_COLORS = {
+    "create"  => { bg: "#dcfce7", color: "#15803d", label: "Created" },
+    "update"  => { bg: "#dbeafe", color: "#1d4ed8", label: "Updated" },
+    "destroy" => { bg: "#fee2e2", color: "#dc2626", label: "Deleted" },
+  }.freeze
+%>
+
+<div style="max-width:960px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Activity Log</h1>
+    <div style="font-size:.8rem;color:#9ca3af">Owners & admins only</div>
+  </div>
+
+  <%# Filters %>
+  <%= form_with url: portal_activity_logs_path, method: :get, local: true,
+        style: "background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem 1.25rem;
+                margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end" do |f| %>
+
+    <div style="display:flex;flex-direction:column;gap:.25rem">
+      <%= f.label :auditable_type, "Resource", style: "font-size:.75rem;font-weight:600;color:#6b7280" %>
+      <%= f.select :auditable_type,
+            [["All", ""]] + Portal::ActivityLogsController::AUDITABLE_TYPES.map { |t| [t.underscore.humanize, t] },
+            { selected: params[:auditable_type] },
+            style: "font-size:.83rem;padding:.35rem .6rem;border:1px solid #d1d5db;border-radius:6px" %>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.25rem">
+      <%= f.label :action_type, "Action", style: "font-size:.75rem;font-weight:600;color:#6b7280" %>
+      <%= f.select :action_type,
+            [["All", ""], ["Created", "create"], ["Updated", "update"], ["Deleted", "destroy"]],
+            { selected: params[:action_type] },
+            style: "font-size:.83rem;padding:.35rem .6rem;border:1px solid #d1d5db;border-radius:6px" %>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.25rem">
+      <%= f.label :user_id, "Member", style: "font-size:.75rem;font-weight:600;color:#6b7280" %>
+      <%= f.select :user_id,
+            [["All", ""]] + @members.map { |u| [u.email, u.id] },
+            { selected: params[:user_id] },
+            style: "font-size:.83rem;padding:.35rem .6rem;border:1px solid #d1d5db;border-radius:6px" %>
+    </div>
+
+    <div style="display:flex;gap:.5rem;margin-top:.1rem">
+      <%= f.submit "Filter",
+            style: "padding:.38rem .9rem;background:#111;color:#fff;border:none;border-radius:6px;
+                    font-size:.83rem;font-weight:600;cursor:pointer" %>
+      <% if params.except(:controller, :action, :page).any?(&:present?) %>
+        <%= link_to "Clear", portal_activity_logs_path,
+              style: "padding:.38rem .9rem;background:#f3f4f6;color:#374151;border-radius:6px;
+                      font-size:.83rem;font-weight:500;text-decoration:none" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Count %>
+  <div style="font-size:.82rem;color:#9ca3af;margin-bottom:.85rem">
+    <%= @audits.total_count %> events
+    <% if params[:auditable_type].present? || params[:action_type].present? || params[:user_id].present? %>
+      &nbsp;·&nbsp;<span style="color:#374151">filtered</span>
+    <% end %>
+  </div>
+
+  <%# Timeline %>
+  <% if @audits.any? %>
+    <% prev_date = nil %>
+    <% @audits.each do |audit| %>
+      <% date_label = audit.created_at.to_date %>
+      <% if date_label != prev_date %>
+        <div style="font-size:.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;
+                    letter-spacing:.06em;margin:1.1rem 0 .5rem;padding-bottom:.3rem;
+                    border-bottom:1px solid #f3f4f6">
+          <%= date_label == Date.today ? "Today" : date_label == Date.yesterday ? "Yesterday" : date_label.strftime("%B %-d, %Y") %>
+        </div>
+        <% prev_date = date_label %>
+      <% end %>
+
+      <% style = ACTION_COLORS[audit.action] || { bg: "#f3f4f6", color: "#374151", label: audit.action.humanize } %>
+      <div style="display:flex;gap:.85rem;align-items:flex-start;padding:.65rem 0;border-bottom:1px solid #f9fafb">
+
+        <%# Action badge %>
+        <div style="flex-shrink:0;width:5.5rem;text-align:center">
+          <span style="background:<%= style[:bg] %>;color:<%= style[:color] %>;font-size:.72rem;
+                       font-weight:700;padding:.2rem .55rem;border-radius:12px">
+            <%= style[:label] %>
+          </span>
+        </div>
+
+        <%# Main content %>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem">
+            <span style="font-size:.85rem;font-weight:600;color:#111">
+              <%= audit.auditable_type.underscore.humanize %>
+            </span>
+            <span style="font-size:.78rem;color:#9ca3af">#<%= audit.auditable_id %></span>
+
+            <% if audit.user.present? %>
+              <span style="font-size:.78rem;color:#6b7280">by
+                <strong style="color:#374151"><%= audit.user.email %></strong>
+              </span>
+            <% else %>
+              <span style="font-size:.78rem;color:#9ca3af">by system</span>
+            <% end %>
+
+            <span style="font-size:.75rem;color:#d1d5db;margin-left:auto">
+              <%= audit.created_at.strftime("%H:%M") %>
+            </span>
+          </div>
+
+          <%# Diff: show changed attributes for updates %>
+          <% if audit.action == "update" && audit.audited_changes.present? %>
+            <div style="margin-top:.3rem;display:flex;flex-wrap:wrap;gap:.4rem">
+              <% audit.audited_changes.each do |attr, change| %>
+                <% from_val, to_val = change.is_a?(Array) ? change : [nil, change] %>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;
+                            padding:.2rem .55rem;font-size:.75rem;max-width:300px">
+                  <span style="color:#6b7280;font-weight:600"><%= attr.humanize %>:</span>
+                  <% if from_val.present? %>
+                    <span style="color:#dc2626;text-decoration:line-through;margin:0 .2rem">
+                      <%= from_val.to_s.truncate(40) %>
+                    </span>
+                    <span style="color:#9ca3af">→</span>
+                  <% end %>
+                  <span style="color:#059669;margin-left:.2rem">
+                    <%= to_val.to_s.truncate(40) %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+          <% elsif audit.action == "create" && audit.audited_changes.present? %>
+            <div style="font-size:.75rem;color:#9ca3af;margin-top:.2rem">
+              <%= audit.audited_changes.keys.map(&:humanize).join(", ") %> set
+            </div>
+          <% end %>
+
+          <% if audit.comment.present? %>
+            <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;font-style:italic">
+              "<%= audit.comment %>"
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Pagination %>
+    <div style="margin-top:1.5rem">
+      <%= paginate @audits %>
+    </div>
+  <% else %>
+    <div style="text-align:center;padding:3rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px">
+      <div style="font-size:2rem;margin-bottom:.5rem">📋</div>
+      <div style="font-size:.9rem;color:#6b7280">No activity found.</div>
+    </div>
+  <% end %>
+</div>

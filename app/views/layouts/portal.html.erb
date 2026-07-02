@@ -50,19 +50,32 @@
         <div style="padding:.25rem 1.5rem .5rem;font-size:.68rem;font-weight:700;color:#475569;letter-spacing:.08em;text-transform:uppercase;margin-top:.5rem">
           Overview
         </div>
-        <%= nav_link.call("Dashboard",  portal_path,        "⊞") %>
+        <%= nav_link.call("Dashboard",    portal_path,               "⊞") %>
+        <%= nav_link.call("Reports",      portal_reports_root_path,  "📊") %>
 
         <div style="padding:.75rem 1.5rem .5rem;font-size:.68rem;font-weight:700;color:#475569;letter-spacing:.08em;text-transform:uppercase">
           Marketplace
         </div>
-        <%= nav_link.call("My Listings", portal_seller_listings_path, "◈") %>
-        <%= nav_link.call("Browse",      listings_path,               "⊙") %>
+        <%= nav_link.call("My Listings",  portal_seller_listings_path,  "◈") %>
+        <%= nav_link.call("Selling",      portal_seller_orders_path,    "📦") %>
+        <%= nav_link.call("Buying",       portal_buyer_orders_path,     "🛒") %>
+        <%= nav_link.call("Invoices",     portal_invoices_path,         "🧾") %>
+        <%= nav_link.call("Favorites",    portal_favorites_path,        "♥") %>
+        <%= nav_link.call("Browse",       listings_path,                "⊙") %>
+
+        <div style="padding:.75rem 1.5rem .5rem;font-size:.68rem;font-weight:700;color:#475569;letter-spacing:.08em;text-transform:uppercase">
+          Operations
+        </div>
+        <%= nav_link.call("Warehouse",    portal_warehouse_root_path,   "🏭") %>
+        <%= nav_link.call("Service",      portal_service_root_path,     "🔧") %>
+        <%= nav_link.call("CRM",          portal_crm_root_path,         "👥") %>
 
         <div style="padding:.75rem 1.5rem .5rem;font-size:.68rem;font-weight:700;color:#475569;letter-spacing:.08em;text-transform:uppercase">
           Account
         </div>
-        <%= nav_link.call("Settings",   "#",  "⚙") %>
-        <%= nav_link.call("Team",        "#",  "👥") %>
+        <%= nav_link.call("Settings",     portal_settings_profile_path, "⚙") %>
+        <%= nav_link.call("Members",      portal_settings_memberships_path, "🧑‍🤝‍🧑") %>
+        <%= nav_link.call("Activity Log", portal_activity_logs_path,    "📋") %>
       </nav>
 
       <%# User footer %>
