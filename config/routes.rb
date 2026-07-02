@@ -52,6 +52,11 @@ Rails.application.routes.draw do
     # Favorites (buyer portal)
     resources :favorites, only: [:index]
 
+    # Saved searches
+    resources :saved_searches, only: [:index, :create, :destroy] do
+      member { patch :toggle_alert }
+    end
+
     # Service
     get "service", to: "service/dashboard#show", as: :service
 

@@ -1,0 +1,42 @@
+<%#
+  Embeds a "Save this search" form on the listings index page.
+  Usage: render "portal/saved_searches/save_search_form", filters: search_params
+  Only renders when the user is signed in and at least one filter is active.
+%>
+<% active_filters = filters.to_h.reject { |_, v| v.blank? } %>
+<% if user_signed_in? && active_filters.any? %>
+  <details style="margin-bottom:1rem">
+    <summary style="cursor:pointer;font-size:.82rem;color:#2563eb;font-weight:600;list-style:none">
+      ♡ Save this search
+    </summary>
+
+    <div style="margin-top:.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:1rem">
+      <%= form_with url: portal_saved_searches_path, method: :post do |f| %>
+        <div style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <%= f.label :name, "Name this search",
+                  style: "display:block;font-size:.78rem;font-weight:600;color:#1d4ed8;margin-bottom:.3rem" %>
+            <%= f.text_field "saved_search[name]",
+                  placeholder: "e.g. HP LaserJet under PKR 50,000",
+                  required: true,
+                  style: "width:100%;padding:.5rem .75rem;border:1px solid #bfdbfe;border-radius:6px;font-size:.88rem" %>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:.5rem;padding-bottom:2px">
+            <%= f.check_box "saved_search[alert_enabled]", { style: "cursor:pointer" }, "1", "0" %>
+            <%= f.label "saved_search[alert_enabled]", "Email me new matches",
+                  style: "font-size:.82rem;color:#1d4ed8;cursor:pointer" %>
+          </div>
+
+          <%= f.submit "Save search",
+                style: "padding:.5rem 1.1rem;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap" %>
+        </div>
+
+        <%# Hidden fields for each active filter %>
+        <% active_filters.each do |key, val| %>
+          <%= hidden_field_tag "saved_search[filters][#{key}]", val %>
+        <% end %>
+      <% end %>
+    </div>
+  </details>
+<% end %>
