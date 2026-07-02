@@ -1,9 +1,10 @@
 <nav style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:0">
   <%
     settings_links = [
-      { label: "Profile",         path: portal_settings_profile_path  },
-      { label: "Account",         path: portal_settings_account_path  },
-      { label: "Password",        path: portal_settings_password_path },
+      { label: "Profile",         path: portal_settings_profile_path      },
+      { label: "Account",         path: portal_settings_account_path      },
+      { label: "Password",        path: portal_settings_password_path     },
+      { label: "Members",         path: portal_settings_memberships_path  },
     ]
   %>
   <% settings_links.each do |link| %>

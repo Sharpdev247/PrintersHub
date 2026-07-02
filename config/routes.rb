@@ -49,6 +49,14 @@ Rails.application.routes.draw do
 
     # Service
     get "service", to: "service/dashboard#show", as: :service
+
+    # Settings
+    namespace :settings do
+      resource  :profile,     only: [:show, :update], controller: "profiles"
+      resource  :account,     only: [:show, :update], controller: "accounts"
+      resource  :password,    only: [:show, :update], controller: "passwords"
+      resources :memberships, only: [:index, :create, :update, :destroy]
+    end
   end
 
   # ── API ────────────────────────────────────────────────────────────────────

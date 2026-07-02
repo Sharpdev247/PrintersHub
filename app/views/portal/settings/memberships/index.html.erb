@@ -1,0 +1,128 @@
+<% content_for :title, "Team Members — PrintersHub" %>
+<% content_for :breadcrumb do %>Settings › Members<% end %>
+
+<%
+  ROLE_OPTIONS = Membership.roles.keys.map { |r| [r.humanize, r] }
+  ROLE_BADGE   = {
+    "owner"           => { bg: "#fef3c7", color: "#92400e" },
+    "admin"           => { bg: "#ede9fe", color: "#5b21b6" },
+    "manager"         => { bg: "#dbeafe", color: "#1d4ed8" },
+    "sales"           => { bg: "#d1fae5", color: "#065f46" },
+    "technician"      => { bg: "#fce7f3", color: "#9d174d" },
+    "warehouse_staff" => { bg: "#ffedd5", color: "#9a3412" },
+    "accountant"      => { bg: "#f3f4f6", color: "#374151" },
+  }
+%>
+
+<div style="max-width:860px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.5rem">Settings</h1>
+
+  <div style="display:grid;grid-template-columns:180px 1fr;gap:1.5rem;align-items:start">
+    <%= render "portal/settings/nav" %>
+
+    <div>
+      <%# ── Member table ── %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:1rem;overflow:hidden">
+        <div style="padding:1.25rem 1.5rem;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">
+          <h2 style="font-size:1rem;font-weight:700;color:#111;margin:0">
+            Team Members
+            <span style="font-size:.8rem;font-weight:500;color:#9ca3af;margin-left:.5rem"><%= @memberships.count %> total</span>
+          </h2>
+        </div>
+
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:#f9fafb">
+              <th style="padding:.6rem 1.5rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Member</th>
+              <th style="padding:.6rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Role</th>
+              <th style="padding:.6rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Joined</th>
+              <th style="padding:.6rem 1rem"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @memberships.each do |m| %>
+              <% badge = ROLE_BADGE[m.role] || ROLE_BADGE["accountant"] %>
+              <% is_me = m.user_id == current_user.id %>
+              <tr style="border-top:1px solid #f3f4f6">
+                <td style="padding:.85rem 1.5rem">
+                  <div style="font-size:.9rem;font-weight:600;color:#111">
+                    <%= m.user.email %>
+                    <% if is_me %>
+                      <span style="font-size:.72rem;color:#6b7280;font-weight:400;margin-left:.35rem">(you)</span>
+                    <% end %>
+                  </div>
+                  <% if m.user.profile&.first_name.present? %>
+                    <div style="font-size:.78rem;color:#9ca3af">
+                      <%= [m.user.profile.first_name, m.user.profile.last_name].compact.join(" ") %>
+                    </div>
+                  <% end %>
+                </td>
+
+                <td style="padding:.85rem 1rem">
+                  <% if policy(m).update? && !is_me && !m.role_owner? %>
+                    <%= form_with url: portal_settings_membership_path(m), method: :patch do |f| %>
+                      <%= f.select "membership[role]", ROLE_OPTIONS,
+                            { selected: m.role },
+                            style: "font-size:.82rem;padding:.3rem .5rem;border:1px solid #d1d5db;border-radius:5px;cursor:pointer",
+                            onchange: "this.form.requestSubmit()" %>
+                    <% end %>
+                  <% else %>
+                    <span style="display:inline-block;padding:.2rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600;background:<%= badge[:bg] %>;color:<%= badge[:color] %>">
+                      <%= m.role.humanize %>
+                    </span>
+                  <% end %>
+                </td>
+
+                <td style="padding:.85rem 1rem;font-size:.82rem;color:#6b7280">
+                  <%= m.created_at.strftime("%b %d, %Y") %>
+                </td>
+
+                <td style="padding:.85rem 1rem;text-align:right">
+                  <% if policy(m).destroy? %>
+                    <%= button_to "Remove",
+                          portal_settings_membership_path(m),
+                          method: :delete,
+                          data: { confirm: "Remove #{m.user.email} from this account?" },
+                          style: "font-size:.78rem;padding:.3rem .75rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:5px;cursor:pointer;font-weight:600" %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <%# ── Invite form ── %>
+      <% if policy(Membership).create? %>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.5rem">
+          <h3 style="font-size:.95rem;font-weight:700;color:#111;margin-bottom:1rem">Add a Member</h3>
+          <p style="font-size:.83rem;color:#6b7280;margin-bottom:1.25rem">
+            The person must already have a PrintersHub account. Enter their registered email address.
+          </p>
+
+          <%= form_with url: portal_settings_memberships_path, method: :post,
+                style: "display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end" do |f| %>
+            <div>
+              <%= label_tag :email, "Email address",
+                    style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+              <%= email_field_tag :email, nil,
+                    placeholder: "colleague@example.com",
+                    required: true,
+                    style: "padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem;width:280px" %>
+            </div>
+
+            <div>
+              <%= label_tag :role, "Role",
+                    style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+              <%= select_tag :role, options_for_select(ROLE_OPTIONS.reject { |_, v| v == "owner" }, "sales"),
+                    style: "padding:.55rem .65rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+            </div>
+
+            <%= submit_tag "Add member",
+                  style: "padding:.58rem 1.25rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:600;cursor:pointer;margin-bottom:1px" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
