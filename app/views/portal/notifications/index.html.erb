@@ -1,0 +1,90 @@
+<% content_for :title, "Notifications — PrintersHub" %>
+
+<%
+  TYPE_ICON = {
+    "offer_received"    => "💰",
+    "offer_accepted"    => "✅",
+    "offer_rejected"    => "❌",
+    "offer_countered"   => "🔄",
+    "offer_withdrawn"   => "↩️",
+    "offer_expired"     => "⏰",
+    "new_message"       => "💬",
+    "listing_published" => "🟢",
+    "listing_approved"  => "✅",
+    "listing_rejected"  => "🚫",
+    "review_received"   => "⭐",
+    "system"            => "📢",
+  }.freeze
+%>
+
+<div style="max-width:760px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <div>
+      <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Notifications</h1>
+      <% if @unread_count > 0 %>
+        <div style="font-size:.85rem;color:#2563eb;margin-top:.2rem;font-weight:500">
+          <%= @unread_count %> unread
+        </div>
+      <% end %>
+    </div>
+
+    <% if @unread_count > 0 %>
+      <%= button_to "Mark all as read", mark_all_read_portal_notifications_path,
+            method: :patch,
+            style: "font-size:.83rem;padding:.45rem 1rem;background:#eff6ff;color:#2563eb;
+                    border:1px solid #bfdbfe;border-radius:7px;cursor:pointer;font-weight:600" %>
+    <% end %>
+  </div>
+
+  <% if @notifications.none? %>
+    <div style="text-align:center;padding:4rem 2rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:2rem;margin-bottom:.75rem">🔔</div>
+      <div style="font-size:1rem;font-weight:600;color:#374151">You're all caught up</div>
+      <div style="font-size:.875rem;color:#6b7280;margin-top:.5rem">No notifications yet.</div>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <% @notifications.each_with_index do |n, i| %>
+        <%= link_to portal_notification_path(n),
+              style: "display:flex;gap:.9rem;padding:1rem 1.25rem;text-decoration:none;
+                      background:#{n.read? ? '#fff' : '#eff6ff'};
+                      border-top:#{i == 0 ? 'none' : '1px solid #f3f4f6'}" do %>
+
+          <div style="font-size:1.4rem;flex-shrink:0;padding-top:.1rem">
+            <%= TYPE_ICON[n.notification_type] || "📌" %>
+          </div>
+
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
+              <div style="font-size:.9rem;font-weight:#{n.read? ? '400' : '600'};color:#111">
+                <%= n.title %>
+              </div>
+              <div style="font-size:.72rem;color:#9ca3af;flex-shrink:0;white-space:nowrap">
+                <%= n.created_at.strftime("%b %d · %I:%M %p") %>
+              </div>
+            </div>
+
+            <% if n.body.present? %>
+              <div style="font-size:.82rem;color:#6b7280;margin-top:.25rem">
+                <%= n.body %>
+              </div>
+            <% end %>
+
+            <div style="font-size:.72rem;color:#9ca3af;margin-top:.3rem">
+              <%= n.notification_type.humanize %>
+              <% unless n.read? %>
+                · <span style="color:#2563eb;font-weight:600">New</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @notifications.total_pages > 1 %>
+      <div style="margin-top:1.5rem;text-align:center">
+        <%= paginate @notifications %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

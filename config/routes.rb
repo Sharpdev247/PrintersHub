@@ -57,6 +57,11 @@ Rails.application.routes.draw do
       member { patch :toggle_alert }
     end
 
+    # Notifications
+    resources :notifications, only: [:index, :show] do
+      collection { patch :mark_all_read }
+    end
+
     # Service
     get "service", to: "service/dashboard#show", as: :service
 
