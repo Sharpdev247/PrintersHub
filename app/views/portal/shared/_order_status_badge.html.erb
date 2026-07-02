@@ -1,0 +1,23 @@
+<%#
+  Usage: render "portal/shared/order_status_badge", status: order.status
+%>
+<%
+  STATUS_STYLES = {
+    "draft"             => { bg: "#f3f4f6", color: "#6b7280" },
+    "pending_payment"   => { bg: "#fef3c7", color: "#92400e" },
+    "payment_confirmed" => { bg: "#dbeafe", color: "#1d4ed8" },
+    "processing"        => { bg: "#ede9fe", color: "#5b21b6" },
+    "partially_shipped" => { bg: "#ffedd5", color: "#9a3412" },
+    "shipped"           => { bg: "#cffafe", color: "#0e7490" },
+    "delivered"         => { bg: "#d1fae5", color: "#065f46" },
+    "completed"         => { bg: "#d1fae5", color: "#065f46" },
+    "cancelled"         => { bg: "#fee2e2", color: "#991b1b" },
+    "refunded"          => { bg: "#fce7f3", color: "#9d174d" },
+    "disputed"          => { bg: "#fef3c7", color: "#92400e" },
+  }.freeze
+  s = STATUS_STYLES[status] || { bg: "#f3f4f6", color: "#6b7280" }
+%>
+<span style="display:inline-block;padding:.2rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600;
+             background:<%= s[:bg] %>;color:<%= s[:color] %>">
+  <%= status.to_s.humanize %>
+</span>

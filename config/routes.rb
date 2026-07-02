@@ -32,6 +32,15 @@ Rails.application.routes.draw do
   namespace :portal do
     get "/",      to: "dashboard#show", as: :root  # /portal → role-based redirect
 
+    # Buyer
+    namespace :buyer do
+      resources :orders, only: [:index, :show, :create] do
+        member do
+          patch :cancel
+        end
+      end
+    end
+
     # Seller
     get "seller",           to: "seller/dashboard#show", as: :seller
 
@@ -45,6 +54,12 @@ Rails.application.routes.draw do
           patch :archive
           patch :mark_sold
           post  :duplicate
+        end
+      end
+      resources :orders, only: [:index, :show] do
+        member do
+          patch :update_status
+          patch :cancel
         end
       end
     end

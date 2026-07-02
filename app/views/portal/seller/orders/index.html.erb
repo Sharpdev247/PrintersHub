@@ -1,0 +1,82 @@
+<% content_for :title, "Orders — PrintersHub Seller" %>
+
+<%
+  STATUS_TABS = [
+    [nil,                "All"],
+    ["pending_payment",  "Pending"],
+    ["payment_confirmed","Confirmed"],
+    ["processing",       "Processing"],
+    ["shipped",          "Shipped"],
+    ["completed",        "Completed"],
+    ["cancelled",        "Cancelled"],
+  ]
+%>
+
+<div style="max-width:1000px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.25rem">Orders</h1>
+
+  <%# Status tabs %>
+  <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem;border-bottom:1px solid #e5e7eb;padding-bottom:.75rem">
+    <% STATUS_TABS.each do |val, label| %>
+      <% active = @status_filter == val %>
+      <% count  = val ? @counts[Order.statuses[val]] : @counts.values.sum %>
+      <%= link_to portal_seller_orders_path(status: val),
+            style: "padding:.35rem .85rem;border-radius:20px;font-size:.82rem;font-weight:#{active ? '700' : '500'};
+                    text-decoration:none;
+                    background:#{active ? '#2563eb' : '#f3f4f6'};
+                    color:#{active ? '#fff' : '#6b7280'}" do %>
+        <%= label %><% if count&.positive? %> (<%= count %>)<% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @orders.none? %>
+    <div style="text-align:center;padding:3rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:.95rem;color:#6b7280">No orders found.</div>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.65rem 1.25rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Order</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Buyer</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Items</th>
+            <th style="padding:.65rem 1rem;text-align:right;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Total</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Status</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @orders.each do |order| %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.85rem 1.25rem">
+                <%= link_to order.order_number, portal_seller_order_path(order),
+                      style: "font-size:.88rem;font-weight:700;color:#2563eb;text-decoration:none;font-family:monospace" %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.85rem;color:#374151">
+                <%= order.buyer_account.name %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.85rem;color:#6b7280">
+                <%= order.order_items.size %> item<%= order.order_items.size == 1 ? "" : "s" %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.9rem;font-weight:700;color:#111;text-align:right">
+                <%= number_to_currency(order.total, unit: order.currency + " ") %>
+              </td>
+              <td style="padding:.85rem 1rem">
+                <%= render "portal/shared/order_status_badge", status: order.status %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.8rem;color:#9ca3af">
+                <%= order.created_at.strftime("%b %d, %Y") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @orders.total_pages > 1 %>
+      <div style="margin-top:1.5rem;text-align:center"><%= paginate @orders %></div>
+    <% end %>
+  <% end %>
+</div>

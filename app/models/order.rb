@@ -80,6 +80,14 @@ class Order < ApplicationRecord
     end
   end
 
+  def cancellable?
+    status_draft? || status_pending_payment? || status_payment_confirmed? || status_processing?
+  end
+
+  def display_status
+    status.humanize
+  end
+
   def capturable_payment
     payments.where(status: Payment.statuses[:pending]).order(created_at: :desc).first
   end
