@@ -69,6 +69,9 @@ gem "kaminari", "~> 1.2"
 # Authorization via policy objects — one class per resource
 gem "pundit", "~> 2.4"
 
+# Anthropic Claude SDK — AI features (description generation, price suggestions, search)
+gem "anthropic-sdk-ruby", "~> 0.3", require: "anthropic"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

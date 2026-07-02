@@ -124,6 +124,12 @@ Rails.application.routes.draw do
     # API Tokens (portal UI)
     resources :api_tokens, only: [:index, :create, :destroy]
 
+    # AI helpers (JSON, called from listing form)
+    namespace :ai do
+      post :describe
+      post :price
+    end
+
     # Settings
     namespace :settings do
       resource  :profile,     only: [:show, :update], controller: "profiles"
@@ -156,6 +162,13 @@ Rails.application.routes.draw do
       # Inventory
       resources :inventory, only: [:index, :show], controller: "inventory" do
         member { post :adjust }
+      end
+
+      # AI helpers
+      namespace :ai do
+        post :describe
+        post :price
+        post :search
       end
     end
   end

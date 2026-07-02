@@ -1,0 +1,114 @@
+<%# AI helper buttons — embedded on the listing new/edit form %>
+<%# Requires: #listing_title, #listing_description, #listing_category_id,
+    #listing_brand_id, #listing_condition, #listing_listing_type fields to exist on the page %>
+
+<% if ENV["ANTHROPIC_API_KEY"].present? %>
+  <div id="ai-helpers" style="display:flex;gap:.6rem;margin-top:.5rem;flex-wrap:wrap">
+    <button type="button" id="ai-describe-btn"
+            style="padding:.38rem .85rem;background:#5b21b6;color:#fff;border:none;border-radius:6px;
+                   font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.35rem">
+      <span>✨</span> Generate description
+    </button>
+    <button type="button" id="ai-price-btn"
+            style="padding:.38rem .85rem;background:#0891b2;color:#fff;border:none;border-radius:6px;
+                   font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.35rem">
+      <span>💡</span> Suggest price
+    </button>
+    <span id="ai-status" style="font-size:.78rem;color:#9ca3af;align-self:center"></span>
+  </div>
+
+  <div id="ai-price-result" style="display:none;margin-top:.6rem;background:#f0f9ff;border:1px solid #bae6fd;
+                                    border-radius:8px;padding:.75rem 1rem;font-size:.83rem;color:#0c4a6e"></div>
+
+  <script>
+  (function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    function collectAttrs() {
+      const title     = document.getElementById('listing_title')?.value || '';
+      const catEl     = document.getElementById('listing_category_id');
+      const brandEl   = document.getElementById('listing_brand_id');
+      const category  = catEl?.options[catEl.selectedIndex]?.text || '';
+      const brand     = brandEl?.options[brandEl.selectedIndex]?.text || '';
+      const condEl    = document.getElementById('listing_condition');
+      const typeEl    = document.getElementById('listing_listing_type');
+      const condition = condEl?.options[condEl.selectedIndex]?.text || '';
+      const type      = typeEl?.options[typeEl.selectedIndex]?.text || '';
+      return { title, category, brand, condition, listing_type: type };
+    }
+
+    function setStatus(msg) {
+      document.getElementById('ai-status').textContent = msg;
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled = loading;
+      btn.style.opacity = loading ? '0.6' : '1';
+    }
+
+    // ── Generate description ─────────────────────────────────────────────────
+    document.getElementById('ai-describe-btn').addEventListener('click', async function() {
+      const attrs = collectAttrs();
+      if (!attrs.title) { setStatus('Add a title first.'); return; }
+
+      setStatus('Generating…');
+      setLoading(this, true);
+
+      try {
+        const res = await fetch('<%= portal_ai_describe_path %>', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+          body: JSON.stringify(attrs)
+        });
+        const data = await res.json();
+        if (data.description) {
+          const field = document.getElementById('listing_description');
+          if (field) field.value = data.description;
+          setStatus('Description generated ✓');
+        } else {
+          setStatus(data.error || 'Failed.');
+        }
+      } catch(e) {
+        setStatus('Error. Try again.');
+      } finally {
+        setLoading(this, false);
+      }
+    });
+
+    // ── Suggest price ────────────────────────────────────────────────────────
+    document.getElementById('ai-price-btn').addEventListener('click', async function() {
+      const attrs = collectAttrs();
+      if (!attrs.title) { setStatus('Add a title first.'); return; }
+
+      setStatus('Analysing market…');
+      setLoading(this, true);
+
+      try {
+        const res = await fetch('<%= portal_ai_price_path %>', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+          body: JSON.stringify(attrs)
+        });
+        const data = await res.json();
+        const box = document.getElementById('ai-price-result');
+        if (data.suggested) {
+          box.innerHTML =
+            `<strong>💡 Price suggestion:</strong> ` +
+            `$${data.min} – $${data.max} &nbsp;·&nbsp; ` +
+            `<strong>Recommended: $${data.suggested}</strong><br>` +
+            `<span style="color:#0369a1">${data.rationale || ''}</span>`;
+          box.style.display = 'block';
+          setStatus('');
+        } else {
+          setStatus(data.error || 'No suggestion available.');
+          box.style.display = 'none';
+        }
+      } catch(e) {
+        setStatus('Error. Try again.');
+      } finally {
+        setLoading(this, false);
+      }
+    });
+  })();
+  </script>
+<% end %>
