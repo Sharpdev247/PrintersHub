@@ -1,6 +1,9 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
+# Run database setup/migrations only when starting the Rails server.
+# Uses db:prepare which: creates the DB if it doesn't exist, runs pending
+# migrations if it does. Safe to run concurrently — Active Record's migration
+# locking prevents duplicate runs across multiple containers starting at once.
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi

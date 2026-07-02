@@ -1,119 +1,119 @@
-# Name of your application. Used to uniquely configure containers.
-service: printers_hub
+# PrintersHub — Kamal 2.x deploy configuration
+# Docs: https://kamal-deploy.org
+#
+# Before first deploy:
+#   1. Set all secrets in .kamal/secrets (pull from ENV or a password manager)
+#   2. Update server IPs below
+#   3. Update the domain/host under proxy.host
+#   4. Run: bin/kamal setup   (first time only — provisions servers, installs Docker)
+#   5. Run: bin/kamal deploy  (subsequent deploys)
 
-# Name of the container image (use your-user/app-name on external registries).
-image: printers_hub
+service: printershub
+image:   your-dockerhub-user/printershub   # ← replace with your registry path
 
-# Deploy to these servers.
+# ── Servers ──────────────────────────────────────────────────────────────────
 servers:
   web:
-    - 192.168.0.1
+    hosts:
+      - YOUR_SERVER_IP   # ← replace with actual IP(s)
+    labels:
+      traefik.http.routers.printershub.rule: Host(`printershub.com`)
+    options:
+      memory: 1g          # cap container RAM; adjust to your server size
+
+  # Dedicated job worker (uncomment when scaling beyond a single server)
   # job:
   #   hosts:
-  #     - 192.168.0.1
+  #     - YOUR_JOB_SERVER_IP
   #   cmd: bin/jobs
 
-# Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
-# If used with Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
-#
-# Using an SSL proxy like this requires turning on config.assume_ssl and config.force_ssl in production.rb!
-#
-# Don't use this when deploying to multiple web servers (then you have to terminate SSL at your load balancer).
-#
-# proxy:
-#   ssl: true
-#   host: app.example.com
+# ── Reverse proxy (Kamal Proxy / Traefik) ────────────────────────────────────
+proxy:
+  ssl: true
+  host: printershub.com        # ← your domain; Let's Encrypt cert auto-provisioned
+  # If behind Cloudflare (Full SSL mode) or a load balancer that terminates SSL:
+  # ssl: false
+  app_port: 80
+  healthcheck:
+    path: /up
+    interval: 5
+    threshold: 5   # 5 consecutive failures → unhealthy
 
-# Where you keep your container images.
+# ── Docker registry ───────────────────────────────────────────────────────────
 registry:
-  # Alternatives: hub.docker.com / registry.digitalocean.com / ghcr.io / ...
-  server: localhost:5555
+  server: registry.hub.docker.com   # Docker Hub; change for ghcr.io / DO / etc.
+  username: your-dockerhub-user     # ← replace
+  password:
+    - KAMAL_REGISTRY_PASSWORD       # pulled from .kamal/secrets
 
-  # Needed for authenticated registries.
-  # username: your-user
-
-  # Always use an access token rather than real password when possible.
-  # password:
-  #   - KAMAL_REGISTRY_PASSWORD
-
-# Inject ENV variables into containers (secrets come from .kamal/secrets).
+# ── Environment variables ─────────────────────────────────────────────────────
 env:
   secret:
     - RAILS_MASTER_KEY
+    - ANTHROPIC_API_KEY      # optional; AI features silently disabled if absent
+    - DATABASE_URL           # full postgres:// connection string
+    - DEVISE_MAILER_SENDER   # e.g. no-reply@printershub.com
+    - SMTP_ADDRESS
+    - SMTP_PORT
+    - SMTP_USERNAME
+    - SMTP_PASSWORD
+
   clear:
-    # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
-    # When you start using multiple servers, you should split out job processing to a dedicated machine.
+    RAILS_LOG_LEVEL:    info
     SOLID_QUEUE_IN_PUMA: true
+    WEB_CONCURRENCY:    2         # Puma workers; tune to (CPU cores - 1)
+    RAILS_MAX_THREADS:  5
 
-    # Set number of processes dedicated to Solid Queue (default: 1)
-    # JOB_CONCURRENCY: 3
-
-    # Set number of cores available to the application on each server (default: 1).
-    # WEB_CONCURRENCY: 2
-
-    # Match this to any external database server to configure Active Record correctly
-    # Use printers_hub-db for a db accessory server on same machine via local kamal docker network.
-    # DB_HOST: 192.168.0.2
-
-    # Log everything from Rails
-    # RAILS_LOG_LEVEL: debug
-
-# Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
-# "bin/kamal logs -r job" will tail logs from the first server in the job section.
-aliases:
-  console: app exec --interactive --reuse "bin/rails console"
-  shell: app exec --interactive --reuse "bash"
-  logs: app logs -f
-  dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
-
-# Use a persistent storage volume for sqlite database files and local Active Storage files.
-# Recommended to change this to a mounted volume path that is backed up off server.
-volumes:
-  - "printers_hub_storage:/rails/storage"
-
-# Bridge fingerprinted assets, like JS and CSS, between versions to avoid
-# hitting 404 on in-flight requests. Combines all files from new and old
-# version inside the asset_path.
-asset_path: /rails/public/assets
-
-# Configure the image builder.
+# ── Image builder ─────────────────────────────────────────────────────────────
 builder:
   arch: amd64
+  # For Apple Silicon (M-series) local builds targeting amd64 servers:
+  # remote: ssh://docker@build-server-ip
+  args:
+    RUBY_VERSION: 3.4.9
+  cache:
+    type: registry
+    options: mode=max
+    image: your-dockerhub-user/printershub-build-cache   # ← replace
 
-  # # Build image via remote server (useful for faster amd64 builds on arm64 computers)
-  # remote: ssh://docker@docker-builder-server
-  #
-  # # Pass arguments and secrets to the Docker build process
-  # args:
-  #   RUBY_VERSION: 3.4.9
-  # secrets:
-  #   - GITHUB_TOKEN
-  #   - RAILS_MASTER_KEY
+# ── SSH ───────────────────────────────────────────────────────────────────────
+ssh:
+  user: deploy   # dedicated non-root deploy user on each server
 
-# Use a different ssh user than root
-# ssh:
-#   user: app
+# ── Persistent volumes ────────────────────────────────────────────────────────
+volumes:
+  - printershub_storage:/rails/storage   # Active Storage uploads
 
-# Use accessory services (secrets come from .kamal/secrets).
+# ── Asset bridging ────────────────────────────────────────────────────────────
+asset_path: /rails/public/assets
+
+# ── Deploy hooks ──────────────────────────────────────────────────────────────
+# Kamal runs scripts in .kamal/hooks/ at each lifecycle event.
+# pre-deploy, post-deploy, pre-connect, docker-setup, etc.
+
+# ── Useful aliases ────────────────────────────────────────────────────────────
+aliases:
+  console:  app exec --interactive --reuse "bin/rails console"
+  shell:    app exec --interactive --reuse "bash"
+  logs:     app logs -f
+  dbc:      app exec --interactive --reuse "bin/rails dbconsole --include-password"
+  migrate:  app exec "bin/rails db:migrate"
+  rollback: app exec "bin/rails db:rollback"
+
+# ── Accessories (managed containers on the same server) ───────────────────────
+# Use this for single-server setups. For production scale, use a managed
+# database (RDS, DigitalOcean Managed PG, etc.) and set DATABASE_URL instead.
+#
 # accessories:
 #   db:
-#     image: mysql:8.0
-#     host: 192.168.0.2
-#     # Change to 3306 to expose port to the world instead of just local network.
-#     port: "127.0.0.1:3306:3306"
+#     image: postgres:16-alpine
+#     host: YOUR_SERVER_IP
+#     port: "127.0.0.1:5432:5432"   # localhost-only — not exposed to the internet
 #     env:
-#       clear:
-#         MYSQL_ROOT_HOST: '%'
 #       secret:
-#         - MYSQL_ROOT_PASSWORD
-#     files:
-#       - config/mysql/production.cnf:/etc/mysql/my.cnf
-#       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
+#         - POSTGRES_PASSWORD
+#       clear:
+#         POSTGRES_USER: printershub
+#         POSTGRES_DB:   printershub_production
 #     directories:
-#       - data:/var/lib/mysql
-#   redis:
-#     image: valkey/valkey:8
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data
+#       - printershub_postgres_data:/var/lib/postgresql/data

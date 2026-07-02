@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -e
+
+# Pre-deploy hook: log the deployment and optionally notify Slack.
+# Available env vars: KAMAL_PERFORMER, KAMAL_VERSION, KAMAL_HOSTS,
+#                     KAMAL_COMMAND, KAMAL_RECORDED_AT
+
+echo "▶ PrintersHub deploy starting"
+echo "  Performer : ${KAMAL_PERFORMER:-unknown}"
+echo "  Version   : ${KAMAL_VERSION:-unknown}"
+echo "  Hosts     : ${KAMAL_HOSTS:-unknown}"
+echo "  Time      : ${KAMAL_RECORDED_AT:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+
+# Optional Slack notification — set SLACK_DEPLOY_WEBHOOK in your environment.
+if [ -n "$SLACK_DEPLOY_WEBHOOK" ]; then
+  curl -s -X POST "$SLACK_DEPLOY_WEBHOOK" \
+    -H "Content-type: application/json" \
+    -d "{
+      \"text\": \"🚀 *PrintersHub* deploy started\",
+      \"attachments\": [{
+        \"color\": \"#2563eb\",
+        \"fields\": [
+          {\"title\": \"Performer\", \"value\": \"${KAMAL_PERFORMER:-unknown}\", \"short\": true},
+          {\"title\": \"Version\",   \"value\": \"${KAMAL_VERSION:-unknown}\",   \"short\": true}
+        ]
+      }]
+    }" || true   # don't fail the deploy if Slack is unreachable
+fi

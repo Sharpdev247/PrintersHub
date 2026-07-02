@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -e
+
+# Post-deploy hook: log success and optionally notify Slack.
+
+echo "✓ PrintersHub deploy complete"
+echo "  Version : ${KAMAL_VERSION:-unknown}"
+
+if [ -n "$SLACK_DEPLOY_WEBHOOK" ]; then
+  curl -s -X POST "$SLACK_DEPLOY_WEBHOOK" \
+    -H "Content-type: application/json" \
+    -d "{
+      \"text\": \"✅ *PrintersHub* deployed successfully\",
+      \"attachments\": [{
+        \"color\": \"good\",
+        \"fields\": [
+          {\"title\": \"Version\",   \"value\": \"${KAMAL_VERSION:-unknown}\",   \"short\": true},
+          {\"title\": \"Performer\", \"value\": \"${KAMAL_PERFORMER:-unknown}\", \"short\": true}
+        ]
+      }]
+    }" || true
+fi
