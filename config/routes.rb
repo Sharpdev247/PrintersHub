@@ -81,6 +81,15 @@ Rails.application.routes.draw do
       collection { patch :mark_all_read }
     end
 
+    # Warehouse
+    namespace :warehouse do
+      get "/", to: "dashboard#show", as: :root
+      resources :warehouses, only: [:index, :show, :new, :create, :edit, :update]
+      resources :inventory_items, only: [:index, :show] do
+        member { patch :adjust }
+      end
+    end
+
     # Service
     get "service", to: "service/dashboard#show", as: :service
 

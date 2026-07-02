@@ -1,0 +1,78 @@
+<% content_for :title, "Inventory — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">
+      Inventory
+      <% if @warehouse %>
+        <span style="font-size:.85rem;font-weight:400;color:#9ca3af">in <%= @warehouse.name %></span>
+      <% end %>
+    </h1>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <% [
+        [nil,           "All",           params[:filter].blank?],
+        ["low_stock",   "Low Stock",     params[:filter] == "low_stock"],
+        ["out_of_stock","Out of Stock",  params[:filter] == "out_of_stock"],
+      ].each do |val, label, active| %>
+        <%= link_to portal_warehouse_inventory_items_path(filter: val, warehouse_id: params[:warehouse_id]),
+              style: "font-size:.8rem;padding:.35rem .85rem;border-radius:20px;text-decoration:none;font-weight:#{active ? '700' : '500'};
+                      background:#{active ? '#2563eb' : '#f3f4f6'};color:#{active ? '#fff' : '#6b7280'}" do %>
+          <%= label %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @items.none? %>
+    <div style="text-align:center;padding:3rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:.95rem;color:#6b7280">No inventory items found.</div>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.6rem 1.25rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Product</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Warehouse</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">On Hand</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Reserved</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Available</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Reorder At</th>
+            <th style="padding:.6rem 1rem"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @items.each do |item| %>
+            <% avail = item.available_quantity %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.8rem 1.25rem">
+                <div style="font-size:.88rem;font-weight:600;color:#111">
+                  <%= item.product_variant&.product&.name || "—" %>
+                </div>
+                <div style="font-size:.75rem;color:#9ca3af"><%= item.product_variant&.name %> · <%= item.location_code %></div>
+              </td>
+              <td style="padding:.8rem 1rem;font-size:.82rem;color:#6b7280"><%= item.warehouse.name %></td>
+              <td style="padding:.8rem 1rem;text-align:right;font-size:.9rem;font-weight:600;color:#374151"><%= item.quantity_on_hand %></td>
+              <td style="padding:.8rem 1rem;text-align:right;font-size:.85rem;color:#6b7280"><%= item.reserved_quantity %></td>
+              <td style="padding:.8rem 1rem;text-align:right">
+                <span style="font-size:.9rem;font-weight:700;color:<%= avail <= 0 ? '#dc2626' : avail <= item.reorder_point ? '#d97706' : '#059669' %>">
+                  <%= avail %>
+                </span>
+              </td>
+              <td style="padding:.8rem 1rem;text-align:right;font-size:.82rem;color:#9ca3af">
+                <%= item.reorder_point > 0 ? item.reorder_point : "—" %>
+              </td>
+              <td style="padding:.8rem 1rem;text-align:right">
+                <%= link_to "Details", portal_warehouse_inventory_item_path(item),
+                      style: "font-size:.78rem;color:#2563eb;text-decoration:none;font-weight:600" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <% if @items.total_pages > 1 %>
+        <div style="padding:1rem;text-align:center"><%= paginate @items %></div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,59 @@
+<% content_for :title, "Warehouses — PrintersHub" %>
+
+<div style="max-width:900px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Warehouses</h1>
+    <% if policy(Warehouse.new(account: Current.account)).create? %>
+      <%= link_to "+ New Warehouse", new_portal_warehouse_warehouse_path,
+            style: "font-size:.85rem;padding:.45rem 1rem;background:#2563eb;color:#fff;border-radius:7px;text-decoration:none;font-weight:600" %>
+    <% end %>
+  </div>
+
+  <% if @warehouses.none? %>
+    <div style="text-align:center;padding:4rem 2rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:2rem;margin-bottom:.75rem">🏭</div>
+      <div style="font-size:1rem;font-weight:600;color:#374151;margin-bottom:.5rem">No warehouses yet</div>
+      <%= link_to "Create warehouse", new_portal_warehouse_warehouse_path,
+            style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-size:.9rem;font-weight:600" %>
+    </div>
+  <% else %>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+      <% @warehouses.each do |wh| %>
+        <%= link_to portal_warehouse_warehouse_path(wh),
+              style: "text-decoration:none;background:#fff;border:1px solid #e5e7eb;border-radius:10px;
+                      padding:1.25rem;display:block;transition:box-shadow .15s" do %>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem">
+            <div>
+              <div style="font-size:.95rem;font-weight:700;color:#111"><%= wh.name %></div>
+              <div style="font-size:.78rem;color:#9ca3af;font-family:monospace"><%= wh.code %></div>
+            </div>
+            <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:10px;
+                         background:<%= wh.active? ? '#d1fae5' : '#f3f4f6' %>;
+                         color:<%= wh.active? ? '#065f46' : '#6b7280' %>;font-weight:600">
+              <%= wh.active? ? "Active" : "Inactive" %>
+            </span>
+          </div>
+          <% if wh.city.present? || wh.country_code.present? %>
+            <div style="font-size:.82rem;color:#6b7280;margin-bottom:.75rem">
+              📍 <%= [wh.city, wh.country_code].compact.join(", ") %>
+            </div>
+          <% end %>
+          <div style="display:flex;gap:1.25rem;border-top:1px solid #f3f4f6;padding-top:.75rem">
+            <div>
+              <div style="font-size:.88rem;font-weight:700;color:#111"><%= wh.inventory_items.active.count %></div>
+              <div style="font-size:.7rem;color:#9ca3af">SKUs</div>
+            </div>
+            <div>
+              <div style="font-size:.88rem;font-weight:700;color:#111"><%= number_with_delimiter(wh.inventory_items.active.sum(:quantity_on_hand)) %></div>
+              <div style="font-size:.7rem;color:#9ca3af">On Hand</div>
+            </div>
+            <div>
+              <div style="font-size:.88rem;font-weight:700;color:#d97706"><%= wh.inventory_items.active.low_stock.count %></div>
+              <div style="font-size:.7rem;color:#9ca3af">Low Stock</div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

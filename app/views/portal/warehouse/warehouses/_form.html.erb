@@ -1,0 +1,59 @@
+<%= form_with model: @warehouse, url: @warehouse.new_record? ? portal_warehouse_warehouses_path : portal_warehouse_warehouse_path(@warehouse), method: @warehouse.new_record? ? :post : :patch do |f| %>
+  <% if @warehouse.errors.any? %>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.875rem;margin-bottom:1.25rem">
+      <% @warehouse.errors.full_messages.each do |msg| %>
+        <div style="font-size:.85rem;color:#dc2626"><%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div>
+      <%= f.label :name, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :name, style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+    <div>
+      <%= f.label :code, "Code (unique per account)", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :code, style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem;font-family:monospace",
+            placeholder: "WH-001" %>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1rem">
+    <%= f.label :address_line1, "Address", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+    <%= f.text_field :address_line1, style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div>
+      <%= f.label :city, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :city, style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+    <div>
+      <%= f.label :country_code, "Country (ISO2)", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :country_code, maxlength: 2, placeholder: "PK",
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem;font-family:monospace;text-transform:uppercase" %>
+    </div>
+    <div>
+      <%= f.label :contact_name, "Contact", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :contact_name, style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <%= f.label :email, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+    <%= f.email_field :email, style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem">
+    <%= f.check_box :active %>
+    <%= f.label :active, "Active warehouse", style: "font-size:.88rem;color:#374151" %>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <%= f.submit @warehouse.new_record? ? "Create Warehouse" : "Save Changes",
+          style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:600;cursor:pointer" %>
+    <%= link_to "Cancel", @warehouse.new_record? ? portal_warehouse_warehouses_path : portal_warehouse_warehouse_path(@warehouse),
+          style: "padding:.6rem 1rem;font-size:.9rem;color:#6b7280;text-decoration:none" %>
+  </div>
+<% end %>

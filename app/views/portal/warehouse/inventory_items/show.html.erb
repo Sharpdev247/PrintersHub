@@ -1,0 +1,129 @@
+<% content_for :title, "Inventory Item — PrintersHub" %>
+
+<div style="max-width:860px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+    <div>
+      <%= link_to "← Inventory", portal_warehouse_inventory_items_path,
+            style: "font-size:.82rem;color:#6b7280;text-decoration:none" %>
+      <h1 style="font-size:1.2rem;font-weight:700;color:#111;margin:.3rem 0 0">
+        <%= @item.product_variant&.product&.name || "Inventory Item" %>
+      </h1>
+      <div style="font-size:.82rem;color:#9ca3af;margin-top:.1rem">
+        Variant: <%= @item.product_variant&.name %> ·
+        Warehouse: <%= @item.warehouse.name %>
+        <% if @item.location_code.present? %>
+          · Location: <span style="font-family:monospace"><%= @item.location_code %></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start">
+    <%# Left: stats + transaction history %>
+    <div>
+      <%# Stock cards %>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
+        <% avail = @item.available_quantity %>
+        <% [
+          ["On Hand",   @item.quantity_on_hand,   "#111"],
+          ["Reserved",  @item.reserved_quantity,   "#6b7280"],
+          ["Available", avail, avail <= 0 ? "#dc2626" : avail <= @item.reorder_point ? "#d97706" : "#059669"],
+        ].each do |label, val, color| %>
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem;text-align:center">
+            <div style="font-size:1.6rem;font-weight:800;color:<%= color %>"><%= val %></div>
+            <div style="font-size:.75rem;color:#9ca3af;margin-top:.2rem"><%= label %></div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Transaction history %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+        <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+          Recent Transactions
+        </div>
+        <% if @transactions.none? %>
+          <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">No transactions yet.</div>
+        <% else %>
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#f9fafb">
+                <th style="padding:.55rem 1.25rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase">Type</th>
+                <th style="padding:.55rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase">Change</th>
+                <th style="padding:.55rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase">After</th>
+                <th style="padding:.55rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @transactions.each do |t| %>
+                <tr style="border-top:1px solid #f3f4f6">
+                  <td style="padding:.7rem 1.25rem">
+                    <div style="font-size:.82rem;font-weight:600;color:#374151">
+                      <%= t.transaction_type.humanize %>
+                    </div>
+                    <% if t.notes.present? %>
+                      <div style="font-size:.72rem;color:#9ca3af"><%= t.notes %></div>
+                    <% end %>
+                  </td>
+                  <td style="padding:.7rem 1rem;text-align:right;font-size:.88rem;font-weight:700;
+                             color:<%= t.quantity_change > 0 ? '#059669' : '#dc2626' %>">
+                    <%= t.quantity_change > 0 ? "+#{t.quantity_change}" : t.quantity_change %>
+                  </td>
+                  <td style="padding:.7rem 1rem;text-align:right;font-size:.85rem;color:#374151">
+                    <%= t.quantity_after %>
+                  </td>
+                  <td style="padding:.7rem 1rem;font-size:.75rem;color:#9ca3af">
+                    <%= t.performed_at.strftime("%b %d, %Y") %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Right: manual adjustment %>
+    <div>
+      <% if policy(@item).update? %>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem;margin-bottom:1rem">
+          <div style="font-size:.9rem;font-weight:700;color:#111;margin-bottom:.9rem">Stock Adjustment</div>
+          <%= form_with url: adjust_portal_warehouse_inventory_item_path(@item), method: :patch do |f| %>
+            <div style="margin-bottom:.75rem">
+              <%= label_tag :delta, "Quantity change (use − for reduction)",
+                    style: "display:block;font-size:.78rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+              <%= number_field_tag :delta, nil, required: true,
+                    placeholder: "e.g. +10 or -3",
+                    style: "width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+            </div>
+            <div style="margin-bottom:1rem">
+              <%= label_tag :note, "Note",
+                    style: "display:block;font-size:.78rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+              <%= text_field_tag :note, nil,
+                    placeholder: "Received shipment, damage, etc.",
+                    style: "width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.88rem" %>
+            </div>
+            <%= submit_tag "Apply adjustment",
+                  style: "width:100%;padding:.55rem;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Item details %>
+      <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:1rem">
+        <div style="font-size:.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Item Details</div>
+        <% {
+          "Reorder Point"  => @item.reorder_point > 0 ? @item.reorder_point : "—",
+          "Reorder Qty"    => @item.reorder_quantity > 0 ? @item.reorder_quantity : "—",
+          "Unit Cost"      => @item.unit_cost ? number_to_currency(@item.unit_cost, unit: @item.cost_currency + " ") : "—",
+          "Backorders"     => @item.allow_backorders? ? "Allowed" : "Not allowed",
+          "Status"         => @item.active? ? "Active" : "Inactive",
+        }.each do |label, val| %>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid #f3f4f6">
+            <span style="color:#9ca3af"><%= label %></span>
+            <span style="color:#374151;font-weight:500"><%= val %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

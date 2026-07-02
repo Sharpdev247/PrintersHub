@@ -1,0 +1,95 @@
+<% content_for :title, "Warehouse Dashboard — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Warehouse</h1>
+    <div style="display:flex;gap:.75rem">
+      <%= link_to "Inventory", portal_warehouse_inventory_items_path,
+            style: "font-size:.85rem;padding:.45rem 1rem;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:7px;text-decoration:none;font-weight:600" %>
+      <%= link_to "+ New Warehouse", new_portal_warehouse_warehouse_path,
+            style: "font-size:.85rem;padding:.45rem 1rem;background:#2563eb;color:#fff;border:none;border-radius:7px;text-decoration:none;font-weight:600" %>
+    </div>
+  </div>
+
+  <%# KPI row %>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem">
+    <% [
+      ["Warehouses",    @warehouses_count,    "#2563eb", "🏭"],
+      ["Total SKUs",    @total_skus,          "#059669", "📦"],
+      ["On Hand",       @total_on_hand,       "#0891b2", "📊"],
+      ["Low Stock",     @low_stock_count,     "#d97706", "⚠️"],
+      ["Out of Stock",  @out_of_stock_count,  "#dc2626", "🚫"],
+    ].each do |label, val, color, icon| %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem 1.25rem">
+        <div style="font-size:1.25rem;margin-bottom:.3rem"><%= icon %></div>
+        <div style="font-size:1.5rem;font-weight:800;color:<%= color %>"><%= number_with_delimiter(val) %></div>
+        <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem"><%= label %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <%# Low stock alert %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.9rem;font-weight:700;color:#111">⚠️ Low Stock</span>
+        <%= link_to "View all", portal_warehouse_inventory_items_path(filter: "low_stock"),
+              style: "font-size:.78rem;color:#2563eb;text-decoration:none" %>
+      </div>
+      <% if @low_stock_items.none? %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">All stock levels healthy.</div>
+      <% else %>
+        <% @low_stock_items.each do |item| %>
+          <div style="padding:.7rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:.85rem;font-weight:600;color:#111">
+                <%= item.product_variant&.product&.name || "—" %>
+                <span style="font-size:.75rem;color:#9ca3af;font-weight:400">/ <%= item.product_variant&.name %></span>
+              </div>
+              <div style="font-size:.75rem;color:#9ca3af"><%= item.warehouse.name %></div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:.95rem;font-weight:700;color:<%= item.available_quantity <= 0 ? '#dc2626' : '#d97706' %>">
+                <%= item.available_quantity %>
+              </div>
+              <div style="font-size:.7rem;color:#9ca3af">available</div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Warehouses list %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.9rem;font-weight:700;color:#111">🏭 Warehouses</span>
+        <%= link_to "Manage", portal_warehouse_warehouses_path,
+              style: "font-size:.78rem;color:#2563eb;text-decoration:none" %>
+      </div>
+      <% if @warehouses.none? %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">
+          No warehouses yet.
+          <%= link_to "Create one", new_portal_warehouse_warehouse_path, style: "color:#2563eb" %>
+        </div>
+      <% else %>
+        <% @warehouses.each do |wh| %>
+          <div style="padding:.75rem 1.25rem;border-top:1px solid #f9fafb">
+            <%= link_to portal_warehouse_warehouse_path(wh),
+                  style: "text-decoration:none;display:flex;justify-content:space-between;align-items:center" do %>
+              <div>
+                <div style="font-size:.88rem;font-weight:600;color:#111"><%= wh.name %></div>
+                <div style="font-size:.75rem;color:#9ca3af"><%= wh.code %> · <%= wh.city %></div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:.9rem;font-weight:700;color:#374151">
+                  <%= wh.inventory_items.active.sum(:quantity_on_hand) %>
+                </div>
+                <div style="font-size:.7rem;color:#9ca3af">on hand</div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

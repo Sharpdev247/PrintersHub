@@ -1,0 +1,91 @@
+<% content_for :title, "#{@warehouse.name} — Warehouse" %>
+
+<div style="max-width:1000px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+    <div>
+      <%= link_to "← Warehouses", portal_warehouse_warehouses_path,
+            style: "font-size:.82rem;color:#6b7280;text-decoration:none" %>
+      <h1 style="font-size:1.2rem;font-weight:700;color:#111;margin:.3rem 0 0">
+        <%= @warehouse.name %>
+        <span style="font-size:.78rem;color:#9ca3af;font-family:monospace;font-weight:400;margin-left:.4rem"><%= @warehouse.code %></span>
+      </h1>
+    </div>
+    <% if policy(@warehouse).update? %>
+      <%= link_to "Edit", edit_portal_warehouse_warehouse_path(@warehouse),
+            style: "font-size:.85rem;padding:.4rem .9rem;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:7px;text-decoration:none;font-weight:600" %>
+    <% end %>
+  </div>
+
+  <%# Stats %>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+    <% [
+      ["Total SKUs",   @warehouse.inventory_items.active.count,                             "#2563eb"],
+      ["On Hand",      number_with_delimiter(@warehouse.inventory_items.active.sum(:quantity_on_hand)), "#059669"],
+      ["Reserved",     number_with_delimiter(@warehouse.inventory_items.active.sum(:reserved_quantity)), "#0891b2"],
+      ["Low Stock",    @warehouse.inventory_items.active.low_stock.count,                   "#d97706"],
+    ].each do |label, val, color| %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem 1.25rem">
+        <div style="font-size:1.4rem;font-weight:800;color:<%= color %>"><%= val %></div>
+        <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem"><%= label %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Inventory table %>
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+    <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.9rem;font-weight:700;color:#111">
+      Inventory Items (<%= @inventory_items.total_count %>)
+    </div>
+
+    <% if @inventory_items.none? %>
+      <div style="padding:2rem;text-align:center;font-size:.88rem;color:#9ca3af">No inventory items in this warehouse.</div>
+    <% else %>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.6rem 1.25rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Product / Variant</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">On Hand</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Reserved</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Available</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Reorder At</th>
+            <th style="padding:.6rem 1rem"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @inventory_items.each do |item| %>
+            <% avail = item.available_quantity %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.8rem 1.25rem">
+                <div style="font-size:.88rem;font-weight:600;color:#111">
+                  <%= item.product_variant&.product&.name || "—" %>
+                </div>
+                <div style="font-size:.75rem;color:#9ca3af"><%= item.product_variant&.name %></div>
+              </td>
+              <td style="padding:.8rem 1rem;text-align:right;font-size:.9rem;font-weight:600;color:#374151">
+                <%= item.quantity_on_hand %>
+              </td>
+              <td style="padding:.8rem 1rem;text-align:right;font-size:.85rem;color:#6b7280">
+                <%= item.reserved_quantity %>
+              </td>
+              <td style="padding:.8rem 1rem;text-align:right">
+                <span style="font-size:.9rem;font-weight:700;color:<%= avail <= 0 ? '#dc2626' : avail <= item.reorder_point ? '#d97706' : '#059669' %>">
+                  <%= avail %>
+                </span>
+              </td>
+              <td style="padding:.8rem 1rem;font-size:.82rem;color:#9ca3af">
+                <%= item.reorder_point > 0 ? item.reorder_point : "—" %>
+              </td>
+              <td style="padding:.8rem 1rem;text-align:right">
+                <%= link_to "Details", portal_warehouse_inventory_item_path(item),
+                      style: "font-size:.78rem;color:#2563eb;text-decoration:none;font-weight:600" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <% if @inventory_items.total_pages > 1 %>
+        <div style="padding:1rem;text-align:center"><%= paginate @inventory_items %></div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
