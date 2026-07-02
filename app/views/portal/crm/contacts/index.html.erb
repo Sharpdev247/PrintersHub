@@ -1,0 +1,93 @@
+<% content_for :title, "Contacts — PrintersHub CRM" %>
+
+<%
+  TYPE_BADGE = {
+    "lead"     => { bg: "#dbeafe", color: "#1d4ed8" },
+    "customer" => { bg: "#d1fae5", color: "#065f46" },
+    "contact"  => { bg: "#f3f4f6", color: "#6b7280" },
+  }.freeze
+%>
+
+<div style="max-width:1000px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Contacts</h1>
+    <%= link_to "+ New Contact", new_portal_crm_contact_path,
+          style: "font-size:.85rem;padding:.45rem 1rem;background:#2563eb;color:#fff;border-radius:7px;text-decoration:none;font-weight:600" %>
+  </div>
+
+  <%# Type tabs %>
+  <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;border-bottom:1px solid #e5e7eb;padding-bottom:.75rem">
+    <% [[nil,"All"], ["lead","Leads"], ["customer","Customers"], ["contact","Contacts"]].each do |val, label| %>
+      <% active = params[:type] == val %>
+      <% count = val ? @counts[val].to_i : @counts.values.sum %>
+      <%= link_to portal_crm_contacts_path(type: val, q: params[:q]),
+            style: "padding:.35rem .85rem;border-radius:20px;font-size:.82rem;font-weight:#{active ? '700' : '500'};
+                    text-decoration:none;background:#{active ? '#2563eb' : '#f3f4f6'};color:#{active ? '#fff' : '#6b7280'}" do %>
+        <%= label %><% if count > 0 %> (<%= count %>)<% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Search %>
+  <%= form_with url: portal_crm_contacts_path, method: :get, local: true,
+        style: "display:flex;gap:.6rem;margin-bottom:1.25rem" do |f| %>
+    <%= f.hidden_field :type, value: params[:type] %>
+    <%= f.search_field :q, value: params[:q],
+          placeholder: "Search name, email, company…",
+          style: "flex:1;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:7px;font-size:.88rem" %>
+    <%= f.submit "Search", style: "padding:.5rem 1rem;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:7px;font-size:.88rem;cursor:pointer" %>
+  <% end %>
+
+  <% if @contacts.none? %>
+    <div style="text-align:center;padding:3rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:.95rem;color:#6b7280">No contacts found.</div>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.6rem 1.25rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Name</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Company</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Type</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Owner</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Last Contact</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @contacts.each do |c| %>
+            <% badge = TYPE_BADGE[c.contact_type] || TYPE_BADGE["contact"] %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.85rem 1.25rem">
+                <%= link_to portal_crm_contact_path(c), style: "text-decoration:none" do %>
+                  <div style="font-size:.88rem;font-weight:600;color:#111"><%= c.full_name %></div>
+                  <div style="font-size:.75rem;color:#9ca3af"><%= c.email %></div>
+                <% end %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.85rem;color:#374151"><%= c.company_name || "—" %></td>
+              <td style="padding:.85rem 1rem">
+                <span style="font-size:.75rem;padding:.15rem .55rem;border-radius:10px;font-weight:600;
+                             background:<%= badge[:bg] %>;color:<%= badge[:color] %>">
+                  <%= c.contact_type.humanize %>
+                </span>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.82rem;color:#6b7280">
+                <%= c.owner&.email&.split("@")&.first || "—" %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.8rem;color:#9ca3af">
+                <%= c.last_contacted_at&.strftime("%b %d, %Y") || "Never" %>
+              </td>
+              <td style="padding:.85rem 1rem;text-align:right;font-size:.82rem;color:#6b7280">
+                <%= c.contact_notes.count %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <% if @contacts.total_pages > 1 %>
+      <div style="margin-top:1.5rem;text-align:center"><%= paginate @contacts %></div>
+    <% end %>
+  <% end %>
+</div>

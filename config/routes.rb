@@ -90,6 +90,14 @@ Rails.application.routes.draw do
       end
     end
 
+    # CRM
+    namespace :crm do
+      get "/", to: "dashboard#show", as: :root
+      resources :contacts do
+        resources :contact_notes, only: [:create, :destroy], shallow: true
+      end
+    end
+
     # Service Center
     get "service", to: "service/dashboard#show", as: :service
     namespace :service do

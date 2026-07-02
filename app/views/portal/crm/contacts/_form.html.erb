@@ -1,0 +1,79 @@
+<%= form_with model: @contact,
+      url: @contact.new_record? ? portal_crm_contacts_path : portal_crm_contact_path(@contact),
+      method: @contact.new_record? ? :post : :patch do |f| %>
+
+  <% if @contact.errors.any? %>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.875rem;margin-bottom:1.25rem">
+      <% @contact.errors.full_messages.each do |msg| %>
+        <div style="font-size:.85rem;color:#dc2626"><%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div>
+      <%= f.label :first_name, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :first_name, required: true,
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+    <div>
+      <%= f.label :last_name, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.text_field :last_name,
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div>
+      <%= f.label :email, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.email_field :email,
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+    <div>
+      <%= f.label :phone, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.telephone_field :phone,
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1rem">
+    <%= f.label :company_name, "Company", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+    <%= f.text_field :company_name,
+          style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div>
+      <%= f.label :contact_type, "Type", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.select :contact_type, Contact::TYPES.map { |t| [t.humanize, t] },
+            { selected: @contact.contact_type || "lead" },
+            style: "width:100%;padding:.55rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+    <div>
+      <%= f.label :status, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.select :status, Contact::STATUSES.map { |s| [s.humanize, s] },
+            { selected: @contact.status || "active" },
+            style: "width:100%;padding:.55rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+    <div>
+      <%= f.label :source, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+      <%= f.select :source, Contact::SOURCES.map { |s| [s.humanize, s] },
+            { include_blank: "— Unknown —" },
+            style: "width:100%;padding:.55rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <%= f.label :notes, "Profile Notes", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+    <%= f.text_area :notes, rows: 3,
+          style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem;resize:vertical;background:#fffbeb" %>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <%= f.submit @contact.new_record? ? "Add Contact" : "Save Changes",
+          style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:600;cursor:pointer" %>
+    <%= link_to "Cancel",
+          @contact.new_record? ? portal_crm_contacts_path : portal_crm_contact_path(@contact),
+          style: "padding:.6rem 1rem;font-size:.9rem;color:#6b7280;text-decoration:none" %>
+  </div>
+<% end %>

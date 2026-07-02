@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_02_093709) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_094253) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -316,6 +316,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_093709) do
     t.index ["user_id"], name: "index_companies_on_user_id"
     t.index ["verified"], name: "index_companies_on_verified_true", where: "(verified = true)"
     t.check_constraint "verified = false AND verified_at IS NULL OR verified = true AND verified_at IS NOT NULL", name: "chk_companies_verified_at_consistency"
+  end
+
+  create_table "contact_notes", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.bigint "contact_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "follow_up_at"
+    t.string "note_type", limit: 20, default: "note"
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_contact_notes_on_author_id"
+    t.index ["contact_id"], name: "index_contact_notes_on_contact_id"
+    t.index ["follow_up_at"], name: "index_contact_notes_on_follow_up_at", where: "(follow_up_at IS NOT NULL)"
+  end
+
+  create_table "contacts", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "company_name", limit: 255
+    t.string "contact_type", limit: 20, default: "contact"
+    t.datetime "created_at", null: false
+    t.datetime "discarded_at"
+    t.string "email", limit: 255
+    t.string "first_name", null: false
+    t.datetime "last_contacted_at"
+    t.string "last_name"
+    t.text "notes"
+    t.bigint "owner_id"
+    t.string "phone", limit: 50
+    t.string "source", limit: 50
+    t.string "status", limit: 20, default: "active"
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "email"], name: "index_contacts_on_account_and_email", unique: true, where: "((email IS NOT NULL) AND (discarded_at IS NULL))"
+    t.index ["account_id"], name: "index_contacts_on_account_id"
+    t.index ["contact_type"], name: "index_contacts_on_contact_type"
+    t.index ["discarded_at"], name: "index_contacts_on_discarded_at", where: "(discarded_at IS NOT NULL)"
+    t.index ["owner_id"], name: "index_contacts_on_owner_id"
+    t.index ["status"], name: "index_contacts_on_status"
   end
 
   create_table "conversation_participants", force: :cascade do |t|
@@ -1569,6 +1606,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_093709) do
   add_foreign_key "companies", "accounts", on_delete: :restrict
   add_foreign_key "companies", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "companies", "users", on_delete: :restrict
+  add_foreign_key "contact_notes", "contacts"
+  add_foreign_key "contact_notes", "users", column: "author_id"
+  add_foreign_key "contacts", "accounts"
+  add_foreign_key "contacts", "users", column: "owner_id"
   add_foreign_key "conversation_participants", "conversations", on_delete: :cascade
   add_foreign_key "conversation_participants", "messages", column: "last_read_message_id", on_delete: :nullify
   add_foreign_key "conversation_participants", "users", on_delete: :cascade
