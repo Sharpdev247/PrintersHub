@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "PrintersHub" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+             background: #f5f6fa; color: #1a1a2e; min-height: 100vh;
+             display: flex; flex-direction: column; align-items: center;
+             justify-content: center; padding: 1rem; }
+      .auth-card { background: #fff; border-radius: 12px;
+                   box-shadow: 0 4px 24px rgba(0,0,0,.08);
+                   width: 100%; max-width: 440px; padding: 2.5rem; }
+      .auth-logo { text-align: center; margin-bottom: 2rem; }
+      .auth-logo a { font-size: 1.5rem; font-weight: 700; color: #2563eb;
+                     text-decoration: none; letter-spacing: -.5px; }
+      .auth-logo span { color: #1a1a2e; }
+      h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 1.5rem;
+           color: #1a1a2e; text-align: center; }
+      .field { margin-bottom: 1.1rem; }
+      label { display: block; font-size: .85rem; font-weight: 600;
+              color: #374151; margin-bottom: .35rem; }
+      input[type=email], input[type=password], input[type=text] {
+        width: 100%; padding: .6rem .85rem; border: 1.5px solid #d1d5db;
+        border-radius: 7px; font-size: .95rem; transition: border-color .15s;
+        outline: none; }
+      input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+      .hint { font-size: .78rem; color: #6b7280; margin-top: .25rem; }
+      .btn-primary { display: block; width: 100%; padding: .7rem;
+                     background: #2563eb; color: #fff; border: none;
+                     border-radius: 7px; font-size: 1rem; font-weight: 600;
+                     cursor: pointer; margin-top: 1.5rem; transition: background .15s; }
+      .btn-primary:hover { background: #1d4ed8; }
+      .auth-links { text-align: center; margin-top: 1.25rem; font-size: .85rem;
+                    color: #6b7280; }
+      .auth-links a { color: #2563eb; text-decoration: none; }
+      .auth-links a:hover { text-decoration: underline; }
+      .auth-links p { margin-top: .5rem; }
+      .remember-row { display: flex; align-items: center; gap: .5rem;
+                      margin-bottom: .5rem; }
+      .remember-row input[type=checkbox] { width: auto; }
+      .remember-row label { margin: 0; font-weight: 400; font-size: .9rem; }
+      .error-messages { background: #fef2f2; border: 1px solid #fca5a5;
+                        border-radius: 7px; padding: .75rem 1rem;
+                        margin-bottom: 1.25rem; font-size: .875rem; color: #b91c1c; }
+      .error-messages ul { padding-left: 1.1rem; }
+      .flash-notice { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46;
+                      border-radius: 7px; padding: .65rem 1rem;
+                      margin-bottom: 1rem; font-size: .875rem; }
+      .flash-alert  { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c;
+                      border-radius: 7px; padding: .65rem 1rem;
+                      margin-bottom: 1rem; font-size: .875rem; }
+    </style>
+  </head>
+  <body>
+    <div class="auth-card">
+      <div class="auth-logo">
+        <%= link_to root_path do %>
+          <span style="color:#2563eb">Printers</span><span>Hub</span>
+        <% end %>
+      </div>
+
+      <% if notice %><div class="flash-notice"><%= notice %></div><% end %>
+      <% if alert  %><div class="flash-alert"><%= alert %></div><% end %>
+
+      <%= yield %>
+    </div>
+  </body>
+</html>

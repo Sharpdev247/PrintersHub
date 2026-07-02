@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_080822) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -144,24 +144,52 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
   end
 
   create_table "admin_users", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "current_sign_in_at"
     t.string "current_sign_in_ip"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.integer "failed_attempts", default: 0, null: false
+    t.datetime "last_active_at"
     t.datetime "last_sign_in_at"
     t.string "last_sign_in_ip"
     t.datetime "locked_at"
+    t.text "notes"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.string "role", default: "staff", null: false
     t.integer "sign_in_count", default: 0, null: false
+    t.boolean "super_admin", default: false, null: false
     t.string "unlock_token"
     t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_admin_users_on_active"
     t.index ["email"], name: "index_admin_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
+    t.index ["role"], name: "index_admin_users_on_role"
     t.index ["unlock_token"], name: "index_admin_users_on_unlock_token", unique: true
+  end
+
+  create_table "api_tokens", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.datetime "last_used_at"
+    t.string "name", null: false
+    t.string "prefix", null: false
+    t.datetime "revoked_at"
+    t.jsonb "scopes", default: [], null: false
+    t.string "token_digest", null: false
+    t.string "token_type", default: "personal", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["account_id", "revoked_at"], name: "index_api_tokens_on_account_id_and_revoked_at"
+    t.index ["account_id"], name: "idx_api_tokens_active_account", where: "(revoked_at IS NULL)"
+    t.index ["account_id"], name: "index_api_tokens_on_account_id"
+    t.index ["prefix"], name: "index_api_tokens_on_prefix"
+    t.index ["token_digest"], name: "index_api_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_api_tokens_on_user_id"
   end
 
   create_table "audits", force: :cascade do |t|
@@ -567,16 +595,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
   end
 
   create_table "listings", force: :cascade do |t|
-    t.bigint "account_id"
+    t.bigint "account_id", null: false
     t.bigint "brand_id", null: false
     t.bigint "category_id", null: false
-    t.integer "condition", default: 0, null: false
+    t.string "condition", default: "brand_new", null: false
     t.datetime "created_at", null: false
     t.string "currency", limit: 3, default: "USD", null: false
     t.text "description", null: false
+    t.datetime "discarded_at"
     t.boolean "featured", default: false, null: false
     t.bigint "inventory_item_id"
-    t.integer "listing_type", default: 0, null: false
+    t.string "listing_type", default: "sale", null: false
     t.bigint "location_city_id"
     t.decimal "price", precision: 12, scale: 2, null: false
     t.boolean "price_negotiable", default: false, null: false
@@ -585,21 +614,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
     t.datetime "published_at"
     t.integer "quantity", default: 1, null: false
     t.string "slug", null: false
-    t.integer "status", default: 0, null: false
+    t.string "status", default: "draft", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.integer "views_count", default: 0, null: false
     t.integer "year"
-    t.index ["account_id", "status"], name: "index_listings_on_account_and_status", where: "(account_id IS NOT NULL)"
-    t.index ["brand_id", "status"], name: "index_listings_on_brand_and_status"
+    t.index ["account_id", "status"], name: "index_listings_on_account_id_and_status"
+    t.index ["brand_id", "status"], name: "index_listings_on_brand_id_and_status"
     t.index ["brand_id"], name: "index_listings_on_brand_id"
-    t.index ["category_id", "status"], name: "index_listings_on_category_and_status"
+    t.index ["category_id", "status"], name: "index_listings_on_category_id_and_status"
     t.index ["category_id"], name: "index_listings_on_category_id"
+    t.index ["discarded_at"], name: "index_listings_on_discarded_at"
     t.index ["featured"], name: "index_listings_on_featured"
     t.index ["inventory_item_id"], name: "index_listings_on_inventory_item_id"
-    t.index ["listing_type", "status"], name: "index_listings_on_type_and_status"
-    t.index ["location_city_id", "status"], name: "index_listings_on_city_and_status", where: "(location_city_id IS NOT NULL)"
     t.index ["location_city_id"], name: "index_listings_on_location_city_id", where: "(location_city_id IS NOT NULL)"
     t.index ["price"], name: "index_listings_on_price"
     t.index ["printer_model_id"], name: "index_listings_on_printer_model_id", where: "(printer_model_id IS NOT NULL)"
@@ -608,9 +636,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
     t.index ["slug"], name: "index_listings_on_slug", unique: true
     t.index ["status"], name: "index_listings_on_status"
     t.index ["title"], name: "index_listings_on_title_trigram", opclass: :gin_trgm_ops, using: :gin
-    t.index ["user_id", "status"], name: "index_listings_on_user_and_status"
     t.index ["user_id"], name: "index_listings_on_user_id"
-    t.check_constraint "(status <> ALL (ARRAY[1, 2])) OR published_at IS NOT NULL", name: "chk_listings_published_at_when_live"
     t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_listings_currency_format"
     t.check_constraint "price > 0::numeric", name: "chk_listings_price_positive"
     t.check_constraint "quantity >= 0", name: "chk_listings_quantity_non_negative"
@@ -1383,6 +1409,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
     t.check_constraint "lead_time_days >= 0", name: "chk_suppliers_lead_time"
   end
 
+  create_table "system_settings", force: :cascade do |t|
+    t.string "category", default: "general", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.boolean "editable", default: true, null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.text "value"
+    t.string "value_type", default: "string", null: false
+    t.index ["category"], name: "index_system_settings_on_category"
+    t.index ["key"], name: "index_system_settings_on_key", unique: true
+  end
+
   create_table "tax_rates", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "country_code", limit: 2, null: false
@@ -1482,6 +1521,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_160016) do
   add_foreign_key "addresses", "cities", on_delete: :restrict
   add_foreign_key "addresses", "countries", on_delete: :restrict
   add_foreign_key "addresses", "states", on_delete: :restrict
+  add_foreign_key "api_tokens", "accounts"
+  add_foreign_key "api_tokens", "users"
   add_foreign_key "cart_items", "carts", on_delete: :cascade
   add_foreign_key "cart_items", "listings", on_delete: :cascade
   add_foreign_key "cart_items", "users", column: "added_by_id", on_delete: :nullify

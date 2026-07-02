@@ -1,17 +1,66 @@
 Rails.application.routes.draw do
+  # ── Admin ──────────────────────────────────────────────────────────────────
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
-  devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  # ── User auth (custom controllers for post-auth redirects) ─────────────────
+  devise_for :users,
+             path: "",
+             controllers: {
+               sessions:      "users/sessions",
+               registrations: "users/registrations",
+               passwords:     "users/passwords",
+               confirmations: "users/confirmations"
+             },
+             path_names: {
+               sign_in:  "login",
+               sign_out: "logout",
+               sign_up:  "register"
+             }
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Root route — required by Devise for after-sign-in redirect
+  # ── Public ─────────────────────────────────────────────────────────────────
   root "home#index"
+
+  get "welcome", to: "welcome#show", as: :welcome
+
+  # Public marketplace browsing (no login required)
+  resources :listings, only: [:index, :show]
+
+  # ── Portal ─────────────────────────────────────────────────────────────────
+  namespace :portal do
+    get "/",      to: "dashboard#show", as: :root  # /portal → role-based redirect
+
+    # Seller
+    get "seller", to: "seller/dashboard#show", as: :seller
+
+    namespace :seller do
+      resources :listings do
+        member do
+          patch :publish
+          patch :unpublish
+          patch :pause
+          patch :archive
+          patch :mark_sold
+          post  :duplicate
+        end
+      end
+    end
+
+    # Service
+    get "service", to: "service/dashboard#show", as: :service
+  end
+
+  # ── API ────────────────────────────────────────────────────────────────────
+  namespace :api do
+    namespace :v1 do
+      # Token management (session-authed — not token-authed)
+      resources :tokens, only: [:index, :create, :destroy]
+
+      # Auth introspection
+      get "me", to: "auth#me"
+    end
+  end
+
+  # ── Health check ───────────────────────────────────────────────────────────
+  get "up" => "rails/health#show", as: :rails_health_check
 end

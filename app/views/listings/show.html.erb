@@ -1,0 +1,150 @@
+<% content_for :title, "#{@listing.title} — PrintersHub" %>
+
+<div style="max-width:1100px;margin:0 auto;padding:2rem 1rem">
+  <%# Breadcrumb %>
+  <nav style="font-size:.85rem;color:#888;margin-bottom:1.5rem">
+    <%= link_to "Marketplace", listings_path, style: "color:#2563eb;text-decoration:none" %>
+    <span style="margin:0 .4rem">›</span>
+    <%= @listing.category.name %>
+    <span style="margin:0 .4rem">›</span>
+    <span style="color:#333"><%= truncate(@listing.title, length: 50) %></span>
+  </nav>
+
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:2rem;align-items:start">
+    <%# ── Left: images + description ─────────────────────────────────────── %>
+    <div>
+      <%# Main image %>
+      <div style="background:#f0f0f0;border-radius:10px;overflow:hidden;height:400px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+        <% if @listing.images.attached? %>
+          <%= image_tag @listing.images.first,
+                style: "width:100%;height:100%;object-fit:cover" %>
+        <% else %>
+          <span style="color:#bbb">No images uploaded</span>
+        <% end %>
+      </div>
+
+      <%# Thumbnail strip %>
+      <% if @listing.images.count > 1 %>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+          <% @listing.images.each do |img| %>
+            <%= image_tag img,
+                  style: "width:80px;height:80px;object-fit:cover;border-radius:6px;border:2px solid #e0e0e0;cursor:pointer" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Description %>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.75rem;color:#111">Description</h2>
+      <div style="color:#444;font-size:.95rem;line-height:1.7;white-space:pre-wrap">
+        <%= @listing.description %>
+      </div>
+
+      <%# Documents %>
+      <% if @listing.documents.attached? %>
+        <div style="margin-top:1.5rem">
+          <h2 style="font-size:1rem;font-weight:700;margin-bottom:.5rem;color:#111">Documents</h2>
+          <% @listing.documents.each do |doc| %>
+            <div style="padding:.4rem 0">
+              <%= link_to doc.filename, rails_blob_path(doc, disposition: :attachment),
+                    style: "color:#2563eb;font-size:.9rem" %>
+              <span style="color:#999;font-size:.8rem">(<%= number_to_human_size(doc.byte_size) %>)</span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# ── Right: detail card ───────────────────────────────────────────────── %>
+    <div>
+      <div style="border:1px solid #e0e0e0;border-radius:12px;padding:1.5rem;background:#fff;position:sticky;top:1.5rem">
+        <%# Badges %>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem">
+          <span style="font-size:.75rem;padding:.2rem .6rem;background:#eff6ff;color:#2563eb;border-radius:4px;font-weight:600">
+            <%= @listing.listing_type.humanize %>
+          </span>
+          <span style="font-size:.75rem;padding:.2rem .6rem;background:#f0fdf4;color:#16a34a;border-radius:4px;font-weight:600">
+            <%= @listing.condition.humanize.gsub("_", " ") %>
+          </span>
+          <% if @listing.status_sold? %>
+            <span style="font-size:.75rem;padding:.2rem .6rem;background:#fef2f2;color:#dc2626;border-radius:4px;font-weight:600">SOLD</span>
+          <% end %>
+        </div>
+
+        <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1rem;line-height:1.3">
+          <%= @listing.title %>
+        </h1>
+
+        <div style="font-size:1.8rem;font-weight:800;color:#111;margin-bottom:1.25rem">
+          <%= number_to_currency(@listing.price, unit: @listing.currency + " ") %>
+        </div>
+
+        <%# Specs table %>
+        <table style="width:100%;font-size:.88rem;border-collapse:collapse;margin-bottom:1.25rem">
+          <% if @listing.brand %>
+            <tr>
+              <td style="padding:.35rem 0;color:#888;width:40%">Brand</td>
+              <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.brand.name %></td>
+            </tr>
+          <% end %>
+          <% if @listing.printer_model %>
+            <tr>
+              <td style="padding:.35rem 0;color:#888">Model</td>
+              <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.printer_model.name %></td>
+            </tr>
+          <% end %>
+          <% if @listing.year %>
+            <tr>
+              <td style="padding:.35rem 0;color:#888">Year</td>
+              <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.year %></td>
+            </tr>
+          <% end %>
+          <tr>
+            <td style="padding:.35rem 0;color:#888">Quantity</td>
+            <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.quantity %></td>
+          </tr>
+          <tr>
+            <td style="padding:.35rem 0;color:#888">Seller</td>
+            <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.account.name %></td>
+          </tr>
+          <% if @listing.location_city %>
+            <tr>
+              <td style="padding:.35rem 0;color:#888">Location</td>
+              <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.location_city.name %></td>
+            </tr>
+          <% end %>
+          <tr>
+            <td style="padding:.35rem 0;color:#888">Listed</td>
+            <td style="padding:.35rem 0;font-weight:500;color:#333">
+              <%= @listing.published_at&.strftime("%b %d, %Y") || "—" %>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:.35rem 0;color:#888">Views</td>
+            <td style="padding:.35rem 0;font-weight:500;color:#333"><%= @listing.views_count %></td>
+          </tr>
+        </table>
+
+        <%# CTA buttons %>
+        <% unless @listing.status_sold? %>
+          <% if user_signed_in? %>
+            <a href="#contact"
+               style="display:block;width:100%;padding:.75rem;background:#2563eb;color:#fff;text-align:center;border-radius:8px;text-decoration:none;font-weight:600;font-size:.95rem;margin-bottom:.6rem">
+              Contact Seller
+            </a>
+          <% else %>
+            <%= link_to "Sign in to Contact",
+                  new_user_session_path,
+                  style: "display:block;width:100%;padding:.75rem;background:#2563eb;color:#fff;text-align:center;border-radius:8px;text-decoration:none;font-weight:600;font-size:.95rem;margin-bottom:.6rem" %>
+          <% end %>
+        <% end %>
+
+        <%# Seller edit shortcut (own listing) %>
+        <% if user_signed_in? && policy(@listing).update? %>
+          <%= link_to "Edit listing",
+                edit_portal_seller_listing_path(@listing),
+                style: "display:block;width:100%;padding:.6rem;background:#fff;color:#2563eb;text-align:center;border-radius:8px;text-decoration:none;font-weight:500;font-size:.88rem;border:1px solid #2563eb" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

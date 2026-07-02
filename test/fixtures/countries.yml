@@ -1,29 +1,27 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
-one:
-  name: MyString
-  iso2: MyString
-  iso3: MyString
-  phone_code: MyString
-  currency_code: MyString
-  currency_symbol: MyString
-  continent: MyString
-  locale_code: MyString
-  flag_emoji: MyString
-  timezone: MyString
+pk:
+  name: Pakistan
+  iso2: PK
+  iso3: PAK
+  phone_code: "+92"
+  currency_code: PKR
+  currency_symbol: "₨"
+  continent: Asia
+  locale_code: en-PK
+  flag_emoji: "🇵🇰"
+  timezone: Asia/Karachi
   display_order: 1
-  active: false
+  active: true
 
-two:
-  name: MyString
-  iso2: MyString
-  iso3: MyString
-  phone_code: MyString
-  currency_code: MyString
-  currency_symbol: MyString
-  continent: MyString
-  locale_code: MyString
-  flag_emoji: MyString
-  timezone: MyString
-  display_order: 1
-  active: false
+us:
+  name: United States
+  iso2: US
+  iso3: USA
+  phone_code: "+1"
+  currency_code: USD
+  currency_symbol: "$"
+  continent: North America
+  locale_code: en-US
+  flag_emoji: "🇺🇸"
+  timezone: America/New_York
+  display_order: 2
+  active: true

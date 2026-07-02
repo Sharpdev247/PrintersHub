@@ -1,0 +1,16 @@
+seller_account:
+  name: Test Seller Co
+  slug: test-seller-co
+  account_type: 2
+  status: 0
+  email: seller@test.com
+  verified: true
+  verified_at: 2026-01-01 00:00:00
+
+buyer_account:
+  name: Test Buyer Co
+  slug: test-buyer-co
+  account_type: 0
+  status: 0
+  email: buyer@test.com
+  verified: false

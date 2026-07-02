@@ -1,21 +1,21 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  brand: one
-  category: one
-  name: MyString
-  slug: MyString
-  model_number: MyString
-  description: MyText
-  release_year: 1
+hp_m404n:
+  brand: hp
+  category: printers
+  name: LaserJet Pro M404n
+  slug: laserjet-pro-m404n
+  model_number: W1A52A
+  description: HP LaserJet Pro M404n monochrome laser printer
+  release_year: 2019
   discontinued: false
 
-two:
-  brand: two
-  category: two
-  name: MyString
-  slug: MyString
-  model_number: MyString
-  description: MyText
-  release_year: 1
+canon_g6020:
+  brand: canon
+  category: printers
+  name: PIXMA G6020
+  slug: pixma-g6020
+  model_number: 4479C002
+  description: Canon PIXMA G6020 MegaTank all-in-one printer
+  release_year: 2019
   discontinued: false

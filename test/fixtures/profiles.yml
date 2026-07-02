@@ -1,21 +1,15 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  user: one
-  first_name: MyString
-  last_name: MyString
-  phone: MyString
-  bio: MyText
-  date_of_birth: 2026-07-01
-  locale: MyString
-  timezone: MyString
+seller_profile:
+  user: seller
+  first_name: Seller
+  last_name: User
+  bio: Test seller bio
+  timezone: UTC
 
-two:
-  user: two
-  first_name: MyString
-  last_name: MyString
-  phone: MyString
-  bio: MyText
-  date_of_birth: 2026-07-01
-  locale: MyString
-  timezone: MyString
+buyer_profile:
+  user: buyer
+  first_name: Buyer
+  last_name: User
+  bio: Test buyer bio
+  timezone: UTC

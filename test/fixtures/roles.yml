@@ -1,11 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: MyString
-  slug: MyString
-  description: MyText
+buyer:
+  name: buyer
+  slug: buyer
+  description: Can browse and purchase listings
 
-two:
-  name: MyString
-  slug: MyString
-  description: MyText
+seller:
+  name: seller
+  slug: seller
+  description: Can create and manage listings

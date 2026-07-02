@@ -39,6 +39,7 @@ class Account < ApplicationRecord
   has_many :payments, dependent: :restrict_with_error
   has_many :coupon_redemptions, dependent: :restrict_with_error
   has_many :subscription_usages, dependent: :destroy
+  has_many :api_tokens,          dependent: :destroy
 
   enum :account_type, {
     individual:  0,

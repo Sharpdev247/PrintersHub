@@ -2,7 +2,8 @@ class Company < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
-  belongs_to :user
+  belongs_to :account
+  belongs_to :created_by, class_name: "User", foreign_key: :created_by_id, optional: true
   has_many :addresses, as: :addressable, dependent: :destroy
 
   enum :company_type, {

@@ -1,9 +1,9 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  user: one
-  role: one
+seller_role:
+  user: seller
+  role: seller
 
-two:
-  user: two
-  role: two
+buyer_role:
+  user: buyer
+  role: buyer

@@ -1,15 +1,15 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: MyString
-  slug: MyString
-  description: MyText
-  website: MyString
-  active: false
+hp:
+  name: HP
+  slug: hp
+  description: Hewlett-Packard printers and supplies
+  website: https://www.hp.com
+  active: true
 
-two:
-  name: MyString
-  slug: MyString
-  description: MyText
-  website: MyString
-  active: false
+canon:
+  name: Canon
+  slug: canon
+  description: Canon imaging products
+  website: https://www.canon.com
+  active: true

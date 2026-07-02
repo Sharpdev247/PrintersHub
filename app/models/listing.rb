@@ -1,18 +1,28 @@
 class Listing < ApplicationRecord
+  include Discard::Model
+  audited associated_with: :account
+
   extend FriendlyId
   friendly_id :title, use: :slugged
 
   include PgSearch::Model
 
+  # Full-text + trigram search across listing content and related names.
+  # Weight A: title (most relevant), B: description, C: brand/category/model names.
   pg_search_scope :search,
                   against: { title: "A", description: "B" },
+                  associated_against: {
+                    brand:         { name: "C" },
+                    category:      { name: "C" },
+                    printer_model: { name: "C" }
+                  },
                   using: {
-                    tsearch:  { prefix: true, any_word: true, dictionary: "english" },
-                    trigram:  { threshold: 0.1 }
+                    tsearch:  { prefix: true, dictionary: "english" },
+                    trigram:  { threshold: 0.15, only: [:title] }
                   }
 
   belongs_to :user
-  belongs_to :account, optional: true
+  belongs_to :account
   belongs_to :product,        optional: true
   belongs_to :inventory_item, optional: true
   belongs_to :category
@@ -33,9 +43,13 @@ class Listing < ApplicationRecord
   has_many :order_items, dependent: :nullify
   has_many :carts,       through: :cart_items
 
-  enum :listing_type, { sale: 0, rental: 1, service: 2, wanted: 3 }, prefix: true
-  enum :condition,    { brand_new: 0, like_new: 1, good: 2, fair: 3, poor: 4 }, prefix: true
-  enum :status,       { draft: 0, published: 1, sold: 2, archived: 3 }, prefix: true
+  enum :listing_type, { sale: "sale", rental: "rental", service: "service", wanted: "wanted" }, prefix: true
+  enum :condition,    { brand_new: "brand_new", like_new: "like_new", good: "good", fair: "fair", poor: "poor" }, prefix: true
+  enum :status,       { draft: "draft", published: "published", sold: "sold", archived: "archived", paused: "paused" }, prefix: true
+
+  validates :listing_type, inclusion: { in: listing_types.keys }
+  validates :condition,    inclusion: { in: conditions.keys }
+  validates :status,       inclusion: { in: statuses.keys }
 
   SUPPORTED_IMAGE_TYPES    = %w[image/jpeg image/png image/webp image/gif].freeze
   SUPPORTED_DOCUMENT_TYPES = %w[application/pdf].freeze
@@ -68,17 +82,23 @@ class Listing < ApplicationRecord
   validate :document_content_types
   validate :document_file_sizes
 
-  scope :published,    -> { where(status: statuses[:published]) }
-  scope :draft,        -> { where(status: statuses[:draft]) }
-  scope :sold,         -> { where(status: statuses[:sold]) }
-  scope :archived,     -> { where(status: statuses[:archived]) }
+  scope :published,    -> { kept.where(status: "published") }
+  scope :draft,        -> { kept.where(status: "draft") }
+  scope :sold,         -> { kept.where(status: "sold") }
+  scope :archived,     -> { kept.where(status: "archived") }
+  scope :paused,       -> { kept.where(status: "paused") }
   scope :featured,     -> { where(featured: true) }
-  scope :live,         -> { where(status: [statuses[:published], statuses[:sold]]) }
-  scope :recent,       -> { order(published_at: :desc) }
-  scope :by_price,     -> { order(:price) }
-  scope :for_category, ->(cat) { where(category: cat) }
-  scope :for_brand,    ->(b) { where(brand: b) }
-  scope :search_title, ->(q) { where("title ILIKE ?", "%#{sanitize_sql_like(q)}%") }
+  scope :live,         -> { kept.where(status: %w[published sold]) }
+  scope :recent,          -> { order(published_at: :desc) }
+  scope :by_price_asc,    -> { order(price: :asc) }
+  scope :by_price_desc,   -> { order(price: :desc) }
+  scope :by_newest,       -> { order(created_at: :desc) }
+  scope :by_views,        -> { order(views_count: :desc) }
+  scope :for_category,    ->(cat) { where(category: cat) }
+  scope :for_brand,       ->(b)   { where(brand: b) }
+  scope :price_between,   ->(min, max) { where(price: min..max) }
+  scope :in_currency,     ->(c)   { where(currency: c) }
+  scope :search_title,    ->(q)   { where("title ILIKE ?", "%#{sanitize_sql_like(q)}%") }
 
   def publish!
     update!(status: :published, published_at: published_at || Time.current)
@@ -90,6 +110,16 @@ class Listing < ApplicationRecord
 
   def mark_sold!
     update!(status: :sold)
+  end
+
+  def pause!
+    update!(status: :paused)
+  end
+
+  def increment_view!
+    # SQL-level increment avoids lock contention and bypasses callbacks/auditing.
+    self.class.where(id: id).update_all("views_count = views_count + 1")
+    reload
   end
 
   def owned_by?(user)

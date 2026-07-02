@@ -1,0 +1,119 @@
+<% content_for :title, "#{@listing.title} — My Listings — PrintersHub" %>
+
+<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem">
+  <div style="margin-bottom:1.5rem">
+    <%= link_to "← My Listings", portal_seller_listings_path,
+          style: "color:#2563eb;text-decoration:none;font-size:.88rem" %>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1.5rem">
+    <div>
+      <h1 style="font-size:1.4rem;font-weight:700;color:#111;margin-bottom:.4rem"><%= @listing.title %></h1>
+      <span style="font-size:.8rem;color:#888">Slug: <%= @listing.slug %></span>
+    </div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <%= link_to "Edit", edit_portal_seller_listing_path(@listing),
+            style: "padding:.5rem 1rem;background:#fff;color:#2563eb;border:1px solid #2563eb;border-radius:7px;text-decoration:none;font-size:.88rem;font-weight:500" %>
+
+      <% if @listing.status_draft? || @listing.status_paused? %>
+        <%= button_to "Publish",
+              publish_portal_seller_listing_path(@listing),
+              method: :patch,
+              style: "padding:.5rem 1rem;background:#16a34a;color:#fff;border:none;border-radius:7px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+      <% end %>
+
+      <% if @listing.status_published? %>
+        <%= button_to "Pause",
+              pause_portal_seller_listing_path(@listing),
+              method: :patch,
+              style: "padding:.5rem 1rem;background:#ca8a04;color:#fff;border:none;border-radius:7px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+        <%= button_to "Mark Sold",
+              mark_sold_portal_seller_listing_path(@listing),
+              method: :patch,
+              style: "padding:.5rem 1rem;background:#dc2626;color:#fff;border:none;border-radius:7px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+      <% end %>
+
+      <% if policy(@listing).archive? && !@listing.status_archived? %>
+        <%= button_to "Archive",
+              archive_portal_seller_listing_path(@listing),
+              method: :patch,
+              style: "padding:.5rem 1rem;background:#6b7280;color:#fff;border:none;border-radius:7px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+      <% end %>
+
+      <% if policy(@listing).duplicate? %>
+        <%= button_to "Duplicate",
+              duplicate_portal_seller_listing_path(@listing),
+              method: :post,
+              style: "padding:.5rem 1rem;background:#fff;color:#555;border:1px solid #ccc;border-radius:7px;font-size:.88rem;font-weight:500;cursor:pointer" %>
+      <% end %>
+
+      <% if policy(@listing).destroy? %>
+        <%= button_to "Delete",
+              portal_seller_listing_path(@listing),
+              method: :delete,
+              data: { confirm: "Permanently delete this listing? This cannot be undone." },
+              style: "padding:.5rem 1rem;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:7px;font-size:.88rem;font-weight:500;cursor:pointer" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem">
+    <%# Listing details %>
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1.5rem">
+      <table style="width:100%;font-size:.9rem;border-collapse:collapse">
+        <% {
+          "Status"       => @listing.status.humanize,
+          "Type"         => @listing.listing_type.humanize,
+          "Condition"    => @listing.condition.humanize.gsub("_", " "),
+          "Price"        => number_to_currency(@listing.price, unit: @listing.currency + " "),
+          "Quantity"     => @listing.quantity,
+          "Category"     => @listing.category.name,
+          "Brand"        => @listing.brand&.name || "—",
+          "Printer Model" => @listing.printer_model&.name || "—",
+          "Year"         => @listing.year || "—",
+          "Location"     => @listing.location_city&.name || "—",
+          "Views"        => @listing.views_count,
+          "Published at" => (@listing.published_at&.strftime("%b %d, %Y %H:%M") || "—"),
+          "Created"      => @listing.created_at.strftime("%b %d, %Y"),
+        }.each do |label, value| %>
+          <tr style="border-bottom:1px solid #f0f0f0">
+            <td style="padding:.6rem 0;color:#888;width:35%"><%= label %></td>
+            <td style="padding:.6rem 0;font-weight:500;color:#333"><%= value %></td>
+          </tr>
+        <% end %>
+      </table>
+
+      <% if @listing.description.present? %>
+        <h3 style="font-size:.95rem;font-weight:700;margin:1.25rem 0 .5rem;color:#111">Description</h3>
+        <p style="font-size:.9rem;color:#444;line-height:1.6;white-space:pre-wrap"><%= @listing.description %></p>
+      <% end %>
+    </div>
+
+    <%# Stats + public link %>
+    <div>
+      <div style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1.25rem;margin-bottom:1rem">
+        <h3 style="font-size:.9rem;font-weight:700;color:#111;margin:0 0 1rem">Stats</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div style="text-align:center;padding:.75rem;background:#f8f9fa;border-radius:8px">
+            <div style="font-size:1.5rem;font-weight:700;color:#2563eb"><%= @listing.views_count %></div>
+            <div style="font-size:.75rem;color:#888">Views</div>
+          </div>
+          <div style="text-align:center;padding:.75rem;background:#f8f9fa;border-radius:8px">
+            <div style="font-size:1.5rem;font-weight:700;color:#16a34a"><%= @listing.favorites.count %></div>
+            <div style="font-size:.75rem;color:#888">Favorites</div>
+          </div>
+        </div>
+      </div>
+
+      <% if @listing.status_published? %>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:1.25rem">
+          <p style="font-size:.85rem;font-weight:600;color:#1e40af;margin-bottom:.5rem">Public listing</p>
+          <%= link_to "View on marketplace →",
+                listing_path(@listing),
+                target: "_blank",
+                style: "font-size:.85rem;color:#2563eb;text-decoration:none" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

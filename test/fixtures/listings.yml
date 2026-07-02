@@ -1,39 +1,59 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+hp_laser:
+  account: seller_account
+  user: seller
+  category: printers
+  brand: hp
+  title: HP LaserJet Pro M404n Used Excellent Condition
+  slug: hp-laserjet-pro-m404n-used-excellent-condition
+  description: A well-maintained HP LaserJet Pro M404n laser printer in excellent working condition with original accessories included.
+  listing_type: sale
+  condition: like_new
+  price: 45000.00
+  currency: PKR
+  price_negotiable: true
+  quantity: 1
+  year: 2022
+  status: published
+  featured: true
+  views_count: 0
+  published_at: 2026-01-15 10:00:00
 
-one:
-  user: one
-  category: one
-  brand: one
-  title: MyString
-  slug: MyString
-  description: MyText
-  listing_type: 1
-  condition: 1
-  price: 9.99
-  currency: MyString
+canon_inkjet:
+  account: seller_account
+  user: seller
+  category: printers
+  brand: canon
+  title: Canon PIXMA G6020 MegaTank All In One Printer
+  slug: canon-pixma-g6020-megatank-all-in-one-printer
+  description: Canon PIXMA G6020 MegaTank all-in-one wireless printer barely used with all ink tanks full and original packaging.
+  listing_type: sale
+  condition: brand_new
+  price: 35000.00
+  currency: PKR
   price_negotiable: false
   quantity: 1
-  year: 1
-  status: 1
+  year: 2024
+  status: published
   featured: false
-  views_count: 1
-  published_at: 2026-07-01 19:14:48
+  views_count: 0
+  published_at: 2026-01-20 09:00:00
 
-two:
-  user: two
-  category: two
-  brand: two
-  title: MyString
-  slug: MyString
-  description: MyText
-  listing_type: 1
-  condition: 1
-  price: 9.99
-  currency: MyString
-  price_negotiable: false
+draft_listing:
+  account: seller_account
+  user: seller
+  category: printers
+  brand: hp
+  title: HP OfficeJet Pro 9015e Draft Listing For Sale
+  slug: hp-officejet-pro-9015e-draft-listing-for-sale
+  description: HP OfficeJet Pro 9015e wireless all-in-one printer in good working condition with minor cosmetic wear on outer casing only.
+  listing_type: sale
+  condition: good
+  price: 25000.00
+  currency: PKR
+  price_negotiable: true
   quantity: 1
-  year: 1
-  status: 1
+  year: 2021
+  status: draft
   featured: false
-  views_count: 1
-  published_at: 2026-07-01 19:14:48
+  views_count: 0
+  published_at:

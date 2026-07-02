@@ -1,0 +1,83 @@
+<% content_for :title, "My Listings — PrintersHub" %>
+
+<div style="max-width:1100px;margin:0 auto;padding:2rem 1rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <h1 style="font-size:1.5rem;font-weight:700;color:#111">My Listings</h1>
+    <%= link_to "＋ New Listing", new_portal_seller_listing_path,
+          style: "padding:.55rem 1.25rem;background:#2563eb;color:#fff;border-radius:7px;text-decoration:none;font-weight:600;font-size:.9rem" %>
+  </div>
+
+  <% if @listings.empty? %>
+    <div style="text-align:center;padding:4rem;background:#fff;border:1px solid #e0e0e0;border-radius:12px;color:#888">
+      <p style="font-size:1.05rem;margin-bottom:1rem">No listings yet.</p>
+      <%= link_to "Create your first listing", new_portal_seller_listing_path,
+            style: "color:#2563eb;font-weight:600;text-decoration:none" %>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+        <thead>
+          <tr style="background:#f8f9fa;border-bottom:1px solid #e0e0e0">
+            <th style="text-align:left;padding:.75rem 1rem;font-weight:600;color:#555">Title</th>
+            <th style="text-align:left;padding:.75rem 1rem;font-weight:600;color:#555">Type</th>
+            <th style="text-align:left;padding:.75rem 1rem;font-weight:600;color:#555">Price</th>
+            <th style="text-align:left;padding:.75rem 1rem;font-weight:600;color:#555">Status</th>
+            <th style="text-align:left;padding:.75rem 1rem;font-weight:600;color:#555">Views</th>
+            <th style="text-align:left;padding:.75rem 1rem;font-weight:600;color:#555">Updated</th>
+            <th style="padding:.75rem 1rem"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @listings.each do |listing| %>
+            <tr style="border-bottom:1px solid #f0f0f0">
+              <td style="padding:.75rem 1rem">
+                <%= link_to truncate(listing.title, length: 55),
+                      portal_seller_listing_path(listing),
+                      style: "color:#2563eb;text-decoration:none;font-weight:500" %>
+              </td>
+              <td style="padding:.75rem 1rem;color:#555"><%= listing.listing_type.humanize %></td>
+              <td style="padding:.75rem 1rem;font-weight:600">
+                <%= number_to_currency(listing.price, unit: listing.currency + " ") %>
+              </td>
+              <td style="padding:.75rem 1rem">
+                <%
+                  status_colors = {
+                    "published" => "#dcfce7;color:#16a34a",
+                    "draft"     => "#f3f4f6;color:#6b7280",
+                    "paused"    => "#fef9c3;color:#ca8a04",
+                    "sold"      => "#fee2e2;color:#dc2626",
+                    "archived"  => "#f3f4f6;color:#9ca3af"
+                  }
+                  bg_color = status_colors[listing.status] || "#f3f4f6;color:#6b7280"
+                %>
+                <span style="font-size:.75rem;padding:.2rem .6rem;background:<%= bg_color.split(";").first %>;
+                             color:<%= bg_color.split("color:").last %>;border-radius:4px;font-weight:600">
+                  <%= listing.status.humanize %>
+                </span>
+              </td>
+              <td style="padding:.75rem 1rem;color:#888"><%= listing.views_count %></td>
+              <td style="padding:.75rem 1rem;color:#888"><%= listing.updated_at.strftime("%b %d") %></td>
+              <td style="padding:.75rem 1rem">
+                <div style="display:flex;gap:.5rem">
+                  <%= link_to "Edit", edit_portal_seller_listing_path(listing),
+                        style: "font-size:.8rem;color:#2563eb;text-decoration:none" %>
+                  <% if listing.status_draft? || listing.status_paused? %>
+                    <%= button_to "Publish",
+                          publish_portal_seller_listing_path(listing),
+                          method: :patch,
+                          style: "font-size:.8rem;color:#16a34a;background:none;border:none;cursor:pointer;padding:0;font-family:inherit" %>
+                  <% elsif listing.status_published? %>
+                    <%= button_to "Pause",
+                          pause_portal_seller_listing_path(listing),
+                          method: :patch,
+                          style: "font-size:.8rem;color:#ca8a04;background:none;border:none;cursor:pointer;padding:0;font-family:inherit" %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

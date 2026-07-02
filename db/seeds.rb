@@ -13,9 +13,13 @@ admin = AdminUser.find_or_initialize_by(email: admin_email)
 if admin.new_record?
   admin.password              = admin_password
   admin.password_confirmation = admin_password
+  admin.role                  = "super_admin"
+  admin.super_admin           = true
+  admin.active                = true
   admin.save!
-  puts "  [created] AdminUser: #{admin_email}"
+  puts "  [created] AdminUser: #{admin_email} (super_admin)"
 else
+  admin.update!(role: "super_admin", super_admin: true, active: true) if admin.role.blank?
   puts "  [exists]  AdminUser: #{admin_email}"
 end
 
@@ -341,6 +345,27 @@ else
   puts "  [exists]  Seed User: seller@printershub.com"
 end
 
+# Seller account must exist before listings because account_id is NOT NULL.
+seller_account = Account.find_or_initialize_by(name: "PrintersPro Lahore")
+if seller_account.new_record?
+  seller_account.assign_attributes(
+    account_type: :dealer,
+    status:       :active,
+    email:        "seller@printershub.com",
+    verified:     true,
+    verified_at:  Time.current
+  )
+  seller_account.save!
+  puts "  [created] Account (early): #{seller_account.name}"
+else
+  puts "  [exists]  Account (early): #{seller_account.name}"
+end
+
+unless Membership.exists?(account: seller_account, user: seed_user)
+  Membership.create!(account: seller_account, user: seed_user, role: :owner)
+  puts "  [created] Membership: #{seed_user.email} → #{seller_account.name} (owner)"
+end
+
 hp     = Brand.find_by!(name: "HP")
 canon  = Brand.find_by!(name: "Canon")
 epson  = Brand.find_by!(name: "Epson")
@@ -412,6 +437,7 @@ SAMPLE_LISTINGS.each do |attrs|
   end
 
   listing = Listing.new(
+    account:       seller_account,
     user:          seed_user,
     title:         attrs[:title],
     description:   attrs[:description],
@@ -744,28 +770,9 @@ puts "\n  Seeding accounts and memberships..."
 free_plan     = SubscriptionPlan.find_by!(name: "Free")
 silver_plan   = SubscriptionPlan.find_by!(name: "Silver")
 
-# Seller account
-seller_account = Account.find_or_initialize_by(name: "PrintersPro Lahore")
-if seller_account.new_record?
-  seller_account.assign_attributes(
-    account_type: :dealer,
-    status:       :active,
-    email:        "seller@printershub.com",
-    verified:     true,
-    verified_at:  Time.current
-  )
-  seller_account.save!
-  puts "  [created] Account: #{seller_account.name}"
-else
-  puts "  [exists]  Account: #{seller_account.name}"
-end
-
-unless Membership.exists?(account: seller_account, user: seed_user)
-  Membership.create!(account: seller_account, user: seed_user, role: :owner)
-  puts "  [created] Membership: #{seed_user.email} → #{seller_account.name} (owner)"
-else
-  puts "  [exists]  Membership: #{seed_user.email} → #{seller_account.name}"
-end
+# Seller account was already created before the listings section above.
+seller_account = Account.find_by!(name: "PrintersPro Lahore")
+puts "  [exists]  Account: #{seller_account.name}"
 
 # Buyer account
 buyer_account = Account.find_or_initialize_by(name: "KarachiPrints")
@@ -788,9 +795,6 @@ unless Membership.exists?(account: buyer_account, user: seed_buyer)
 else
   puts "  [exists]  Membership: #{seed_buyer.email} → #{buyer_account.name}"
 end
-
-# Link listings to seller account (idempotent)
-Listing.where(user: seed_user, account_id: nil).update_all(account_id: seller_account.id)
 
 # ── Account Subscriptions ─────────────────────────────────────────────────────
 puts "\n  Seeding account subscriptions..."
@@ -1162,3 +1166,57 @@ else
 end
 
 puts "\n── Inventory seeding complete ──────────────────────────────\n\n"
+
+# ── System Settings ───────────────────────────────────────────────────────────
+puts "\n── Seeding system settings ─────────────────────────────────"
+
+settings = [
+  # General
+  { key: "platform.name",            value: "PrintersHub",              value_type: "string",  category: "general",     description: "Public platform name" },
+  { key: "platform.tagline",         value: "The Printer Parts Marketplace", value_type: "string", category: "general", description: "Marketing tagline" },
+  { key: "platform.support_email",   value: "support@printershub.com",  value_type: "string",  category: "general",     description: "Support contact email" },
+  { key: "platform.default_currency",value: "USD",                      value_type: "string",  category: "general",     description: "Default currency code" },
+  { key: "platform.default_timezone",value: "UTC",                      value_type: "string",  category: "general",     description: "Default timezone" },
+
+  # Marketplace
+  { key: "marketplace.listings_per_page",       value: "24",    value_type: "integer", category: "marketplace", description: "Listings shown per browse page" },
+  { key: "marketplace.max_images_per_listing",  value: "10",    value_type: "integer", category: "marketplace", description: "Max images a seller can upload per listing" },
+  { key: "marketplace.offer_max_rounds",        value: "5",     value_type: "integer", category: "marketplace", description: "Max counter-offer rounds before offer expires" },
+  { key: "marketplace.offer_expiry_hours",      value: "48",    value_type: "integer", category: "marketplace", description: "Hours before an unanswered offer expires" },
+  { key: "marketplace.featured_listings_count", value: "6",     value_type: "integer", category: "marketplace", description: "Number of featured listings on homepage" },
+  { key: "marketplace.registration_open",       value: "true",  value_type: "boolean", category: "marketplace", description: "Allow new seller registrations" },
+
+  # Commerce
+  { key: "commerce.platform_fee_pct",           value: "0.05",  value_type: "float",   category: "commerce",    description: "Platform transaction fee (0.05 = 5%)" },
+  { key: "commerce.auto_complete_days",         value: "7",     value_type: "integer", category: "commerce",    description: "Days after delivery before order auto-completes" },
+  { key: "commerce.min_order_amount",           value: "1.00",  value_type: "float",   category: "commerce",    description: "Minimum order value in default currency" },
+  { key: "commerce.max_order_amount",           value: "50000", value_type: "integer", category: "commerce",    description: "Maximum order value cap" },
+
+  # Email
+  { key: "email.from_name",     value: "PrintersHub",              value_type: "string",  category: "email", description: "Sender display name" },
+  { key: "email.from_address",  value: "no-reply@printershub.com", value_type: "string",  category: "email", description: "Sender email address" },
+  { key: "email.reply_to",      value: "support@printershub.com",  value_type: "string",  category: "email", description: "Reply-to address" },
+
+  # Security
+  { key: "security.require_email_confirmation", value: "true",  value_type: "boolean", category: "security", description: "Require email confirmation before first login" },
+  { key: "security.session_timeout_hours",      value: "8",     value_type: "integer", category: "security", description: "Idle session timeout in hours" },
+  { key: "security.max_login_attempts",         value: "5",     value_type: "integer", category: "security", description: "Failed login attempts before lockout" },
+
+  # API
+  { key: "api.enabled",               value: "true",  value_type: "boolean", category: "api", description: "Enable public API access" },
+  { key: "api.rate_limit_per_minute", value: "60",    value_type: "integer", category: "api", description: "API requests per minute per token" },
+  { key: "api.max_tokens_per_user",   value: "10",    value_type: "integer", category: "api", description: "Max active API tokens per user" },
+
+  # Maintenance
+  { key: "maintenance.mode",          value: "false", value_type: "boolean", category: "maintenance", description: "Enable maintenance mode (blocks all user access)" },
+  { key: "maintenance.message",       value: "We are performing scheduled maintenance. Back soon!", value_type: "string", category: "maintenance", description: "Message shown during maintenance" },
+]
+
+settings.each do |s|
+  setting = SystemSetting.find_or_initialize_by(key: s[:key])
+  setting.assign_attributes(s)
+  setting.save!
+  puts "  [setting] #{s[:key]} = #{s[:value]}"
+end
+
+puts "\n── System settings seeding complete ────────────────────────\n\n"

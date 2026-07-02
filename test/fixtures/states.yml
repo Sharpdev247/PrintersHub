@@ -1,11 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  country: one
-  name: MyString
-  code: MyString
+punjab:
+  country: pk
+  name: Punjab
+  code: PB
 
-two:
-  country: two
-  name: MyString
-  code: MyString
+sindh:
+  country: pk
+  name: Sindh
+  code: SD

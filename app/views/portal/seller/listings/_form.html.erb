@@ -1,0 +1,155 @@
+<%= form_with model: [:portal, :seller, listing],
+      style: "max-width:860px" do |f| %>
+
+  <% if listing.errors.any? %>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+      <p style="font-weight:600;color:#dc2626;margin-bottom:.5rem">
+        <%= pluralize(listing.errors.count, "error") %> prevented this listing from being saved:
+      </p>
+      <ul style="margin:0;padding-left:1.25rem;color:#dc2626;font-size:.9rem">
+        <% listing.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# ── Core details ─────────────────────────────────────────────────────── %>
+  <section style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1.5rem;margin-bottom:1.25rem">
+    <h2 style="font-size:1rem;font-weight:700;color:#111;margin:0 0 1.25rem">Basic Details</h2>
+
+    <div style="margin-bottom:1rem">
+      <%= f.label :title, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+      <%= f.text_field :title,
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #ccc;border-radius:6px;font-size:.95rem",
+            placeholder: "e.g. HP LaserJet Pro MFP M428fdn" %>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div>
+        <%= f.label :listing_type, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.select :listing_type,
+              Listing.listing_types.keys.map { |k| [k.humanize, k] },
+              { include_blank: "— Select —" },
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :condition, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.select :condition,
+              Listing.conditions.keys.map { |k| [k.humanize.gsub("_", " "), k] },
+              { include_blank: "— Select —" },
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :status, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.select :status,
+              Listing.statuses.keys.map { |k| [k.humanize, k] },
+              {},
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+    </div>
+
+    <div style="margin-bottom:0">
+      <%= f.label :description, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+      <%= f.text_area :description, rows: 6,
+            style: "width:100%;padding:.55rem .75rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem;resize:vertical",
+            placeholder: "Describe the item condition, features, included accessories, and any known issues…" %>
+    </div>
+  </section>
+
+  <%# ── Pricing & inventory ─────────────────────────────────────────────── %>
+  <section style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1.5rem;margin-bottom:1.25rem">
+    <h2 style="font-size:1rem;font-weight:700;color:#111;margin:0 0 1.25rem">Pricing & Inventory</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem">
+      <div>
+        <%= f.label :price, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.number_field :price, step: "0.01", min: 0,
+              style: "width:100%;padding:.55rem .75rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem",
+              placeholder: "0.00" %>
+      </div>
+      <div>
+        <%= f.label :currency, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.select :currency,
+              [["USD", "USD"], ["EUR", "EUR"], ["GBP", "GBP"], ["AED", "AED"], ["SAR", "SAR"]],
+              {},
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :quantity, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.number_field :quantity, min: 0,
+              style: "width:100%;padding:.55rem .75rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :year, style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.number_field :year, min: 1950, max: Date.current.year + 2,
+              style: "width:100%;padding:.55rem .75rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem",
+              placeholder: "Optional" %>
+      </div>
+    </div>
+  </section>
+
+  <%# ── Classification ──────────────────────────────────────────────────── %>
+  <section style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1.5rem;margin-bottom:1.25rem">
+    <h2 style="font-size:1rem;font-weight:700;color:#111;margin:0 0 1.25rem">Classification</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div>
+        <%= f.label :category_id, "Category", style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.collection_select :category_id,
+              Category.order(:name), :id, :name,
+              { include_blank: "— Select category —" },
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :brand_id, "Brand", style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.collection_select :brand_id,
+              Brand.order(:name), :id, :name,
+              { include_blank: "— Select brand —" },
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :printer_model_id, "Printer Model", style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.collection_select :printer_model_id,
+              PrinterModel.order(:name), :id, :name,
+              { include_blank: "— Optional —" },
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+      <div>
+        <%= f.label :location_city_id, "Location", style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+        <%= f.collection_select :location_city_id,
+              City.order(:name), :id, :name,
+              { include_blank: "— Optional —" },
+              style: "width:100%;padding:.55rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem" %>
+      </div>
+    </div>
+  </section>
+
+  <%# ── Media ───────────────────────────────────────────────────────────── %>
+  <section style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1.5rem;margin-bottom:1.25rem">
+    <h2 style="font-size:1rem;font-weight:700;color:#111;margin:0 0 1.25rem">Images & Documents</h2>
+
+    <div style="margin-bottom:1rem">
+      <%= f.label :images, "Images (up to 20, JPEG/PNG/WebP, max 10 MB each)",
+            style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+      <%= f.file_field :images, multiple: true, accept: "image/jpeg,image/png,image/webp,image/gif",
+            style: "font-size:.9rem" %>
+    </div>
+
+    <div>
+      <%= f.label :documents, "Documents (PDF, max 20 MB each)",
+            style: "display:block;font-size:.85rem;font-weight:600;margin-bottom:.35rem;color:#444" %>
+      <%= f.file_field :documents, multiple: true, accept: "application/pdf",
+            style: "font-size:.9rem" %>
+    </div>
+  </section>
+
+  <%# ── Submit ───────────────────────────────────────────────────────────── %>
+  <div style="display:flex;gap:.75rem">
+    <%= f.submit listing.persisted? ? "Save changes" : "Create listing",
+          style: "padding:.65rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.95rem;font-weight:600;cursor:pointer" %>
+    <%= link_to "Cancel",
+          listing.persisted? ? portal_seller_listing_path(listing) : portal_seller_listings_path,
+          style: "padding:.65rem 1.25rem;background:#fff;color:#555;border:1px solid #ccc;border-radius:7px;font-size:.95rem;font-weight:500;text-decoration:none" %>
+  </div>
+<% end %>

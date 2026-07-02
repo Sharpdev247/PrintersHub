@@ -1,31 +1,25 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  addressable: one
-  addressable_type: Addressable
-  label: MyString
-  address_type: MyString
-  line1: MyString
-  line2: MyString
-  city: MyString
-  state: MyString
-  postal_code: MyString
-  country_code: MyString
-  latitude: 9.99
-  longitude: 9.99
-  is_primary: false
+  addressable_type: User
+  addressable_id: 1
+  label: Home
+  address_type: default
+  line1: 123 Test Street
+  postal_code: "54000"
+  country_code: PK
+  latitude: 31.5
+  longitude: 74.3
+  is_primary: true
 
 two:
-  addressable: two
-  addressable_type: Addressable
-  label: MyString
-  address_type: MyString
-  line1: MyString
-  line2: MyString
-  city: MyString
-  state: MyString
-  postal_code: MyString
-  country_code: MyString
-  latitude: 9.99
-  longitude: 9.99
+  addressable_type: User
+  addressable_id: 2
+  label: Office
+  address_type: shipping
+  line1: 456 Test Avenue
+  postal_code: "75500"
+  country_code: PK
+  latitude: 24.8
+  longitude: 67.0
   is_primary: false

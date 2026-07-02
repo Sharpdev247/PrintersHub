@@ -1,19 +1,15 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: MyString
-  slug: MyString
-  description: MyText
-  ancestry: MyString
+printers:
+  name: Printers
+  slug: printers
+  description: All types of printers
   position: 1
-  active: false
-  icon: MyString
+  active: true
 
-two:
-  name: MyString
-  slug: MyString
-  description: MyText
-  ancestry: MyString
-  position: 1
-  active: false
-  icon: MyString
+printer_parts:
+  name: Printer Parts
+  slug: printer-parts
+  description: Spare parts and components
+  position: 2
+  active: true

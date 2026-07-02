@@ -1,0 +1,11 @@
+<% content_for :title, "Edit — #{@listing.title} — PrintersHub" %>
+
+<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem">
+  <div style="margin-bottom:1.5rem">
+    <%= link_to "← Back to listing", portal_seller_listing_path(@listing),
+          style: "color:#2563eb;text-decoration:none;font-size:.88rem" %>
+  </div>
+  <h1 style="font-size:1.5rem;font-weight:700;color:#111;margin-bottom:1.5rem">Edit Listing</h1>
+
+  <%= render "form", listing: @listing %>
+</div>

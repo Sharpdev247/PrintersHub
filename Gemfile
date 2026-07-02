@@ -63,6 +63,12 @@ gem "audited", "~> 5.7"
 # PostgreSQL full-text search — tsearch (ranked FTS) + trigram (fuzzy)
 gem "pg_search", "~> 2.3"
 
+# Pagination
+gem "kaminari", "~> 1.2"
+
+# Authorization via policy objects — one class per resource
+gem "pundit", "~> 2.4"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

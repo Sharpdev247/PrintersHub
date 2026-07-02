@@ -1,27 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
-  user: one
-  name: MyString
-  slug: MyString
-  email: MyString
-  phone: MyString
-  website: MyString
-  description: MyText
-  tax_number: MyString
+  user_id: 991613951
+  name: Test Company One
+  slug: test-company-one
+  email: company1@test.com
   company_type: 1
   verified: false
-  verified_at: 2026-07-01 17:42:17
 
 two:
-  user: two
-  name: MyString
-  slug: MyString
-  email: MyString
-  phone: MyString
-  website: MyString
-  description: MyText
-  tax_number: MyString
+  user_id: 76570549
+  name: Test Company Two
+  slug: test-company-two
+  email: company2@test.com
   company_type: 1
   verified: false
-  verified_at: 2026-07-01 17:42:17
