@@ -1,0 +1,68 @@
+<% content_for :title, "Change Password — PrintersHub" %>
+<% content_for :breadcrumb do %>Settings › Password<% end %>
+
+<div style="max-width:800px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.5rem">Settings</h1>
+
+  <div style="display:grid;grid-template-columns:180px 1fr;gap:1.5rem;align-items:start">
+    <%= render "portal/settings/nav" %>
+
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.75rem">
+      <h2 style="font-size:1rem;font-weight:700;color:#111;margin-bottom:1.25rem">Change Password</h2>
+
+      <% if current_user.errors.any? %>
+        <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.875rem;margin-bottom:1.25rem">
+          <% current_user.errors.full_messages.each do |msg| %>
+            <div style="font-size:.85rem;color:#dc2626"><%= msg %></div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= form_with model: current_user,
+            url: portal_settings_password_path,
+            method: :patch do |f| %>
+
+        <div style="margin-bottom:1rem">
+          <%= f.label :current_password, "Current Password",
+                style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+          <%= f.password_field :current_password,
+                autocomplete: "current-password",
+                style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <%= f.label :password, "New Password",
+                style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+          <%= f.password_field :password,
+                autocomplete: "new-password",
+                style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+          <div style="font-size:.75rem;color:#9ca3af;margin-top:.3rem">Minimum 8 characters.</div>
+        </div>
+
+        <div style="margin-bottom:1.75rem">
+          <%= f.label :password_confirmation, "Confirm New Password",
+                style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+          <%= f.password_field :password_confirmation,
+                autocomplete: "new-password",
+                style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+        </div>
+
+        <%= f.submit "Update password",
+              style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:600;cursor:pointer" %>
+      <% end %>
+
+      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid #f3f4f6">
+        <div style="font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem">Signed in as</div>
+        <div style="font-size:.9rem;color:#374151"><%= current_user.email %></div>
+        <% if current_user.last_sign_in_at %>
+          <div style="font-size:.75rem;color:#9ca3af;margin-top:.25rem">
+            Last sign in: <%= current_user.last_sign_in_at.strftime("%b %d, %Y at %I:%M %p") %>
+            <% if current_user.last_sign_in_ip %>
+              from <%= current_user.last_sign_in_ip %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

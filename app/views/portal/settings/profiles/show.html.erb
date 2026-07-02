@@ -1,0 +1,90 @@
+<% content_for :title, "Profile Settings — PrintersHub" %>
+<% content_for :breadcrumb do %>Settings › Profile<% end %>
+
+<div style="max-width:800px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.5rem">Settings</h1>
+
+  <div style="display:grid;grid-template-columns:180px 1fr;gap:1.5rem;align-items:start">
+    <%= render "portal/settings/nav" %>
+
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.75rem">
+      <h2 style="font-size:1rem;font-weight:700;color:#111;margin-bottom:1.25rem">Personal Profile</h2>
+
+      <% if @profile.errors.any? %>
+        <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.875rem;margin-bottom:1.25rem">
+          <% @profile.errors.full_messages.each do |msg| %>
+            <div style="font-size:.85rem;color:#dc2626"><%= msg %></div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= form_with model: @profile,
+            url: portal_settings_profile_path,
+            method: :patch do |f| %>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <%= f.label :first_name, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.text_field :first_name,
+                  style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+          </div>
+          <div>
+            <%= f.label :last_name, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.text_field :last_name,
+                  style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+          </div>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <%= f.label :phone, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+          <%= f.telephone_field :phone,
+                style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem",
+                placeholder: "+92 300 0000000" %>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <%= f.label :bio, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+          <%= f.text_area :bio, rows: 3,
+                style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem;resize:vertical",
+                placeholder: "Tell buyers a bit about yourself…" %>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <%= f.label :date_of_birth, "Date of Birth", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.date_field :date_of_birth,
+                  style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+          </div>
+          <div>
+            <%= f.label :timezone, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.select :timezone,
+                  ActiveSupport::TimeZone.all.map { |tz| [tz.to_s, tz.name] },
+                  { selected: @profile.timezone.presence || "UTC" },
+                  style: "width:100%;padding:.55rem;border:1px solid #d1d5db;border-radius:6px;font-size:.88rem" %>
+          </div>
+        </div>
+
+        <div style="margin-bottom:1.5rem">
+          <%= f.label :locale, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+          <%= f.select :locale,
+                [["English", "en"], ["Urdu", "ur"], ["Arabic", "ar"]],
+                { selected: @profile.locale.presence || "en" },
+                style: "width:200px;padding:.55rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+        </div>
+
+        <div style="border-top:1px solid #f3f4f6;padding-top:1.25rem">
+          <div style="margin-bottom:1rem">
+            <div style="font-size:.82rem;font-weight:600;color:#555;margin-bottom:.2rem">Email address</div>
+            <div style="font-size:.9rem;color:#374151"><%= current_user.email %></div>
+            <div style="font-size:.75rem;color:#9ca3af;margin-top:.2rem">
+              To change your email, contact support.
+            </div>
+          </div>
+        </div>
+
+        <%= f.submit "Save profile",
+              style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:600;cursor:pointer" %>
+      <% end %>
+    </div>
+  </div>
+</div>

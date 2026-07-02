@@ -1,0 +1,18 @@
+<nav style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:0">
+  <%
+    settings_links = [
+      { label: "Profile",         path: portal_settings_profile_path  },
+      { label: "Account",         path: portal_settings_account_path  },
+      { label: "Password",        path: portal_settings_password_path },
+    ]
+  %>
+  <% settings_links.each do |link| %>
+    <% active = request.path == link[:path] %>
+    <%= link_to link[:label], link[:path],
+          style: "display:block;padding:.75rem 1.25rem;font-size:.88rem;font-weight:#{active ? '600' : '400'};
+                  color:#{active ? '#1d4ed8' : '#374151'};text-decoration:none;
+                  background:#{active ? '#eff6ff' : 'transparent'};
+                  border-left:3px solid #{active ? '#2563eb' : 'transparent'};
+                  border-bottom:1px solid #f3f4f6" %>
+  <% end %>
+</nav>

@@ -1,0 +1,86 @@
+<% content_for :title, "Account Settings — PrintersHub" %>
+<% content_for :breadcrumb do %>Settings › Account<% end %>
+
+<div style="max-width:800px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.5rem">Settings</h1>
+
+  <div style="display:grid;grid-template-columns:180px 1fr;gap:1.5rem;align-items:start">
+    <%= render "portal/settings/nav" %>
+
+    <div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.75rem;margin-bottom:1rem">
+        <h2 style="font-size:1rem;font-weight:700;color:#111;margin-bottom:1.25rem">Account Details</h2>
+
+        <% if @account.errors.any? %>
+          <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.875rem;margin-bottom:1.25rem">
+            <% @account.errors.full_messages.each do |msg| %>
+              <div style="font-size:.85rem;color:#dc2626"><%= msg %></div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%= form_with model: @account,
+              url: portal_settings_account_path,
+              method: :patch do |f| %>
+
+          <div style="margin-bottom:1rem">
+            <%= f.label :name, "Account / Business Name", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.text_field :name,
+                  style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div>
+              <%= f.label :email, "Contact Email", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+              <%= f.email_field :email,
+                    style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem" %>
+            </div>
+            <div>
+              <%= f.label :phone, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+              <%= f.telephone_field :phone,
+                    style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem",
+                    placeholder: "+92 300 0000000" %>
+            </div>
+          </div>
+
+          <div style="margin-bottom:1rem">
+            <%= f.label :website, style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.url_field :website,
+                  style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem",
+                  placeholder: "https://yoursite.com" %>
+          </div>
+
+          <div style="margin-bottom:1.5rem">
+            <%= f.label :bio, "About this account", style: "display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:.3rem" %>
+            <%= f.text_area :bio, rows: 3,
+                  style: "width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.9rem;resize:vertical",
+                  placeholder: "Describe your business to buyers…" %>
+          </div>
+
+          <%= f.submit "Save account",
+                style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:600;cursor:pointer" %>
+        <% end %>
+      </div>
+
+      <%# Read-only info panel %>
+      <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem">
+        <h3 style="font-size:.88rem;font-weight:700;color:#6b7280;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em">Account Info</h3>
+        <table style="width:100%;font-size:.85rem;border-collapse:collapse">
+          <% {
+            "Account type" => @account.account_type.humanize,
+            "Status"       => @account.status.humanize,
+            "Verified"     => (@account.verified? ? "Yes — #{@account.verified_at&.strftime('%b %d, %Y')}" : "Not verified"),
+            "Slug"         => @account.slug,
+            "Created"      => @account.created_at.strftime("%b %d, %Y"),
+            "Members"      => @account.memberships.kept.count
+          }.each do |label, value| %>
+            <tr>
+              <td style="padding:.4rem 0;color:#9ca3af;width:40%"><%= label %></td>
+              <td style="padding:.4rem 0;color:#374151;font-weight:500"><%= value %></td>
+            </tr>
+          <% end %>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
