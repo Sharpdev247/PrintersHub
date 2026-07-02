@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_02_080822) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_091856) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -566,13 +566,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_080822) do
   create_table "invoices", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "account_subscription_id"
+    t.bigint "buyer_account_id"
     t.datetime "created_at", null: false
     t.string "currency", limit: 3, default: "USD", null: false
     t.decimal "discount_amount", precision: 12, scale: 2, default: "0.0", null: false
     t.datetime "due_at"
     t.string "invoice_number", null: false
+    t.string "invoice_type", limit: 20, default: "subscription"
     t.jsonb "metadata", default: {}, null: false
     t.text "notes"
+    t.bigint "order_id"
     t.datetime "paid_at"
     t.string "provider_invoice_id"
     t.integer "status", default: 0, null: false
@@ -584,8 +587,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_080822) do
     t.index ["account_id", "status"], name: "index_invoices_on_account_and_status"
     t.index ["account_id"], name: "index_invoices_on_account_id"
     t.index ["account_subscription_id"], name: "index_invoices_on_account_subscription_id", where: "(account_subscription_id IS NOT NULL)"
+    t.index ["buyer_account_id"], name: "index_invoices_on_buyer_account_id"
     t.index ["due_at"], name: "index_invoices_on_due_at_open", where: "((due_at IS NOT NULL) AND (status = 1))"
     t.index ["invoice_number"], name: "index_invoices_on_invoice_number", unique: true
+    t.index ["invoice_type"], name: "index_invoices_on_invoice_type"
+    t.index ["order_id"], name: "index_invoices_on_order_id"
     t.index ["provider_invoice_id"], name: "index_invoices_on_provider_invoice_id", unique: true, where: "(provider_invoice_id IS NOT NULL)"
     t.check_constraint "currency::text ~ '^[A-Z]{3}$'::text", name: "chk_invoices_currency"
     t.check_constraint "discount_amount >= 0::numeric", name: "chk_invoices_discount"
@@ -1552,7 +1558,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_080822) do
   add_foreign_key "inventory_transactions", "inventory_items", on_delete: :restrict
   add_foreign_key "invoice_items", "invoices", on_delete: :cascade
   add_foreign_key "invoices", "account_subscriptions", on_delete: :nullify
+  add_foreign_key "invoices", "accounts", column: "buyer_account_id"
   add_foreign_key "invoices", "accounts", on_delete: :restrict
+  add_foreign_key "invoices", "orders"
   add_foreign_key "invoices", "subscription_plans", on_delete: :nullify
   add_foreign_key "listings", "accounts", on_delete: :restrict
   add_foreign_key "listings", "brands", on_delete: :restrict

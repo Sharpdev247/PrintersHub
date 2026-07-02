@@ -1,0 +1,143 @@
+<% content_for :title, "Invoice #{@invoice.invoice_number} — PrintersHub" %>
+
+<style>
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff !important; }
+    .invoice-card { border: none !important; box-shadow: none !important; }
+  }
+</style>
+
+<div style="max-width:760px">
+  <%# Actions bar — hidden when printing %>
+  <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <%= link_to "← Invoices", portal_invoices_path,
+          style: "font-size:.82rem;color:#6b7280;text-decoration:none" %>
+    <div style="display:flex;gap:.75rem">
+      <button onclick="window.print()"
+              style="padding:.45rem 1rem;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:7px;font-size:.85rem;font-weight:600;cursor:pointer">
+        🖨 Print / Save PDF
+      </button>
+    </div>
+  </div>
+
+  <%# Invoice card %>
+  <div class="invoice-card" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;padding:2.5rem">
+
+    <%# Header %>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem">
+      <div>
+        <div style="font-size:1.6rem;font-weight:800;color:#111;letter-spacing:-.02em">PrintersHub</div>
+        <div style="font-size:.82rem;color:#9ca3af;margin-top:.2rem">printershub.com</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:1.1rem;font-weight:700;color:#111;font-family:monospace">
+          <%= @invoice.invoice_number %>
+        </div>
+        <%
+          s_bg    = { "paid" => "#d1fae5", "open" => "#fef3c7", "void" => "#fee2e2" }[@invoice.status] || "#f3f4f6"
+          s_color = { "paid" => "#065f46", "open" => "#92400e", "void" => "#991b1b" }[@invoice.status] || "#6b7280"
+        %>
+        <span style="display:inline-block;padding:.2rem .7rem;border-radius:20px;font-size:.8rem;font-weight:700;
+                     background:<%= s_bg %>;color:<%= s_color %>;margin-top:.35rem">
+          <%= @invoice.status.upcase %>
+        </span>
+      </div>
+    </div>
+
+    <%# From / To %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem">
+      <div>
+        <div style="font-size:.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">From</div>
+        <div style="font-size:.92rem;font-weight:700;color:#111"><%= @invoice.account.name %></div>
+        <% if @invoice.account.email.present? %>
+          <div style="font-size:.82rem;color:#6b7280"><%= @invoice.account.email %></div>
+        <% end %>
+      </div>
+      <div>
+        <div style="font-size:.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Bill To</div>
+        <div style="font-size:.92rem;font-weight:700;color:#111"><%= @invoice.buyer_account&.name || "—" %></div>
+        <% if @invoice.buyer_account&.email.present? %>
+          <div style="font-size:.82rem;color:#6b7280"><%= @invoice.buyer_account.email %></div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Dates %>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:2rem;
+                background:#f9fafb;border-radius:8px;padding:1rem">
+      <% [
+        ["Issue Date", @invoice.created_at.strftime("%b %d, %Y")],
+        ["Due Date",   @invoice.due_at&.strftime("%b %d, %Y") || "—"],
+        ["Order",      @invoice.order&.order_number || "—"],
+      ].each do |label, val| %>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em"><%= label %></div>
+          <div style="font-size:.88rem;font-weight:600;color:#374151;margin-top:.2rem;font-family:monospace"><%= val %></div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Line items %>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem">
+      <thead>
+        <tr style="border-bottom:2px solid #e5e7eb">
+          <th style="padding:.6rem 0;text-align:left;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Description</th>
+          <th style="padding:.6rem 0;text-align:center;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;width:60px">Qty</th>
+          <th style="padding:.6rem 0;text-align:right;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;width:110px">Unit Price</th>
+          <th style="padding:.6rem 0;text-align:right;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;width:110px">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @invoice.invoice_items.each do |item| %>
+          <tr style="border-bottom:1px solid #f3f4f6">
+            <td style="padding:.75rem 0;font-size:.88rem;color:#111"><%= item.description %></td>
+            <td style="padding:.75rem 0;font-size:.88rem;color:#6b7280;text-align:center"><%= item.quantity %></td>
+            <td style="padding:.75rem 0;font-size:.88rem;color:#374151;text-align:right">
+              <%= number_to_currency(item.unit_price, unit: item.currency + " ") %>
+            </td>
+            <td style="padding:.75rem 0;font-size:.88rem;font-weight:600;color:#111;text-align:right">
+              <%= number_to_currency(item.amount, unit: item.currency + " ") %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%# Totals %>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1.5rem">
+      <div style="width:260px">
+        <% [
+          ["Subtotal",  @invoice.subtotal],
+          ["Tax",       @invoice.tax_amount],
+          ["Discount",  @invoice.discount_amount.positive? ? -@invoice.discount_amount : nil],
+        ].compact.each do |label, amt| %>
+          <% next unless amt %>
+          <div style="display:flex;justify-content:space-between;font-size:.85rem;color:#6b7280;padding:.3rem 0">
+            <span><%= label %></span>
+            <span><%= number_to_currency(amt.abs, unit: @invoice.currency + " ") %></span>
+          </div>
+        <% end %>
+        <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;color:#111;
+                    border-top:2px solid #111;padding:.5rem 0;margin-top:.25rem">
+          <span>Total</span>
+          <span><%= number_to_currency(@invoice.total, unit: @invoice.currency + " ") %></span>
+        </div>
+        <% if @invoice.paid_at %>
+          <div style="font-size:.78rem;color:#059669;margin-top:.35rem;text-align:right">
+            ✓ Paid on <%= @invoice.paid_at.strftime("%b %d, %Y") %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Notes %>
+    <% if @invoice.notes.present? %>
+      <div style="border-top:1px solid #f3f4f6;padding-top:1rem">
+        <div style="font-size:.72rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Notes</div>
+        <div style="font-size:.85rem;color:#6b7280"><%= @invoice.notes %></div>
+      </div>
+    <% end %>
+
+  </div>
+</div>

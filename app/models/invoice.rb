@@ -1,7 +1,9 @@
 class Invoice < ApplicationRecord
   audited
 
-  belongs_to :account
+  belongs_to :account                                    # seller account (issuer)
+  belongs_to :buyer_account, class_name: "Account", optional: true
+  belongs_to :order,                                     optional: true
   belongs_to :account_subscription, optional: true
   belongs_to :subscription_plan,    optional: true
 
@@ -26,9 +28,11 @@ class Invoice < ApplicationRecord
 
   before_validation :generate_invoice_number, on: :create
 
-  scope :paid,   -> { status_paid }
-  scope :open,   -> { status_open }
-  scope :recent, -> { order(created_at: :desc) }
+  scope :paid,         -> { status_paid }
+  scope :open,         -> { status_open }
+  scope :recent,       -> { order(created_at: :desc) }
+  scope :order_type,   -> { where(invoice_type: "order") }
+  scope :for_account,  ->(acct) { where("account_id = ? OR buyer_account_id = ?", acct.id, acct.id) }
 
   def recalculate!
     self.subtotal = invoice_items.sum(&:amount)

@@ -1,0 +1,71 @@
+<% content_for :title, "Invoices — PrintersHub" %>
+
+<div style="max-width:900px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.5rem">Invoices</h1>
+
+  <% if @invoices.none? %>
+    <div style="text-align:center;padding:4rem 2rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:2rem;margin-bottom:.75rem">🧾</div>
+      <div style="font-size:1rem;font-weight:600;color:#374151;margin-bottom:.5rem">No invoices yet</div>
+      <div style="font-size:.875rem;color:#6b7280">Invoices are generated when orders are placed.</div>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.65rem 1.25rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Invoice</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Order</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Party</th>
+            <th style="padding:.65rem 1rem;text-align:right;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Total</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Status</th>
+            <th style="padding:.65rem 1rem;text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @invoices.each do |inv| %>
+            <%
+              is_seller = inv.account_id == Current.account.id
+              other = is_seller ? inv.buyer_account : inv.account
+              status_styles = {
+                "draft"         => { bg: "#f3f4f6", color: "#6b7280" },
+                "open"          => { bg: "#fef3c7", color: "#92400e" },
+                "paid"          => { bg: "#d1fae5", color: "#065f46" },
+                "void"          => { bg: "#fee2e2", color: "#991b1b" },
+                "uncollectible" => { bg: "#f3f4f6", color: "#9ca3af" },
+              }
+              s = status_styles[inv.status] || status_styles["draft"]
+            %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.85rem 1.25rem">
+                <%= link_to inv.invoice_number, portal_invoice_path(inv),
+                      style: "font-size:.88rem;font-weight:700;color:#2563eb;text-decoration:none;font-family:monospace" %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.82rem;color:#6b7280;font-family:monospace">
+                <%= inv.order&.order_number %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.85rem;color:#374151">
+                <%= is_seller ? "To: #{other&.name}" : "From: #{other&.name}" %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.9rem;font-weight:700;color:#111;text-align:right">
+                <%= number_to_currency(inv.total, unit: inv.currency + " ") %>
+              </td>
+              <td style="padding:.85rem 1rem">
+                <span style="display:inline-block;padding:.2rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600;
+                             background:<%= s[:bg] %>;color:<%= s[:color] %>">
+                  <%= inv.status.humanize %>
+                </span>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.8rem;color:#9ca3af">
+                <%= inv.created_at.strftime("%b %d, %Y") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <% if @invoices.total_pages > 1 %>
+      <div style="margin-top:1.5rem;text-align:center"><%= paginate @invoices %></div>
+    <% end %>
+  <% end %>
+</div>

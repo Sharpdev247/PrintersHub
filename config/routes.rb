@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       resources :orders, only: [:index, :show, :create] do
         member do
           patch :cancel
+          post  :invoice, to: "/portal/invoices#create", as: :generate_invoice
         end
       end
     end
@@ -63,6 +64,9 @@ Rails.application.routes.draw do
         end
       end
     end
+
+    # Invoices
+    resources :invoices, only: [:index, :show]
 
     # Favorites (buyer portal)
     resources :favorites, only: [:index]
