@@ -73,10 +73,11 @@
         <div style="padding:.75rem 1.5rem .5rem;font-size:.68rem;font-weight:700;color:#475569;letter-spacing:.08em;text-transform:uppercase">
           Account
         </div>
-        <%= nav_link.call("Settings",     portal_settings_profile_path, "⚙") %>
+        <%= nav_link.call("Settings",     portal_settings_profile_path,     "⚙") %>
         <%= nav_link.call("Members",      portal_settings_memberships_path, "🧑‍🤝‍🧑") %>
-        <%= nav_link.call("Activity Log", portal_activity_logs_path,    "📋") %>
-        <%= nav_link.call("API Tokens",   portal_api_tokens_path,       "🔑") %>
+        <%= nav_link.call("Subscription", portal_subscription_path,         "💳") %>
+        <%= nav_link.call("Activity Log", portal_activity_logs_path,        "📋") %>
+        <%= nav_link.call("API Tokens",   portal_api_tokens_path,           "🔑") %>
       </nav>
 
       <%# User footer %>

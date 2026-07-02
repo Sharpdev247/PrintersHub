@@ -26,6 +26,14 @@ module Portal
         @listing.user = current_user
         authorize @listing
 
+        begin
+          SubscriptionEnforcer.new(Current.account).enforce!(:max_listings)
+        rescue SubscriptionEnforcer::LimitError => e
+          redirect_to portal_subscription_plans_path,
+            alert: e.message
+          return
+        end
+
         if @listing.save
           redirect_to portal_seller_listing_path(@listing),
                       notice: "Listing created successfully."

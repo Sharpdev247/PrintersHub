@@ -1,0 +1,117 @@
+<% content_for :title, "Pricing Plans — PrintersHub" %>
+
+<div style="max-width:900px">
+  <div style="text-align:center;margin-bottom:2rem">
+    <h1 style="font-size:1.5rem;font-weight:800;color:#111;margin-bottom:.5rem">Choose your plan</h1>
+    <p style="font-size:.9rem;color:#6b7280">Scale as your business grows. Downgrade or cancel anytime.</p>
+  </div>
+
+  <%# Billing interval toggle %>
+  <div style="display:flex;justify-content:center;margin-bottom:2rem">
+    <div style="background:#f3f4f6;border-radius:30px;padding:.25rem;display:inline-flex;gap:.25rem">
+      <%= link_to "Monthly", portal_subscription_plans_path,
+            style: "padding:.4rem 1.1rem;border-radius:20px;font-size:.85rem;font-weight:600;text-decoration:none;
+                    background:#{params[:interval] != 'yearly' ? '#fff' : 'transparent'};
+                    color:#{params[:interval] != 'yearly' ? '#111' : '#6b7280'};
+                    box-shadow:#{params[:interval] != 'yearly' ? '0 1px 3px rgba(0,0,0,.1)' : 'none'}" %>
+      <%= link_to portal_subscription_plans_path(interval: "yearly"),
+            style: "padding:.4rem 1.1rem;border-radius:20px;font-size:.85rem;font-weight:600;text-decoration:none;
+                    background:#{params[:interval] == 'yearly' ? '#fff' : 'transparent'};
+                    color:#{params[:interval] == 'yearly' ? '#111' : '#6b7280'};
+                    box-shadow:#{params[:interval] == 'yearly' ? '0 1px 3px rgba(0,0,0,.1)' : 'none'}" do %>
+        Yearly <span style="font-size:.72rem;background:#dcfce7;color:#15803d;padding:.1rem .4rem;border-radius:10px;margin-left:.25rem">Save up to 20%</span>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Plan cards %>
+  <div style="display:grid;grid-template-columns:repeat(<%= [@plans.count, 4].min %>,1fr);gap:1rem;margin-bottom:2rem">
+    <% yearly = params[:interval] == "yearly" %>
+    <% @plans.each do |plan| %>
+      <% is_current = @current&.id == plan.id %>
+      <% price = yearly ? plan.yearly_price : plan.monthly_price %>
+      <% interval_label = yearly ? "yr" : "mo" %>
+
+      <div style="background:#fff;border:2px solid <%= is_current ? '#2563eb' : '#e5e7eb' %>;
+                  border-radius:12px;padding:1.5rem;position:relative;
+                  <%= plan.featured? ? 'box-shadow:0 4px 20px rgba(37,99,235,.15)' : '' %>">
+
+        <% if is_current %>
+          <div style="position:absolute;top:-1px;right:1rem;background:#2563eb;color:#fff;
+                      font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:0 0 6px 6px">
+            CURRENT
+          </div>
+        <% elsif plan.featured? %>
+          <div style="position:absolute;top:-1px;right:1rem;background:#f59e0b;color:#fff;
+                      font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:0 0 6px 6px">
+            POPULAR
+          </div>
+        <% end %>
+
+        <div style="font-size:1rem;font-weight:800;color:#111"><%= plan.name %></div>
+        <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem;min-height:2rem"><%= plan.description %></div>
+
+        <div style="margin:1rem 0;display:flex;align-items:baseline;gap:.25rem">
+          <span style="font-size:1.75rem;font-weight:900;color:#111">
+            $<%= price.to_i %>
+          </span>
+          <span style="font-size:.8rem;color:#9ca3af">/ <%= interval_label %></span>
+        </div>
+
+        <% if yearly && plan.yearly_savings > 0 %>
+          <div style="font-size:.75rem;color:#059669;margin-bottom:.75rem">
+            Save $<%= plan.yearly_savings.to_i %>/year
+          </div>
+        <% end %>
+
+        <% if plan.trial_days > 0 && !is_current %>
+          <div style="font-size:.75rem;color:#6b7280;margin-bottom:.75rem">
+            <%= plan.trial_days %>-day free trial
+          </div>
+        <% end %>
+
+        <% if is_current %>
+          <div style="padding:.5rem;text-align:center;background:#eff6ff;border-radius:6px;
+                      font-size:.82rem;color:#2563eb;font-weight:600;margin-bottom:1rem">
+            Your current plan
+          </div>
+        <% else %>
+          <%= form_with url: portal_subscription_path, method: :post, local: true do |f| %>
+            <%= f.hidden_field :plan_id, value: plan.id %>
+            <%= f.hidden_field :interval, value: yearly ? "yearly" : "monthly" %>
+            <%= f.submit plan.plan_type_free? ? "Downgrade to Free" : "Upgrade to #{plan.name}",
+                  style: "width:100%;padding:.55rem;background:#{plan.plan_type_free? ? '#f3f4f6' : '#111'};
+                          color:#{plan.plan_type_free? ? '#374151' : '#fff'};border:none;border-radius:6px;
+                          font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:1rem" %>
+          <% end %>
+        <% end %>
+
+        <%# Feature list %>
+        <div style="border-top:1px solid #f3f4f6;padding-top:.85rem">
+          <% plan.plan_features.order(:display_order).limit(8).each do |f| %>
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
+              <% if f.boolean_feature? %>
+                <span style="font-size:.85rem;color:<%= f.typed_value ? '#059669' : '#d1d5db' %>">
+                  <%= f.typed_value ? "✓" : "✗" %>
+                </span>
+              <% else %>
+                <span style="font-size:.78rem;font-weight:700;color:#2563eb;min-width:1.5rem">
+                  <%= f.unlimited? ? "∞" : f.typed_value %>
+                </span>
+              <% end %>
+              <span style="font-size:.8rem;color:<%= f.boolean_feature? && !f.typed_value ? '#d1d5db' : '#374151' %>">
+                <%= f.display_name %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div style="text-align:center;font-size:.8rem;color:#9ca3af">
+    All plans include SSL, 99.9% uptime SLA, and email support. ·
+    <%= link_to "Manage current subscription →", portal_subscription_path,
+          style: "color:#2563eb;text-decoration:none" %>
+  </div>
+</div>

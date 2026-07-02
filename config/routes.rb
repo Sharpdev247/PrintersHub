@@ -118,6 +118,11 @@ Rails.application.routes.draw do
       end
     end
 
+    # Subscription & billing
+    resource  :subscription, only: [:show, :create, :destroy], controller: "subscriptions" do
+      get :plans, on: :collection
+    end
+
     # Activity Logs
     resources :activity_logs, only: [:index]
 
