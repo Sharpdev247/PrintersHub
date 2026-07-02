@@ -121,6 +121,9 @@ Rails.application.routes.draw do
     # Activity Logs
     resources :activity_logs, only: [:index]
 
+    # API Tokens (portal UI)
+    resources :api_tokens, only: [:index, :create, :destroy]
+
     # Settings
     namespace :settings do
       resource  :profile,     only: [:show, :update], controller: "profiles"
@@ -138,6 +141,22 @@ Rails.application.routes.draw do
 
       # Auth introspection
       get "me", to: "auth#me"
+
+      # Listings
+      resources :listings, only: [:index, :show, :create, :update, :destroy]
+
+      # Orders
+      resources :orders, only: [:index, :show] do
+        member do
+          patch :update_status
+          patch :cancel
+        end
+      end
+
+      # Inventory
+      resources :inventory, only: [:index, :show], controller: "inventory" do
+        member { post :adjust }
+      end
     end
   end
 

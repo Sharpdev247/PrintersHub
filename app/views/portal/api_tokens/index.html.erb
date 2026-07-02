@@ -1,0 +1,158 @@
+<% content_for :title, "API Tokens — PrintersHub" %>
+
+<div style="max-width:800px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+      <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">API Tokens</h1>
+      <p style="font-size:.82rem;color:#9ca3af;margin-top:.25rem">
+        Tokens authenticate API requests via <code style="background:#f3f4f6;padding:.1rem .35rem;border-radius:4px">Authorization: Bearer &lt;token&gt;</code>
+      </p>
+    </div>
+  </div>
+
+  <%# Newly created token banner — shown once %>
+  <% if @flash_token.present? %>
+    <div style="background:#fefce8;border:1.5px solid #fbbf24;border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1.5rem">
+      <div style="font-size:.85rem;font-weight:700;color:#92400e;margin-bottom:.5rem">
+        ⚠ Copy your token now — it will not be shown again.
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <code id="raw-token" style="flex:1;background:#fff;border:1px solid #fde68a;border-radius:6px;
+                                     padding:.55rem .85rem;font-size:.83rem;word-break:break-all;color:#111">
+          <%= @flash_token %>
+        </code>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('raw-token').innerText).then(()=>this.textContent='Copied ✓')"
+                style="padding:.45rem .9rem;background:#f59e0b;color:#fff;border:none;border-radius:6px;
+                       font-size:.82rem;font-weight:600;cursor:pointer;flex-shrink:0">
+          Copy
+        </button>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Create form %>
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem;margin-bottom:1.75rem">
+    <h2 style="font-size:.95rem;font-weight:700;color:#111;margin-bottom:1rem">Create new token</h2>
+
+    <%= form_with url: portal_api_tokens_path, method: :post, local: true do |f| %>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:.85rem;align-items:end">
+
+        <div>
+          <%= f.label :name, "Token name", style: "font-size:.78rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem" %>
+          <%= f.text_field "api_token[name]", placeholder: "e.g. CI pipeline",
+                style: "width:100%;font-size:.88rem;padding:.45rem .7rem;border:1px solid #d1d5db;border-radius:6px" %>
+        </div>
+
+        <div>
+          <%= f.label :token_type, "Type", style: "font-size:.78rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem" %>
+          <%= f.select "api_token[token_type]",
+                [["Personal", "personal"], ["Service", "service"], ["Webhook", "webhook"]],
+                {},
+                style: "width:100%;font-size:.88rem;padding:.45rem .7rem;border:1px solid #d1d5db;border-radius:6px" %>
+        </div>
+
+        <div>
+          <%= f.label :expires_in_days, "Expires in (days)", style: "font-size:.78rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem" %>
+          <%= f.number_field "api_token[expires_in_days]", placeholder: "Never",
+                min: 1,
+                style: "width:100%;font-size:.88rem;padding:.45rem .7rem;border:1px solid #d1d5db;border-radius:6px" %>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem">
+        <div style="font-size:.78rem;font-weight:600;color:#374151;margin-bottom:.5rem">Scopes</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+          <% ApiToken::AVAILABLE_SCOPES.each do |scope| %>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:#374151;cursor:pointer;
+                          background:#f9fafb;border:1px solid #e5e7eb;border-radius:20px;padding:.25rem .75rem">
+              <%= check_box_tag "api_token[scopes][]", scope, false, id: "scope_#{scope.parameterize}" %>
+              <%= scope %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;display:flex;justify-content:flex-end">
+        <%= f.submit "Generate token",
+              style: "padding:.48rem 1.1rem;background:#111;color:#fff;border:none;border-radius:6px;
+                      font-size:.88rem;font-weight:600;cursor:pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Token list %>
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+    <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+      <%= @tokens.count %> token<%= "s" if @tokens.count != 1 %>
+    </div>
+
+    <% if @tokens.any? %>
+      <% @tokens.each do |t| %>
+        <div style="padding:.85rem 1.25rem;border-top:1px solid #f3f4f6;display:flex;align-items:center;gap:1rem">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+              <span style="font-size:.88rem;font-weight:600;color:#111"><%= t.name %></span>
+              <span style="font-size:.72rem;padding:.15rem .5rem;border-radius:12px;
+                           background:<%= t.active? ? '#dcfce7' : '#fee2e2' %>;
+                           color:<%= t.active? ? '#15803d' : '#dc2626' %>;font-weight:700">
+                <%= t.active? ? "Active" : (t.revoked? ? "Revoked" : "Expired") %>
+              </span>
+              <span style="font-size:.75rem;color:#6b7280;background:#f3f4f6;padding:.15rem .5rem;border-radius:6px">
+                <%= t.token_type %>
+              </span>
+            </div>
+
+            <div style="margin-top:.3rem;display:flex;flex-wrap:wrap;gap:.35rem">
+              <% t.scopes.each do |s| %>
+                <span style="font-size:.72rem;color:#1d4ed8;background:#dbeafe;padding:.1rem .45rem;border-radius:10px"><%= s %></span>
+              <% end %>
+            </div>
+
+            <div style="margin-top:.3rem;font-size:.75rem;color:#9ca3af">
+              <code style="background:#f3f4f6;padding:.1rem .35rem;border-radius:4px"><%= t.display_token %></code>
+              &nbsp;·&nbsp;by <%= t.user.email %>
+              &nbsp;·&nbsp;created <%= t.created_at.strftime("%b %-d, %Y") %>
+              <% if t.last_used_at %>
+                &nbsp;·&nbsp;last used <%= t.last_used_at.strftime("%b %-d") %>
+              <% end %>
+              <% if t.expires_at %>
+                &nbsp;·&nbsp;expires <%= t.expires_at.strftime("%b %-d, %Y") %>
+              <% end %>
+            </div>
+          </div>
+
+          <% if t.active? %>
+            <%= button_to "Revoke", portal_api_token_path(t), method: :delete,
+                  data: { confirm: "Revoke this token? Any integrations using it will stop working." },
+                  style: "padding:.38rem .85rem;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;
+                          font-size:.82rem;font-weight:600;cursor:pointer" %>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div style="padding:2rem;text-align:center;font-size:.85rem;color:#9ca3af">
+        No tokens yet. Create one above to start using the API.
+      </div>
+    <% end %>
+  </div>
+
+  <%# Quick API reference %>
+  <div style="background:#1e293b;border-radius:10px;padding:1.25rem;margin-top:1.5rem;font-size:.8rem;color:#cbd5e1">
+    <div style="font-weight:700;color:#fff;margin-bottom:.75rem">Quick reference</div>
+    <% [
+      ["Listings",  "GET /api/v1/listings",   "read:listings"],
+      ["Orders",    "GET /api/v1/orders",     "read:orders"],
+      ["Inventory", "GET /api/v1/inventory",  "read:inventory"],
+      ["Me",        "GET /api/v1/me",         "(any)"],
+    ].each do |resource, endpoint, scope| %>
+      <div style="display:flex;gap:1rem;align-items:center;margin-bottom:.4rem">
+        <code style="color:#7dd3fc;width:4.5rem;flex-shrink:0"><%= resource %></code>
+        <code style="color:#e2e8f0"><%= endpoint %></code>
+        <span style="color:#64748b;font-size:.72rem">scope: <%= scope %></span>
+      </div>
+    <% end %>
+    <div style="margin-top:.75rem;color:#64748b;font-size:.75rem">
+      Add <code style="color:#94a3b8">Authorization: Bearer &lt;token&gt;</code> to every request.
+    </div>
+  </div>
+</div>
