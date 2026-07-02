@@ -1,0 +1,38 @@
+<%#
+  Renders a simple inline SVG bar chart.
+  locals: data (array of {label:, value:}), title:, color: (optional, default blue)
+%>
+<% color ||= "#2563eb" %>
+<% max_val = data.map { |d| d[:value] }.max.to_f %>
+<% max_val = 1.0 if max_val.zero? %>
+<% bar_width = [600.0 / [data.size, 1].max - 2, 40].min %>
+<% chart_w = data.size * (bar_width + 2) %>
+<% chart_w = [chart_w, 300].max %>
+
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem">
+  <div style="font-size:.85rem;font-weight:700;color:#111;margin-bottom:1rem"><%= title %></div>
+  <div style="overflow-x:auto">
+    <svg width="<%= chart_w %>" height="140" viewBox="0 0 <%= chart_w %> 140" style="display:block">
+      <% data.each_with_index do |d, i| %>
+        <% bar_h = [(d[:value].to_f / max_val * 100).round, 2].max %>
+        <% x = i * (bar_width + 2) %>
+        <% y = 100 - bar_h %>
+        <rect x="<%= x %>" y="<%= y %>" width="<%= bar_width %>" height="<%= bar_h %>"
+              fill="<%= color %>" rx="2" opacity="0.85"/>
+        <% if data.size <= 20 %>
+          <text x="<%= x + bar_width / 2 %>" y="130" text-anchor="middle"
+                font-size="8" fill="#9ca3af">
+            <%= d[:label].to_s.last(5) %>
+          </text>
+        <% end %>
+        <title><%= d[:label] %>: <%= d[:value] %></title>
+      <% end %>
+      <line x1="0" y1="100" x2="<%= chart_w %>" y2="100" stroke="#e5e7eb" stroke-width="1"/>
+    </svg>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:.72rem;color:#9ca3af;margin-top:.25rem">
+    <span><%= data.first&.dig(:label) %></span>
+    <span>Max: <%= number_with_delimiter(max_val.to_i) %></span>
+    <span><%= data.last&.dig(:label) %></span>
+  </div>
+</div>

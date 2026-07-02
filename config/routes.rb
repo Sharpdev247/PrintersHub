@@ -90,6 +90,14 @@ Rails.application.routes.draw do
       end
     end
 
+    # Reports
+    namespace :reports do
+      get "/",         to: "overview#show",   as: :root
+      get "revenue",   to: "revenue#show",    as: :revenue
+      get "listings",  to: "listings#show",   as: :listings
+      get "inventory", to: "inventory#show",  as: :inventory
+    end
+
     # CRM
     namespace :crm do
       get "/", to: "dashboard#show", as: :root

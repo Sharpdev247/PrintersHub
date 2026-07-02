@@ -1,0 +1,80 @@
+<% content_for :title, "Revenue Report — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.25rem">Reports</h1>
+  <%= render "portal/reports/nav" %>
+
+  <div style="font-size:.82rem;color:#9ca3af;margin-bottom:1.25rem"><%= period_label %></div>
+
+  <%# Summary cards %>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem">
+    <% s = @report[:summary] %>
+    <% [
+      ["Total Orders",   s[:total_orders],                                                   "#374151"],
+      ["Paid Orders",    s[:paid_orders],                                                    "#059669"],
+      ["Revenue",        number_to_currency(s[:total_revenue], unit: "$ "),                  "#2563eb"],
+      ["Avg Order",      number_to_currency(s[:avg_order],     unit: "$ "),                  "#0891b2"],
+      ["Cancelled",      s[:cancelled],                                                      "#dc2626"],
+    ].each do |label, val, color| %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem 1.1rem">
+        <div style="font-size:1.25rem;font-weight:800;color:<%= color %>"><%= val %></div>
+        <div style="font-size:.75rem;color:#9ca3af;margin-top:.15rem"><%= label %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Revenue chart %>
+  <% if @report[:by_period].any? %>
+    <div style="margin-bottom:1.5rem">
+      <%= render "portal/reports/bar_chart",
+            data: @report[:by_period].map { |r| { label: r[:period], value: r[:revenue] } },
+            title: "Revenue by #{@period == '12m' ? 'Month' : 'Day'}" %>
+    </div>
+
+    <%# Orders chart %>
+    <%= render "portal/reports/bar_chart",
+          data: @report[:by_period].map { |r| { label: r[:period], value: r[:orders] } },
+          title: "Orders by #{@period == '12m' ? 'Month' : 'Day'}",
+          color: "#059669" %>
+  <% else %>
+    <div style="text-align:center;padding:2rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px;margin-bottom:1.5rem">
+      <div style="font-size:.9rem;color:#9ca3af">No orders in this period.</div>
+    </div>
+  <% end %>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem">
+    <%# Orders by status %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+        Orders by Status
+      </div>
+      <% @report[:by_status].each do |label, count| %>
+        <div style="padding:.65rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;font-size:.85rem">
+          <span style="color:#374151"><%= label %></span>
+          <span style="font-weight:700;color:#111"><%= count %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Top listings by revenue %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+        Top Listings by Revenue
+      </div>
+      <% if @report[:top_listings].any? %>
+        <% @report[:top_listings].each do |item| %>
+          <div style="padding:.65rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="font-size:.83rem;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              <%= item.listing_title %>
+            </div>
+            <div style="font-size:.85rem;font-weight:700;color:#059669;flex-shrink:0">
+              <%= number_to_currency(item.total_revenue, unit: "$ ") %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">No data.</div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,50 @@
+<% content_for :title, "Reports Overview — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.25rem">Reports</h1>
+
+  <%= render "portal/reports/nav" %>
+
+  <div style="font-size:.82rem;color:#9ca3af;margin-bottom:1.25rem"><%= period_label %></div>
+
+  <%# KPI grid %>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
+    <% [
+      ["Total Revenue",    number_to_currency(@total_revenue, unit: "$ "), "#059669"],
+      ["Total Orders",     number_with_delimiter(@total_orders),           "#2563eb"],
+      ["Avg Order Value",  number_to_currency(@avg_order_value, unit: "$ "), "#0891b2"],
+      ["Published Listings", number_with_delimiter(@active_listings),     "#5b21b6"],
+      ["Total Listing Views", number_with_delimiter(@total_views),         "#374151"],
+      ["New Contacts",     number_with_delimiter(@new_contacts),           "#d97706"],
+    ].each do |label, val, color| %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem 1.25rem">
+        <div style="font-size:1.4rem;font-weight:800;color:<%= color %>"><%= val %></div>
+        <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem"><%= label %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Revenue sparkline %>
+  <% if @revenue_data.any? %>
+    <%= render "portal/reports/bar_chart",
+          data: @revenue_data.map { |r| { label: r[:period], value: r[:revenue] } },
+          title: "Revenue — #{period_label}",
+          color: "#2563eb" %>
+  <% end %>
+
+  <%# Secondary stats row %>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.25rem">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem 1.25rem">
+      <div style="font-size:1.3rem;font-weight:800;color:#d97706"><%= @total_favorites %></div>
+      <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem">New Favorites</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem 1.25rem">
+      <div style="font-size:1.3rem;font-weight:800;color:#dc2626"><%= @open_service_requests %></div>
+      <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem">Open Service Requests</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem 1.25rem">
+      <div style="font-size:1.3rem;font-weight:800;color:#2563eb"><%= @new_leads %></div>
+      <div style="font-size:.78rem;color:#9ca3af;margin-top:.2rem">New Leads</div>
+    </div>
+  </div>
+</div>

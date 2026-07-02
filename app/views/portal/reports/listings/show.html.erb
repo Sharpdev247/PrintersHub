@@ -1,0 +1,79 @@
+<% content_for :title, "Listings Report — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.25rem">Reports</h1>
+  <%= render "portal/reports/nav" %>
+
+  <%# Summary cards %>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem">
+    <% [
+      ["Total Listings",  @summary[:total],       "#374151"],
+      ["Published",       @summary[:published],   "#059669"],
+      ["Draft",           @summary[:draft],       "#6b7280"],
+      ["Sold",            @summary[:sold],        "#2563eb"],
+      ["Total Views",     number_with_delimiter(@summary[:total_views]), "#0891b2"],
+    ].each do |label, val, color| %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem 1.1rem">
+        <div style="font-size:1.25rem;font-weight:800;color:<%= color %>"><%= val %></div>
+        <div style="font-size:.75rem;color:#9ca3af;margin-top:.15rem"><%= label %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Category breakdown bar chart %>
+  <% if @by_category.any? %>
+    <div style="margin-bottom:1.5rem">
+      <%= render "portal/reports/bar_chart",
+            data: @by_category.map { |name, count| { label: name.to_s.truncate(12), value: count } },
+            title: "Listings by Category",
+            color: "#5b21b6" %>
+    </div>
+  <% end %>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <%# Top by views %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+        Top by Views
+      </div>
+      <% if @top_by_views.any? %>
+        <% @top_by_views.each do |l| %>
+          <div style="padding:.65rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.83rem;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <%= l.title %>
+              </div>
+              <div style="font-size:.72rem;color:#9ca3af"><%= l.category&.name %> · <%= l.brand&.name %></div>
+            </div>
+            <div style="font-size:.88rem;font-weight:700;color:#374151;flex-shrink:0">
+              <%= number_with_delimiter(l.views_count) %> views
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">No data.</div>
+      <% end %>
+    </div>
+
+    <%# Top by favorites %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+        Top by Favorites (<%= period_label %>)
+      </div>
+      <% if @top_by_favorites.any? %>
+        <% @top_by_favorites.each do |l| %>
+          <div style="padding:.65rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="font-size:.83rem;font-weight:600;color:#111;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              <%= l.title %>
+            </div>
+            <div style="font-size:.88rem;font-weight:700;color:#d97706;flex-shrink:0">
+              ♥ <%= l.fav_count %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">No favorites in this period.</div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,117 @@
+<% content_for :title, "Inventory Report — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin-bottom:1.25rem">Reports</h1>
+  <%= render "portal/reports/nav" %>
+
+  <%# Summary cards %>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+    <% [
+      ["Total SKUs",        @summary[:total_skus],                                "#374151"],
+      ["Total Stock",       number_with_delimiter(@summary[:total_stock]),        "#2563eb"],
+      ["Stock Value",       number_to_currency(@summary[:total_value], unit: "$ "), "#059669"],
+      ["Out of Stock",      @summary[:out_of_stock],                              "#dc2626"],
+    ].each do |label, val, color| %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem 1.1rem">
+        <div style="font-size:1.25rem;font-weight:800;color:<%= color %>"><%= val %></div>
+        <div style="font-size:.75rem;color:#9ca3af;margin-top:.15rem"><%= label %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# By warehouse bar chart %>
+  <% if @by_warehouse.any? %>
+    <div style="margin-bottom:1.5rem">
+      <%= render "portal/reports/bar_chart",
+            data: @by_warehouse.map { |name, qty| { label: name.to_s.truncate(12), value: qty } },
+            title: "Stock by Warehouse",
+            color: "#0891b2" %>
+    </div>
+  <% end %>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <%# Low stock items %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#d97706;display:flex;align-items:center;gap:.4rem">
+        ⚠ Low Stock
+        <span style="font-size:.75rem;font-weight:500;color:#9ca3af">(below reorder point)</span>
+      </div>
+      <% if @low_stock.any? %>
+        <% @low_stock.each do |item| %>
+          <div style="padding:.65rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.83rem;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <%= item.listing&.title || item.sku %>
+              </div>
+              <div style="font-size:.72rem;color:#9ca3af">SKU: <%= item.sku %> · Reorder: <%= item.reorder_point %></div>
+            </div>
+            <div style="font-size:.88rem;font-weight:700;color:#d97706;flex-shrink:0">
+              <%= item.quantity_on_hand %> left
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">No low-stock items.</div>
+      <% end %>
+    </div>
+
+    <%# Out of stock items %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#dc2626;display:flex;align-items:center;gap:.4rem">
+        ✕ Out of Stock
+      </div>
+      <% if @out_of_stock.any? %>
+        <% @out_of_stock.each do |item| %>
+          <div style="padding:.65rem 1.25rem;border-top:1px solid #f9fafb;display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.83rem;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <%= item.listing&.title || item.sku %>
+              </div>
+              <div style="font-size:.72rem;color:#9ca3af">SKU: <%= item.sku %></div>
+            </div>
+            <%= link_to "Adjust",
+                  portal_warehouse_inventory_item_path(item),
+                  style: "font-size:.78rem;color:#2563eb;text-decoration:none;flex-shrink:0" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#9ca3af">No out-of-stock items.</div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Recent adjustments %>
+  <% if @recent_adjustments.any? %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-top:1.25rem">
+      <div style="padding:.9rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;font-weight:700;color:#111">
+        Recent Adjustments (<%= period_label %>)
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.6rem 1.25rem;text-align:left;font-weight:600;color:#6b7280">SKU</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-weight:600;color:#6b7280">Type</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-weight:600;color:#6b7280">Change</th>
+            <th style="padding:.6rem 1rem;text-align:right;font-weight:600;color:#6b7280">After</th>
+            <th style="padding:.6rem 1.25rem;text-align:right;font-weight:600;color:#6b7280">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @recent_adjustments.each do |txn| %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.6rem 1.25rem;color:#374151"><%= txn.inventory_item&.sku %></td>
+              <td style="padding:.6rem 1rem;color:#6b7280"><%= txn.transaction_type.humanize %></td>
+              <td style="padding:.6rem 1rem;text-align:right;font-weight:600;color:<%= txn.quantity_change.to_i >= 0 ? '#059669' : '#dc2626' %>">
+                <%= txn.quantity_change.to_i >= 0 ? "+#{txn.quantity_change}" : txn.quantity_change %>
+              </td>
+              <td style="padding:.6rem 1rem;text-align:right;color:#374151"><%= txn.quantity_after %></td>
+              <td style="padding:.6rem 1.25rem;text-align:right;color:#9ca3af">
+                <%= txn.performed_at.strftime("%b %-d") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

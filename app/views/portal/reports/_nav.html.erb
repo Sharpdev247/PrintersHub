@@ -1,0 +1,25 @@
+<%# Period filter + report tabs — rendered at the top of every report page %>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+  <div style="display:flex;gap:.4rem">
+    <% [
+      [portal_reports_root_path,      "Overview"],
+      [portal_reports_revenue_path,   "Revenue"],
+      [portal_reports_listings_path,  "Listings"],
+      [portal_reports_inventory_path, "Inventory"],
+    ].each do |path, label| %>
+      <% active = request.path == path %>
+      <%= link_to label, path + (params[:period].present? ? "?period=#{params[:period]}" : ""),
+            style: "padding:.35rem .85rem;border-radius:20px;font-size:.82rem;font-weight:#{active ? '700' : '500'};
+                    text-decoration:none;background:#{active ? '#111' : '#f3f4f6'};color:#{active ? '#fff' : '#6b7280'}" %>
+    <% end %>
+  </div>
+
+  <div style="display:flex;gap:.35rem">
+    <% [["7d","7D"],["30d","30D"],["90d","90D"],["12m","12M"],["ytd","YTD"]].each do |val, label| %>
+      <% active = @period == val %>
+      <%= link_to label, request.path + "?period=#{val}",
+            style: "padding:.3rem .7rem;border-radius:6px;font-size:.78rem;font-weight:#{active ? '700' : '500'};
+                    text-decoration:none;background:#{active ? '#2563eb' : '#f3f4f6'};color:#{active ? '#fff' : '#6b7280'}" %>
+    <% end %>
+  </div>
+</div>
