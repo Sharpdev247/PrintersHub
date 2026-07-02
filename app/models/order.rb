@@ -38,9 +38,10 @@ class Order < ApplicationRecord
   validates :total,           numericality: { greater_than_or_equal_to: 0 }
   validate  :buyer_and_seller_are_different
 
-  scope :for_buyer,  ->(account) { where(buyer_account: account) }
-  scope :for_seller, ->(account) { where(seller_account: account) }
-  scope :recent,     -> { order(created_at: :desc) }
+  scope :for_buyer,   ->(account) { where(buyer_account: account) }
+  scope :for_seller,  ->(account) { where(seller_account: account) }
+  scope :for_account, ->(account) { where(buyer_account: account).or(where(seller_account: account)) }
+  scope :recent,      -> { order(created_at: :desc) }
   scope :paid,       -> { where.not(paid_at: nil) }
   scope :active,     -> { where(status: [statuses[:pending_payment], statuses[:payment_confirmed],
                                           statuses[:processing], statuses[:partially_shipped],

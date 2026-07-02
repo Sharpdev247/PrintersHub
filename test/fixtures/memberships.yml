@@ -1,0 +1,9 @@
+seller_owner:
+  account: seller_account
+  user: seller
+  role: 0
+
+buyer_owner:
+  account: buyer_account
+  user: buyer
+  role: 0

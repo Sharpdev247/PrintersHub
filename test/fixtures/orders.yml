@@ -1,0 +1,26 @@
+pending_order:
+  buyer_account: buyer_account
+  seller_account: seller_account
+  created_by: buyer
+  order_number: ORD-2026-00001
+  status: 1
+  currency: PKR
+  subtotal: 45000.00
+  tax_amount: 0.00
+  shipping_amount: 500.00
+  discount_amount: 0.00
+  total: 45500.00
+
+completed_order:
+  buyer_account: buyer_account
+  seller_account: seller_account
+  created_by: buyer
+  order_number: ORD-2026-00002
+  status: 7
+  currency: PKR
+  subtotal: 35000.00
+  tax_amount: 0.00
+  shipping_amount: 500.00
+  discount_amount: 0.00
+  total: 35500.00
+  paid_at: 2026-01-25 12:00:00
