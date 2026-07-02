@@ -11,6 +11,9 @@ development:
 
 test:
   <<: *default
+  # DATABASE_URL takes full precedence when set (used in CI).
+  # Falls back to the default host/port config for local dev.
+  url: <%= ENV["DATABASE_URL"] %>
   database: printers_hub_test
 
 production:

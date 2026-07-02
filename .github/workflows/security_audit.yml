@@ -1,0 +1,32 @@
+name: Scheduled Security Audit
+
+on:
+  schedule:
+    # Run every Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+env:
+  RUBY_VERSION: "3.4.9"
+
+jobs:
+  audit:
+    name: Full security audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Update advisory database
+        run: bin/bundler-audit --update
+
+      - name: Brakeman deep scan
+        run: bin/brakeman --no-pager --confidence-level=1
+
+      - name: Audit JS dependencies
+        run: bin/importmap audit
