@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_02_091856) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_093709) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -1084,6 +1084,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_091856) do
     t.index ["user_id"], name: "index_saved_searches_on_user_id_alerts", where: "(alert_enabled = true)"
   end
 
+  create_table "service_requests", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "assigned_to_id"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "USD"
+    t.bigint "customer_account_id"
+    t.text "description"
+    t.datetime "diagnosed_at"
+    t.text "diagnosis"
+    t.decimal "estimated_cost", precision: 12, scale: 2
+    t.decimal "final_cost", precision: 12, scale: 2
+    t.text "notes"
+    t.bigint "printer_model_id"
+    t.string "priority", limit: 20, default: "normal", null: false
+    t.datetime "reported_at"
+    t.string "request_number", null: false
+    t.text "resolution"
+    t.datetime "scheduled_at"
+    t.string "serial_number", limit: 100
+    t.datetime "started_at"
+    t.string "status", limit: 30, default: "pending", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_service_requests_on_account_id"
+    t.index ["assigned_to_id"], name: "index_service_requests_on_assigned_to_id"
+    t.index ["customer_account_id"], name: "index_service_requests_on_customer_account_id"
+    t.index ["request_number"], name: "index_service_requests_on_request_number", unique: true
+    t.index ["status"], name: "index_service_requests_on_status"
+  end
+
   create_table "shipment_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "order_item_id", null: false
@@ -1616,6 +1647,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_091856) do
   add_foreign_key "reviews", "users", column: "reviewee_id", on_delete: :restrict
   add_foreign_key "reviews", "users", column: "reviewer_id", on_delete: :restrict
   add_foreign_key "saved_searches", "users", on_delete: :cascade
+  add_foreign_key "service_requests", "accounts"
+  add_foreign_key "service_requests", "accounts", column: "customer_account_id"
+  add_foreign_key "service_requests", "printer_models"
+  add_foreign_key "service_requests", "users", column: "assigned_to_id"
   add_foreign_key "shipment_items", "order_items", on_delete: :restrict
   add_foreign_key "shipment_items", "shipments", on_delete: :cascade
   add_foreign_key "shipments", "accounts", on_delete: :restrict

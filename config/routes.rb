@@ -90,8 +90,17 @@ Rails.application.routes.draw do
       end
     end
 
-    # Service
+    # Service Center
     get "service", to: "service/dashboard#show", as: :service
+    namespace :service do
+      get "/", to: "dashboard#show", as: :root
+      resources :service_requests, only: [:index, :show, :new, :create, :edit, :update] do
+        member do
+          patch :assign
+          patch :transition
+        end
+      end
+    end
 
     # Settings
     namespace :settings do

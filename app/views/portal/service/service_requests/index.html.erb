@@ -1,0 +1,100 @@
+<% content_for :title, "Service Requests — PrintersHub" %>
+
+<%
+  STATUS_TABS = [
+    [nil,             "All"],
+    ["pending",       "Pending"],
+    ["scheduled",     "Scheduled"],
+    ["in_progress",   "In Progress"],
+    ["diagnosed",     "Diagnosed"],
+    ["waiting_parts", "Waiting Parts"],
+    ["completed",     "Completed"],
+    ["cancelled",     "Cancelled"],
+  ]
+  STATUS_COLOR = {
+    "pending"       => { bg: "#f3f4f6", color: "#6b7280" },
+    "scheduled"     => { bg: "#dbeafe", color: "#1d4ed8" },
+    "in_progress"   => { bg: "#ede9fe", color: "#5b21b6" },
+    "diagnosed"     => { bg: "#fef3c7", color: "#92400e" },
+    "waiting_parts" => { bg: "#ffedd5", color: "#9a3412" },
+    "completed"     => { bg: "#d1fae5", color: "#065f46" },
+    "cancelled"     => { bg: "#fee2e2", color: "#991b1b" },
+  }.freeze
+  PRIORITY_COLOR = { "urgent" => "#dc2626", "high" => "#d97706", "normal" => "#6b7280", "low" => "#9ca3af" }.freeze
+%>
+
+<div style="max-width:1000px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Service Requests</h1>
+    <%= link_to "+ New Request", new_portal_service_service_request_path,
+          style: "font-size:.85rem;padding:.45rem 1rem;background:#2563eb;color:#fff;border-radius:7px;text-decoration:none;font-weight:600" %>
+  </div>
+
+  <%# Status tabs %>
+  <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem;border-bottom:1px solid #e5e7eb;padding-bottom:.75rem">
+    <% STATUS_TABS.each do |val, label| %>
+      <% active = params[:status] == val %>
+      <% count = val ? @counts[val].to_i : @counts.values.sum %>
+      <%= link_to portal_service_service_requests_path(status: val),
+            style: "padding:.35rem .85rem;border-radius:20px;font-size:.82rem;font-weight:#{active ? '700' : '500'};
+                    text-decoration:none;background:#{active ? '#2563eb' : '#f3f4f6'};
+                    color:#{active ? '#fff' : '#6b7280'}" do %>
+        <%= label %><% if count > 0 %> (<%= count %>)<% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @requests.none? %>
+    <div style="text-align:center;padding:3rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:.95rem;color:#6b7280">No service requests found.</div>
+    </div>
+  <% else %>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:.6rem 1.25rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Request</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Assigned</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Priority</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Status</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Scheduled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @requests.each do |sr| %>
+            <% sc = STATUS_COLOR[sr.status] || STATUS_COLOR["pending"] %>
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:.85rem 1.25rem">
+                <%= link_to portal_service_service_request_path(sr),
+                      style: "text-decoration:none" do %>
+                  <div style="font-size:.88rem;font-weight:600;color:#111"><%= sr.title %></div>
+                  <div style="font-size:.73rem;color:#9ca3af;font-family:monospace"><%= sr.request_number %></div>
+                <% end %>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.82rem;color:<%= sr.assigned_to ? '#374151' : '#d97706' %>">
+                <%= sr.assigned_to&.email || "Unassigned" %>
+              </td>
+              <td style="padding:.85rem 1rem">
+                <span style="font-size:.78rem;font-weight:700;color:<%= PRIORITY_COLOR[sr.priority] %>">
+                  <%= sr.priority.upcase %>
+                </span>
+              </td>
+              <td style="padding:.85rem 1rem">
+                <span style="display:inline-block;padding:.2rem .6rem;border-radius:10px;font-size:.75rem;font-weight:600;
+                             background:<%= sc[:bg] %>;color:<%= sc[:color] %>">
+                  <%= sr.status.humanize %>
+                </span>
+              </td>
+              <td style="padding:.85rem 1rem;font-size:.8rem;color:#9ca3af">
+                <%= sr.scheduled_at&.strftime("%b %d, %Y") || "—" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <% if @requests.total_pages > 1 %>
+      <div style="margin-top:1.5rem;text-align:center"><%= paginate @requests %></div>
+    <% end %>
+  <% end %>
+</div>

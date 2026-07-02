@@ -1,0 +1,144 @@
+<% content_for :title, "#{@request.request_number} — Service" %>
+
+<%
+  STATUS_COLOR = {
+    "pending"       => { bg: "#f3f4f6", color: "#6b7280" },
+    "scheduled"     => { bg: "#dbeafe", color: "#1d4ed8" },
+    "in_progress"   => { bg: "#ede9fe", color: "#5b21b6" },
+    "diagnosed"     => { bg: "#fef3c7", color: "#92400e" },
+    "waiting_parts" => { bg: "#ffedd5", color: "#9a3412" },
+    "completed"     => { bg: "#d1fae5", color: "#065f46" },
+    "cancelled"     => { bg: "#fee2e2", color: "#991b1b" },
+  }.freeze
+  NEXT_STATUSES = {
+    "pending"       => %w[scheduled in_progress cancelled],
+    "scheduled"     => %w[in_progress cancelled],
+    "in_progress"   => %w[diagnosed waiting_parts completed cancelled],
+    "diagnosed"     => %w[waiting_parts in_progress completed cancelled],
+    "waiting_parts" => %w[in_progress completed cancelled],
+  }.freeze
+  sc = STATUS_COLOR[@request.status] || STATUS_COLOR["pending"]
+%>
+
+<div style="max-width:860px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+    <div>
+      <%= link_to "← Service Requests", portal_service_service_requests_path,
+            style: "font-size:.82rem;color:#6b7280;text-decoration:none" %>
+      <h1 style="font-size:1.2rem;font-weight:700;color:#111;margin:.3rem 0 0">
+        <%= @request.title %>
+      </h1>
+      <div style="font-size:.8rem;color:#9ca3af;margin-top:.15rem">
+        <span style="font-family:monospace"><%= @request.request_number %></span>
+        · Reported <%= @request.reported_at&.strftime("%b %d, %Y") || @request.created_at.strftime("%b %d, %Y") %>
+        · <span style="font-weight:600;color:<%= @request.priority == 'urgent' ? '#dc2626' : @request.priority == 'high' ? '#d97706' : '#6b7280' %>">
+            <%= @request.priority.upcase %>
+          </span>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center">
+      <span style="display:inline-block;padding:.25rem .8rem;border-radius:20px;font-size:.82rem;font-weight:600;
+                   background:<%= sc[:bg] %>;color:<%= sc[:color] %>">
+        <%= @request.status.humanize %>
+      </span>
+      <% if policy(@request).update? %>
+        <%= link_to "Edit", edit_portal_service_service_request_path(@request),
+              style: "font-size:.82rem;padding:.35rem .85rem;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none;font-weight:600" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:1rem;align-items:start">
+    <%# Left: details %>
+    <div>
+      <%# Description %>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem;margin-bottom:1rem">
+        <div style="font-size:.82rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Description</div>
+        <div style="font-size:.9rem;color:#374151;white-space:pre-wrap"><%= @request.description.presence || "—" %></div>
+      </div>
+
+      <%# Diagnosis %>
+      <% if @request.diagnosis.present? || %w[diagnosed waiting_parts completed].include?(@request.status) %>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem;margin-bottom:1rem">
+          <div style="font-size:.82rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Diagnosis</div>
+          <div style="font-size:.9rem;color:#374151;white-space:pre-wrap"><%= @request.diagnosis.presence || "Not yet diagnosed." %></div>
+        </div>
+      <% end %>
+
+      <%# Resolution %>
+      <% if @request.resolution.present? || @request.status == "completed" %>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem;margin-bottom:1rem">
+          <div style="font-size:.82rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Resolution</div>
+          <div style="font-size:.9rem;color:#374151;white-space:pre-wrap"><%= @request.resolution.presence || "—" %></div>
+        </div>
+      <% end %>
+
+      <%# Notes %>
+      <% if @request.notes.present? %>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:1.25rem">
+          <div style="font-size:.82rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Internal Notes</div>
+          <div style="font-size:.88rem;color:#78350f;white-space:pre-wrap"><%= @request.notes %></div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Right: meta + actions %>
+    <div style="display:flex;flex-direction:column;gap:1rem">
+      <%# Meta info %>
+      <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:1rem">
+        <% {
+          "Assigned To"   => @request.assigned_to&.email || "Unassigned",
+          "Customer"      => @request.customer_account&.name || "—",
+          "Device"        => @request.printer_model&.name || "—",
+          "Serial Number" => @request.serial_number || "—",
+          "Scheduled"     => @request.scheduled_at&.strftime("%b %d, %Y %I:%M %p") || "—",
+          "Started"       => @request.started_at&.strftime("%b %d, %Y") || "—",
+          "Completed"     => @request.completed_at&.strftime("%b %d, %Y") || "—",
+          "Est. Cost"     => @request.estimated_cost ? number_to_currency(@request.estimated_cost, unit: @request.currency + " ") : "—",
+          "Final Cost"    => @request.final_cost ? number_to_currency(@request.final_cost, unit: @request.currency + " ") : "—",
+        }.each do |label, val| %>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid #f3f4f6">
+            <span style="color:#9ca3af"><%= label %></span>
+            <span style="color:#374151;font-weight:500;text-align:right;max-width:150px;overflow:hidden;text-overflow:ellipsis">
+              <%= val %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Status transition %>
+      <% allowed_next = NEXT_STATUSES[@request.status] || [] %>
+      <% if policy(@request).update? && allowed_next.any? %>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem">
+          <div style="font-size:.85rem;font-weight:700;color:#111;margin-bottom:.75rem">Update Status</div>
+          <%= form_with url: transition_portal_service_service_request_path(@request), method: :patch do |f| %>
+            <%= f.select :status,
+                  allowed_next.map { |s| [s.humanize, s] },
+                  { prompt: "Move to…" },
+                  style: "width:100%;padding:.5rem;border:1px solid #d1d5db;border-radius:6px;font-size:.88rem;margin-bottom:.6rem" %>
+            <%= f.submit "Update",
+                  style: "width:100%;padding:.5rem;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Assign technician %>
+      <% if policy(@request).update? %>
+        <% technicians = Current.account.memberships.kept.where(role: Membership.roles[:technician]).includes(:user) %>
+        <% if technicians.any? %>
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem">
+            <div style="font-size:.85rem;font-weight:700;color:#111;margin-bottom:.75rem">Assign Technician</div>
+            <%= form_with url: assign_portal_service_service_request_path(@request), method: :patch do |f| %>
+              <%= select_tag :technician_id,
+                    options_for_select(technicians.map { |m| [m.user.email, m.user_id] }, @request.assigned_to_id),
+                    prompt: "Unassigned",
+                    style: "width:100%;padding:.5rem;border:1px solid #d1d5db;border-radius:6px;font-size:.88rem;margin-bottom:.6rem" %>
+              <%= submit_tag "Assign",
+                    style: "width:100%;padding:.5rem;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer" %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
