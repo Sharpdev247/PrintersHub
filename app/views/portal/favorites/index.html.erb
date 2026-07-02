@@ -1,0 +1,75 @@
+<% content_for :title, "Saved Listings — PrintersHub" %>
+
+<div style="max-width:1000px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <div>
+      <h1 style="font-size:1.3rem;font-weight:700;color:#111;margin:0">Saved Listings</h1>
+      <div style="font-size:.85rem;color:#6b7280;margin-top:.2rem"><%= @favorites.total_count %> saved</div>
+    </div>
+    <%= link_to "Browse marketplace", listings_path,
+          style: "font-size:.85rem;color:#2563eb;text-decoration:none;font-weight:500" %>
+  </div>
+
+  <% if @favorites.none? %>
+    <div style="text-align:center;padding:4rem 2rem;background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px">
+      <div style="font-size:2rem;margin-bottom:.75rem">♡</div>
+      <div style="font-size:1rem;font-weight:600;color:#374151;margin-bottom:.5rem">No saved listings yet</div>
+      <div style="font-size:.875rem;color:#6b7280;margin-bottom:1.5rem">
+        Browse the marketplace and save listings you're interested in.
+      </div>
+      <%= link_to "Browse listings", listings_path,
+            style: "padding:.6rem 1.5rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-size:.9rem;font-weight:600" %>
+    </div>
+  <% else %>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem">
+      <% @favorites.each do |fav| %>
+        <% l = fav.listing %>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;position:relative">
+          <%# Unsave button %>
+          <div style="position:absolute;top:.6rem;right:.6rem;z-index:1">
+            <%= render "favorites/button", listing: l %>
+          </div>
+
+          <%= link_to listing_path(l), style: "text-decoration:none;color:inherit" do %>
+            <%# Placeholder image area %>
+            <div style="height:160px;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
+              <span style="font-size:2.5rem;color:#d1d5db">🖨</span>
+            </div>
+
+            <div style="padding:.9rem 1rem">
+              <div style="font-size:.75rem;color:#9ca3af;margin-bottom:.25rem">
+                <%= l.category&.name %> · <%= l.brand&.name %>
+              </div>
+              <div style="font-size:.95rem;font-weight:700;color:#111;margin-bottom:.35rem;
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <%= l.title %>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+                <div style="font-size:1rem;font-weight:700;color:#2563eb">
+                  <%= number_to_currency(l.price, unit: l.currency + " ") %>
+                </div>
+                <span style="font-size:.72rem;padding:.15rem .5rem;border-radius:10px;
+                      background:<%= l.status_published? ? '#d1fae5' : '#fef3c7' %>;
+                      color:<%= l.status_published? ? '#065f46' : '#92400e' %>">
+                  <%= l.status.humanize %>
+                </span>
+              </div>
+
+              <div style="font-size:.75rem;color:#9ca3af">
+                Saved <%= time_ago_in_words(fav.created_at) %> ago
+                · <%= l.account&.name %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @favorites.total_pages > 1 %>
+      <div style="margin-top:2rem;text-align:center">
+        <%= paginate @favorites %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

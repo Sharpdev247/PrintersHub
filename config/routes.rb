@@ -24,7 +24,9 @@ Rails.application.routes.draw do
   get "welcome", to: "welcome#show", as: :welcome
 
   # Public marketplace browsing (no login required)
-  resources :listings, only: [:index, :show]
+  resources :listings, only: [:index, :show] do
+    resource :favorite, only: [:create], controller: "favorites"
+  end
 
   # ── Portal ─────────────────────────────────────────────────────────────────
   namespace :portal do
@@ -46,6 +48,9 @@ Rails.application.routes.draw do
         end
       end
     end
+
+    # Favorites (buyer portal)
+    resources :favorites, only: [:index]
 
     # Service
     get "service", to: "service/dashboard#show", as: :service
