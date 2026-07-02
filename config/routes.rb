@@ -31,9 +31,10 @@ Rails.application.routes.draw do
     get "/",      to: "dashboard#show", as: :root  # /portal → role-based redirect
 
     # Seller
-    get "seller", to: "seller/dashboard#show", as: :seller
+    get "seller",           to: "seller/dashboard#show", as: :seller
 
     namespace :seller do
+      get "/", to: "dashboard#show", as: :root
       resources :listings do
         member do
           patch :publish
