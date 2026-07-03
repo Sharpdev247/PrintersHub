@@ -1,16 +1,23 @@
-<h2>Forgot your password?</h2>
+<% content_for :title, "Forgot Password — PrintersHub" %>
+
+<h2>Reset your password</h2>
+
+<p style="text-align:center;color:#6b7280;font-size:.9rem;margin-bottom:1.5rem;">
+  Enter your email and we'll send you a reset link.
+</p>
 
 <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
   <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
+    <%= f.label :email, "Email Address" %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email",
+                              placeholder: "you@example.com" %>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Send me password reset instructions" %>
-  </div>
+  <%= f.submit "Send reset instructions", class: "btn-primary" %>
 <% end %>
 
-<%= render "devise/shared/links" %>
+<div class="auth-links">
+  <p><%= link_to "Back to sign in", new_user_session_path %></p>
+</div>
