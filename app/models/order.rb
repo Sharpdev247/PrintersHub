@@ -105,7 +105,7 @@ class Order < ApplicationRecord
   def buyer_and_seller_are_different
     return unless buyer_account_id.present? && seller_account_id.present?
     if buyer_account_id == seller_account_id
-      errors.add(:buyer_account, "cannot be the same as the seller account")
+      errors.add(:base, "buyer and seller accounts must be different")
     end
   end
 end

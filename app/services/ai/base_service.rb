@@ -9,6 +9,14 @@ module Ai
       @client ||= Anthropic::Client.new(api_key: ENV.fetch("ANTHROPIC_API_KEY"))
     end
 
+    # Allows tests to inject a fake client without hitting the real API.
+    def with_client(fake_client)
+      @client = fake_client
+      yield
+    ensure
+      @client = nil
+    end
+
     def chat(system_prompt, user_message, max_tokens: 1024)
       response = client.messages.create(
         model:      MODEL,
