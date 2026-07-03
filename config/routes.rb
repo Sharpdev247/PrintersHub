@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # ── Admin ──────────────────────────────────────────────────────────────────
-  devise_for :admin_users, ActiveAdmin::Devise.config
+  devise_for :admin_users, ActiveAdmin::Devise.config.merge(sign_out_via: [ :get, :delete ])
   ActiveAdmin.routes(self)
 
   # ── User auth (custom controllers for post-auth redirects) ─────────────────

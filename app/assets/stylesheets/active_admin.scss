@@ -11,7 +11,59 @@
 @import "active_admin/mixins";
 @import "active_admin/base";
 
-// Overriding any non-variable Sass must be done after the fact.
-// For example, to change the default status-tag color:
-//
-//   .status_tag { background: #6090DB; }
+// ── Toast Notifications ───────────────────────────────────────────────────────
+
+#aa-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.aa-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 420px;
+  padding: 14px 18px;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: #2e7d32;
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+
+  &--visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  &--notice, &--success { background: #2e7d32; }
+  &--alert, &--error   { background: #c62828; }
+  &--warning           { background: #e65100; }
+
+  &__icon { font-size: 16px; flex-shrink: 0; }
+  &__msg  { flex: 1; line-height: 1.4; }
+
+  &__close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    flex-shrink: 0;
+
+    &:hover { color: #fff; }
+  }
+}

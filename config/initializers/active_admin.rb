@@ -349,6 +349,8 @@ end
 
 
 ActiveAdmin.setup do |config|
+  config.register_javascript "admin_ui.js"
+
   config.namespace :admin do |admin|
     admin.build_menu :default do |menu|
       menu.add label: "People",        priority: 2
