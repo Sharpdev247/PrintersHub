@@ -347,18 +347,6 @@ ActiveAdmin.setup do |config|
   # config.order_clause = MyOrderClause
 end
 
-# == Propshaft-compatible JavaScript loading
-#
-# Rails 8 uses Propshaft, which does not process Sprockets //= require directives.
-# We clear the default "active_admin.js" manifest entry (which is a Sprockets artifact)
-# and register the real compiled files that Propshaft can serve directly from gem load paths:
-#   - jquery3.js  (from jquery-rails gem)
-#   - active_admin/base.js (from activeadmin gem — self-contained UMD bundle)
-Rails.application.config.after_initialize do
-  ActiveAdmin.application.javascripts.clear
-  ActiveAdmin.application.register_javascript "jquery3.js"
-  ActiveAdmin.application.register_javascript "active_admin/base.js"
-end
 
 ActiveAdmin.setup do |config|
   config.namespace :admin do |admin|
