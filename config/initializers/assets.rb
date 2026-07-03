@@ -4,4 +4,4 @@
 Rails.application.config.assets.version = "1.0"
 
 # Compile ActiveAdmin JS/CSS through Sprockets (Propshaft cannot process //= require manifests)
-Rails.application.config.assets.precompile += %w[active_admin.js active_admin.scss admin_ui.js]
+# No Sprockets precompile needed — Propshaft serves all assets from app/assets directly
