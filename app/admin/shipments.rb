@@ -1,4 +1,5 @@
 ActiveAdmin.register Shipment do
+  menu parent: "Inventory", priority: 5, label: "Shipments"
   permit_params :order_id, :account_id, :tracking_number, :carrier, :status,
                 :weight, :weight_unit, :shipping_cost, :currency,
                 :notes, :shipped_at, :estimated_delivery_at, :delivered_at

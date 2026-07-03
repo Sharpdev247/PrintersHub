@@ -1,5 +1,5 @@
 ActiveAdmin.register Membership do
-  menu priority: 4, label: "Memberships"
+  menu parent: "People", priority: 4, label: "Memberships"
 
   permit_params :account_id, :user_id, :role, :title
 

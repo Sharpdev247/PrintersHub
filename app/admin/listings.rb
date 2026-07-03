@@ -1,5 +1,5 @@
 ActiveAdmin.register Listing do
-  menu priority: 5, label: "Listings"
+  menu parent: "Catalog", priority: 2, label: "Listings"
 
   # Show all records including soft-deleted so admins have full visibility.
   controller do

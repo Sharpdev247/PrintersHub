@@ -1,5 +1,5 @@
 ActiveAdmin.register Role do
-  menu priority: 3, label: "Roles"
+  menu parent: "People", priority: 3, label: "Roles"
 
   # Explicit allowlist — slug is writable so admins can override the auto-generated value
   permit_params :name, :description

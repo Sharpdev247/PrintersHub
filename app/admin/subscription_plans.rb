@@ -1,5 +1,5 @@
 ActiveAdmin.register SubscriptionPlan do
-  menu priority: 10, label: "Subscription Plans"
+  menu parent: "Subscriptions", priority: 1, label: "Subscription Plans"
 
   permit_params :name, :plan_type, :monthly_price, :yearly_price, :trial_days,
                 :priority, :active, :description

@@ -1,4 +1,5 @@
 ActiveAdmin.register Product do
+  menu parent: "Catalog", priority: 6, label: "Products"
   permit_params :account_id, :brand_id, :category_id, :printer_model_id,
                 :name, :sku, :barcode, :barcode_type, :description,
                 :status, :base_cost, :cost_currency, :weight, :weight_unit,

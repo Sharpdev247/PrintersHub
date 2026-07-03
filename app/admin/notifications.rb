@@ -1,5 +1,5 @@
 ActiveAdmin.register Notification do
-  menu priority: 12, label: "Notifications"
+  menu parent: "Communications", priority: 3, label: "Notifications"
 
   permit_params :user_id, :title, :body, :notification_type, :read_at, :data
 

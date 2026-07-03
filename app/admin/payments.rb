@@ -1,5 +1,5 @@
 ActiveAdmin.register Payment do
-  menu priority: 5, label: "Payments"
+  menu parent: "Commerce", priority: 2, label: "Payments"
 
   permit_params :account_id, :invoice_id, :amount, :currency, :status,
                 :payment_provider, :provider_payment_id, :paid_at, :failure_reason

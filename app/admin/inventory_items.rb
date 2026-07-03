@@ -1,4 +1,5 @@
 ActiveAdmin.register InventoryItem do
+  menu parent: "Inventory", priority: 1, label: "Inventory Items"
   permit_params :product_variant_id, :warehouse_id, :warehouse_zone_id,
                 :location_code, :reorder_point, :reorder_quantity,
                 :minimum_quantity, :maximum_quantity, :unit_cost,

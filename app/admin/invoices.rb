@@ -1,5 +1,5 @@
 ActiveAdmin.register Invoice do
-  menu priority: 14, label: "Invoices"
+  menu parent: "Commerce", priority: 6, label: "Invoices"
 
   permit_params :account_id, :account_subscription_id, :subscription_plan_id,
                 :invoice_number, :status, :subtotal, :tax_amount, :discount_amount,

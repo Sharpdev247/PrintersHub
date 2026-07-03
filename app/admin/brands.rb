@@ -1,5 +1,5 @@
 ActiveAdmin.register Brand do
-  menu priority: 6, label: "Brands"
+  menu parent: "Catalog", priority: 3, label: "Brands"
 
   permit_params :name, :description, :website, :active
 

@@ -1,5 +1,5 @@
 ActiveAdmin.register City do
-  menu priority: 10, label: "Cities"
+  menu parent: "Geography", priority: 3, label: "Cities"
 
   permit_params :state_id, :name, :latitude, :longitude
 

@@ -1,5 +1,5 @@
 ActiveAdmin.register Favorite do
-  menu priority: 6, label: "Favorites"
+  menu parent: "Commerce", priority: 7, label: "Favorites"
 
   permit_params :user_id, :listing_id
 

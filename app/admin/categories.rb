@@ -1,5 +1,5 @@
 ActiveAdmin.register Category do
-  menu priority: 5, label: "Categories"
+  menu parent: "Catalog", priority: 1, label: "Categories"
 
   # ancestry is written via parent_id exposed by the ancestry gem
   permit_params :name, :description, :parent_id, :position, :active, :icon

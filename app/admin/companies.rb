@@ -1,5 +1,5 @@
 ActiveAdmin.register Company do
-  menu priority: 4, label: "Companies"
+  menu parent: "People", priority: 5, label: "Companies"
 
   permit_params :user_id, :name, :email, :phone, :website,
                 :description, :tax_number, :company_type, :verified, :verified_at

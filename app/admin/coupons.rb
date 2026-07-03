@@ -1,5 +1,5 @@
 ActiveAdmin.register Coupon do
-  menu priority: 13, label: "Coupons"
+  menu parent: "Commerce", priority: 5, label: "Coupons"
 
   permit_params :code, :name, :discount_type, :discount_value, :currency,
                 :max_redemptions, :valid_from, :valid_until, :active,

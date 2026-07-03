@@ -1,5 +1,5 @@
 ActiveAdmin.register Message do
-  menu priority: 9, label: "Messages"
+  menu parent: "Communications", priority: 2, label: "Messages"
 
   permit_params :conversation_id, :user_id, :body
 

@@ -1,5 +1,5 @@
 ActiveAdmin.register Review do
-  menu priority: 11, label: "Reviews"
+  menu parent: "Communications", priority: 4, label: "Reviews"
 
   permit_params :listing_id, :reviewer_id, :reviewee_id, :rating, :body, :status
 

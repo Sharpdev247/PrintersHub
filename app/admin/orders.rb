@@ -1,4 +1,5 @@
 ActiveAdmin.register Order do
+  menu parent: "Commerce", priority: 1, label: "Orders"
   permit_params :buyer_account_id, :seller_account_id, :created_by_id,
                 :status, :currency, :subtotal, :tax_amount, :shipping_amount,
                 :discount_amount, :total, :notes, :internal_notes

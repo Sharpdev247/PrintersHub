@@ -1,5 +1,5 @@
 ActiveAdmin.register PlanFeature do
-  menu priority: 11, label: "Plan Features"
+  menu parent: "Subscriptions", priority: 2, label: "Plan Features"
 
   permit_params :subscription_plan_id, :feature_key, :feature_type, :value
 

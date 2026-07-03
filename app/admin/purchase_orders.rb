@@ -1,4 +1,5 @@
 ActiveAdmin.register PurchaseOrder do
+  menu parent: "Inventory", priority: 4, label: "Purchase Orders"
   permit_params :account_id, :supplier_id, :warehouse_id, :status,
                 :currency, :payment_terms, :notes, :internal_notes,
                 :expected_at,

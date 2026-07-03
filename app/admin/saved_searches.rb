@@ -1,5 +1,5 @@
 ActiveAdmin.register SavedSearch do
-  menu priority: 7, label: "Saved Searches"
+  menu parent: "Catalog", priority: 5, label: "Saved Searches"
 
   permit_params :user_id, :name, :alert_enabled, filters: {}
 

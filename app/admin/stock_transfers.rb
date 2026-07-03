@@ -1,4 +1,5 @@
 ActiveAdmin.register StockTransfer do
+  menu parent: "Inventory", priority: 3, label: "Stock Transfers"
   permit_params :account_id, :source_warehouse_id, :destination_warehouse_id,
                 :notes, :requested_at
 

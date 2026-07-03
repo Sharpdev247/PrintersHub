@@ -1,4 +1,5 @@
 ActiveAdmin.register Currency do
+  menu parent: "Geography", priority: 4, label: "Currencies"
   permit_params :code, :name, :symbol, :exchange_rate, :active, :is_default,
                 :exchange_rate_updated_at
 

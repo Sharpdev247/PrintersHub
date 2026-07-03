@@ -1,5 +1,5 @@
 ActiveAdmin.register Conversation do
-  menu priority: 8, label: "Conversations"
+  menu parent: "Communications", priority: 1, label: "Conversations"
 
   permit_params :subject, :listing_id
 

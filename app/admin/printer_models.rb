@@ -1,5 +1,5 @@
 ActiveAdmin.register PrinterModel do
-  menu priority: 7, label: "Printer Models"
+  menu parent: "Catalog", priority: 4, label: "Printer Models"
 
   permit_params :brand_id, :category_id, :name, :model_number,
                 :description, :release_year, :discontinued

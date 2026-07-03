@@ -1,4 +1,5 @@
 ActiveAdmin.register InventoryCount do
+  menu parent: "Inventory", priority: 7, label: "Inventory Counts"
   permit_params :account_id, :warehouse_id, :count_type, :notes
 
   filter :account

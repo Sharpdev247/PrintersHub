@@ -359,3 +359,18 @@ Rails.application.config.after_initialize do
   ActiveAdmin.application.register_javascript "jquery3.js"
   ActiveAdmin.application.register_javascript "active_admin/base.js"
 end
+
+ActiveAdmin.setup do |config|
+  config.namespace :admin do |admin|
+    admin.build_menu :default do |menu|
+      menu.add label: "People",        priority: 2
+      menu.add label: "Catalog",       priority: 3
+      menu.add label: "Commerce",      priority: 4
+      menu.add label: "Inventory",     priority: 5
+      menu.add label: "Subscriptions", priority: 6
+      menu.add label: "Communications", priority: 7
+      menu.add label: "Geography",     priority: 8
+      menu.add label: "Platform",      priority: 9
+    end
+  end
+end

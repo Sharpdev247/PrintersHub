@@ -1,4 +1,5 @@
 ActiveAdmin.register Supplier do
+  menu parent: "Inventory", priority: 6, label: "Suppliers"
   permit_params :account_id, :name, :code, :contact_name, :email, :phone,
                 :website, :address_line1, :address_line2, :city, :state,
                 :country_code, :postal_code, :currency, :payment_terms,

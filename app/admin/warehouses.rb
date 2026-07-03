@@ -1,4 +1,5 @@
 ActiveAdmin.register Warehouse do
+  menu parent: "Inventory", priority: 2, label: "Warehouses"
   permit_params :account_id, :name, :code, :address_line1, :address_line2,
                 :city, :state, :country_code, :postal_code, :phone, :email,
                 :contact_name, :is_default, :active

@@ -1,5 +1,5 @@
 ActiveAdmin.register State do
-  menu priority: 9, label: "States"
+  menu parent: "Geography", priority: 2, label: "States"
 
   permit_params :country_id, :name, :code
 

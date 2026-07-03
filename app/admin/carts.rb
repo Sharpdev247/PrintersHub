@@ -1,4 +1,5 @@
 ActiveAdmin.register Cart do
+  menu parent: "Commerce", priority: 8, label: "Carts"
   permit_params :account_id, :created_by_id, :status, :currency, :expires_at, :notes
 
   scope :all

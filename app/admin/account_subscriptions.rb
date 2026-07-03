@@ -1,5 +1,5 @@
 ActiveAdmin.register AccountSubscription do
-  menu priority: 12, label: "Account Subscriptions"
+  menu parent: "Subscriptions", priority: 3, label: "Account Subscriptions"
 
   permit_params :account_id, :subscription_plan_id, :coupon_redemption_id, :status,
                 :billing_interval, :current_price, :currency, :starts_at, :ends_at,

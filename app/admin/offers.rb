@@ -1,5 +1,5 @@
 ActiveAdmin.register Offer do
-  menu priority: 10, label: "Offers"
+  menu parent: "Commerce", priority: 3, label: "Offers"
 
   permit_params :listing_id, :buyer_id, :seller_id, :proposed_by_id,
                 :amount, :currency, :status, :message, :expires_at

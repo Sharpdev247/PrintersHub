@@ -1,5 +1,5 @@
 ActiveAdmin.register Country do
-  menu priority: 8, label: "Countries"
+  menu parent: "Geography", priority: 1, label: "Countries"
 
   # iso2/iso3 are settable only on create — changing them after addresses reference
   # the country would break ISO lookups in external systems.

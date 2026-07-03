@@ -1,4 +1,5 @@
 ActiveAdmin.register PaymentTransaction do
+  menu parent: "Commerce", priority: 4, label: "Payment Transactions"
   permit_params :payment_id, :transaction_type, :gateway, :gateway_transaction_id,
                 :status, :amount, :currency, :gateway_message, :processed_at
 

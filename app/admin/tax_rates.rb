@@ -1,4 +1,5 @@
 ActiveAdmin.register TaxRate do
+  menu parent: "Geography", priority: 5, label: "Tax Rates"
   permit_params :name, :country_code, :state_code, :tax_type, :rate, :active, :description
 
   scope :all

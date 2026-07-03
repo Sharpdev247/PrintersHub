@@ -1,5 +1,5 @@
 ActiveAdmin.register Account do
-  menu priority: 3, label: "Accounts"
+  menu parent: "People", priority: 2, label: "Accounts"
 
   permit_params :name, :email, :phone, :website, :account_type, :status, :verified
 
