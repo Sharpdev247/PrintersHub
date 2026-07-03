@@ -8,8 +8,8 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   before_action :check_maintenance_mode
-  before_action :authenticate_user!
-  before_action :set_current_context
+  before_action :authenticate_user!, unless: :admin_controller?
+  before_action :set_current_context, unless: :admin_controller?
 
   rescue_from Pundit::NotAuthorizedError, with: :handle_unauthorized
 
@@ -82,6 +82,10 @@ class ApplicationController < ActionController::Base
 
   def after_sign_out_path_for(_resource)
     root_path
+  end
+
+  def admin_controller?
+    is_a?(ActiveAdmin::BaseController) || self.class.name.to_s.start_with?("ActiveAdmin::")
   end
 
   # Pundit hook stubs — opt in per controller:
