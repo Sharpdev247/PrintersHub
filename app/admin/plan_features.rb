@@ -1,19 +1,13 @@
 ActiveAdmin.register PlanFeature do
   menu priority: 11, label: "Plan Features"
 
-  FEATURE_KEYS = %w[
-    max_listings featured_listings max_team_members api_access analytics
-    crm_module warehouse_module repair_module priority_notifications storage_gb
-    max_api_requests_per_day messages_per_day support_level
-  ].freeze
-
   permit_params :subscription_plan_id, :feature_key, :feature_type, :value
 
   # ── Filters ─────────────────────────────────────────────────────────────────
   filter :subscription_plan, as: :select,
          collection: -> { SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] } }
   filter :feature_key, as: :select,
-         collection: FEATURE_KEYS.map { |k| [ k.humanize, k ] }
+         collection: PlanFeature::FEATURE_KEYS.map { |k| [ k.humanize, k ] }
   filter :feature_type, as: :select,
          collection: %w[boolean limit string].map { |t| [ t.humanize, t ] }
   filter :created_at
@@ -60,7 +54,7 @@ ActiveAdmin.register PlanFeature do
               collection: SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] },
               include_blank: false
       f.input :feature_key, as: :select,
-              collection: FEATURE_KEYS.map { |k| [ k.humanize, k ] },
+              collection: PlanFeature::FEATURE_KEYS.map { |k| [ k.humanize, k ] },
               include_blank: false
       f.input :feature_type, as: :select,
               collection: %w[boolean limit string].map { |t| [ t.humanize, t ] },

@@ -77,7 +77,7 @@ class ApplicationController < ActionController::Base
 
   def after_sign_in_path_for(resource)
     session[:created_at] = Time.current.iso8601
-    stored_location_for(resource) || portal_path
+    stored_location_for(resource) || (resource.is_a?(AdminUser) ? admin_root_path : portal_path)
   end
 
   def after_sign_out_path_for(_resource)
