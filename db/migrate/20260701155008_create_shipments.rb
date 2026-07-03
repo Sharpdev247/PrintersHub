@@ -28,7 +28,7 @@ class CreateShipments < ActiveRecord::Migration[8.1]
               unique: true,
               where: "tracking_number IS NOT NULL",
               name: "index_shipments_on_tracking_number"
-    add_index :shipments, [:account_id, :status], name: "index_shipments_on_account_and_status"
+    add_index :shipments, [ :account_id, :status ], name: "index_shipments_on_account_and_status"
     add_index :shipments, :status,                name: "index_shipments_on_status"
     # t.references :order and :account above auto-create index_shipments_on_order_id
     # and index_shipments_on_account_id — no explicit add_index needed for those

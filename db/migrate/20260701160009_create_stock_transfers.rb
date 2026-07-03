@@ -22,7 +22,7 @@ class CreateStockTransfers < ActiveRecord::Migration[8.1]
               name: "index_stock_transfers_on_transfer_number"
     add_index :stock_transfers, :status,
               name: "index_stock_transfers_on_status"
-    add_index :stock_transfers, [:account_id, :status],
+    add_index :stock_transfers, [ :account_id, :status ],
               name: "index_stock_transfers_on_account_status"
 
     add_check_constraint :stock_transfers,

@@ -23,12 +23,12 @@ class CreateSubscriptionUsages < ActiveRecord::Migration[8.1]
     end
 
     # One usage row per feature per period per account.
-    add_index :subscription_usages, [:account_id, :feature_key, :period_start],
+    add_index :subscription_usages, [ :account_id, :feature_key, :period_start ],
               unique: true,
               name: "index_subscription_usages_on_account_feature_period"
 
     # Find current period's usage for an account quickly.
-    add_index :subscription_usages, [:account_id, :period_start],
+    add_index :subscription_usages, [ :account_id, :period_start ],
               name: "index_subscription_usages_on_account_and_period"
 
     add_check_constraint :subscription_usages, "quantity >= 0",

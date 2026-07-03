@@ -24,8 +24,8 @@ Rails.application.routes.draw do
   get "welcome", to: "welcome#show", as: :welcome
 
   # Public marketplace browsing (no login required)
-  resources :listings, only: [:index, :show] do
-    resource :favorite, only: [:create], controller: "favorites"
+  resources :listings, only: [ :index, :show ] do
+    resource :favorite, only: [ :create ], controller: "favorites"
   end
 
   # ── Portal ─────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ Rails.application.routes.draw do
 
     # Buyer
     namespace :buyer do
-      resources :orders, only: [:index, :show, :create] do
+      resources :orders, only: [ :index, :show, :create ] do
         member do
           patch :cancel
           post  :invoice, to: "/portal/invoices#create", as: :generate_invoice
@@ -57,7 +57,7 @@ Rails.application.routes.draw do
           post  :duplicate
         end
       end
-      resources :orders, only: [:index, :show] do
+      resources :orders, only: [ :index, :show ] do
         member do
           patch :update_status
           patch :cancel
@@ -66,26 +66,26 @@ Rails.application.routes.draw do
     end
 
     # Invoices
-    resources :invoices, only: [:index, :show]
+    resources :invoices, only: [ :index, :show ]
 
     # Favorites (buyer portal)
-    resources :favorites, only: [:index]
+    resources :favorites, only: [ :index ]
 
     # Saved searches
-    resources :saved_searches, only: [:index, :create, :destroy] do
+    resources :saved_searches, only: [ :index, :create, :destroy ] do
       member { patch :toggle_alert }
     end
 
     # Notifications
-    resources :notifications, only: [:index, :show] do
+    resources :notifications, only: [ :index, :show ] do
       collection { patch :mark_all_read }
     end
 
     # Warehouse
     namespace :warehouse do
       get "/", to: "dashboard#show", as: :root
-      resources :warehouses, only: [:index, :show, :new, :create, :edit, :update]
-      resources :inventory_items, only: [:index, :show] do
+      resources :warehouses, only: [ :index, :show, :new, :create, :edit, :update ]
+      resources :inventory_items, only: [ :index, :show ] do
         member { patch :adjust }
       end
     end
@@ -102,7 +102,7 @@ Rails.application.routes.draw do
     namespace :crm do
       get "/", to: "dashboard#show", as: :root
       resources :contacts do
-        resources :contact_notes, only: [:create, :destroy], shallow: true
+        resources :contact_notes, only: [ :create, :destroy ], shallow: true
       end
     end
 
@@ -110,7 +110,7 @@ Rails.application.routes.draw do
     get "service", to: "service/dashboard#show", as: :service
     namespace :service do
       get "/", to: "dashboard#show", as: :root
-      resources :service_requests, only: [:index, :show, :new, :create, :edit, :update] do
+      resources :service_requests, only: [ :index, :show, :new, :create, :edit, :update ] do
         member do
           patch :assign
           patch :transition
@@ -119,15 +119,15 @@ Rails.application.routes.draw do
     end
 
     # Subscription & billing
-    resource  :subscription, only: [:show, :create, :destroy], controller: "subscriptions" do
+    resource :subscription, only: [ :show, :create, :destroy ], controller: "subscriptions" do
       get :plans, on: :collection
     end
 
     # Activity Logs
-    resources :activity_logs, only: [:index]
+    resources :activity_logs, only: [ :index ]
 
     # API Tokens (portal UI)
-    resources :api_tokens, only: [:index, :create, :destroy]
+    resources :api_tokens, only: [ :index, :create, :destroy ]
 
     # AI helpers (JSON, called from listing form)
     namespace :ai do
@@ -137,10 +137,10 @@ Rails.application.routes.draw do
 
     # Settings
     namespace :settings do
-      resource  :profile,     only: [:show, :update], controller: "profiles"
-      resource  :account,     only: [:show, :update], controller: "accounts"
-      resource  :password,    only: [:show, :update], controller: "passwords"
-      resources :memberships, only: [:index, :create, :update, :destroy]
+      resource  :profile,     only: [ :show, :update ], controller: "profiles"
+      resource  :account,     only: [ :show, :update ], controller: "accounts"
+      resource  :password,    only: [ :show, :update ], controller: "passwords"
+      resources :memberships, only: [ :index, :create, :update, :destroy ]
     end
   end
 
@@ -148,16 +148,16 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # Token management (session-authed — not token-authed)
-      resources :tokens, only: [:index, :create, :destroy]
+      resources :tokens, only: [ :index, :create, :destroy ]
 
       # Auth introspection
       get "me", to: "auth#me"
 
       # Listings
-      resources :listings, only: [:index, :show, :create, :update, :destroy]
+      resources :listings, only: [ :index, :show, :create, :update, :destroy ]
 
       # Orders
-      resources :orders, only: [:index, :show] do
+      resources :orders, only: [ :index, :show ] do
         member do
           patch :update_status
           patch :cancel
@@ -165,7 +165,7 @@ Rails.application.routes.draw do
       end
 
       # Inventory
-      resources :inventory, only: [:index, :show], controller: "inventory" do
+      resources :inventory, only: [ :index, :show ], controller: "inventory" do
         member { post :adjust }
       end
 

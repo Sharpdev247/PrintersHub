@@ -9,7 +9,7 @@ class ApiTokenTest < ActiveSupport::TestCase
       account:    seller_account,
       user:       seller,
       name:       "Test token #{SecureRandom.hex(4)}",
-      scopes:     ["read:listings"],
+      scopes:     [ "read:listings" ],
       expires_at: 30.days.from_now,
       **overrides
     )
@@ -83,7 +83,7 @@ class ApiTokenTest < ActiveSupport::TestCase
       account:    seller_account,
       user:       seller,
       name:       "expired",
-      scopes:     ["read:listings"],
+      scopes:     [ "read:listings" ],
       expires_at: 1.day.from_now
     )
     token.update_column(:expires_at, 1.day.ago)
@@ -93,18 +93,18 @@ class ApiTokenTest < ActiveSupport::TestCase
   # ── has_scope? ────────────────────────────────────────────────────────────
 
   test "has_scope? returns true when scope is present" do
-    token, _raw = generate_token(scopes: ["read:listings", "write:orders"])
+    token, _raw = generate_token(scopes: [ "read:listings", "write:orders" ])
     assert token.has_scope?("read:listings")
     assert token.has_scope?("write:orders")
   end
 
   test "has_scope? returns false when scope is absent" do
-    token, _raw = generate_token(scopes: ["read:listings"])
+    token, _raw = generate_token(scopes: [ "read:listings" ])
     assert_not token.has_scope?("write:listings")
   end
 
   test "admin scope grants all scopes" do
-    token, _raw = generate_token(scopes: ["admin"])
+    token, _raw = generate_token(scopes: [ "admin" ])
     assert token.has_scope?("write:inventory")
     assert token.has_scope?("read:analytics")
   end
@@ -119,7 +119,7 @@ class ApiTokenTest < ActiveSupport::TestCase
       token_digest: "x",
       prefix:     "phb_test",
       token_type: "personal",
-      scopes:     ["destroy:everything"],
+      scopes:     [ "destroy:everything" ],
       expires_at: 7.days.from_now
     )
     assert_not token.valid?
@@ -134,7 +134,7 @@ class ApiTokenTest < ActiveSupport::TestCase
       token_digest: "y",
       prefix:     "phb_test2",
       token_type: "personal",
-      scopes:     ["read:listings"],
+      scopes:     [ "read:listings" ],
       expires_at: 1.day.ago
     )
     assert_not token.valid?

@@ -16,7 +16,7 @@ class CreateCouponRedemptions < ActiveRecord::Migration[8.1]
     end
 
     # An account can only redeem each coupon once.
-    add_index :coupon_redemptions, [:coupon_id, :account_id],
+    add_index :coupon_redemptions, [ :coupon_id, :account_id ],
               unique: true,
               name: "index_coupon_redemptions_on_coupon_and_account"
 

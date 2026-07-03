@@ -2,7 +2,7 @@ module Portal
   module Warehouse
     class WarehousesController < Portal::BaseController
       before_action :require_warehouse_access
-      before_action :find_warehouse, only: [:show, :edit, :update]
+      before_action :find_warehouse, only: [ :show, :edit, :update ]
 
       def index
         @warehouses = policy_scope(::Warehouse)

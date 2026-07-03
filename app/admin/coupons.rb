@@ -9,7 +9,7 @@ ActiveAdmin.register Coupon do
   filter :code
   filter :name
   filter :discount_type, as: :select,
-         collection: Coupon.discount_types.keys.map { |t| [t.humanize, t] }
+         collection: Coupon.discount_types.keys.map { |t| [ t.humanize, t ] }
   filter :active, as: :boolean
   filter :created_at
 
@@ -72,7 +72,7 @@ ActiveAdmin.register Coupon do
       f.input :code,  hint: "Unique redemption code (e.g. SAVE20)"
       f.input :name,  hint: "Internal label for this coupon"
       f.input :discount_type, as: :select,
-              collection: Coupon.discount_types.keys.map { |t| [t.humanize, t] },
+              collection: Coupon.discount_types.keys.map { |t| [ t.humanize, t ] },
               include_blank: false
       f.input :discount_value, hint: "Percentage (0-100), fixed amount, or number of trial days"
       f.input :currency,       hint: "Required for fixed_amount discounts (e.g. USD)"
@@ -87,7 +87,7 @@ ActiveAdmin.register Coupon do
 
     f.inputs "Plan Restriction (optional)" do
       f.input :subscription_plan, as: :select,
-              collection: SubscriptionPlan.order(:name).map { |p| [p.name, p.id] },
+              collection: SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] },
               include_blank: true,
               hint: "Leave blank to allow on any plan"
     end

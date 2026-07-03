@@ -43,7 +43,7 @@ class CreateAccountSubscriptions < ActiveRecord::Migration[8.1]
               unique: true,
               name: "index_account_subscriptions_on_account_active"
 
-    add_index :account_subscriptions, [:account_id, :status],
+    add_index :account_subscriptions, [ :account_id, :status ],
               name: "index_account_subscriptions_on_account_and_status"
 
     # Expiry sweep job: find subscriptions expiring soon.

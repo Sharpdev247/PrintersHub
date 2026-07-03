@@ -5,7 +5,7 @@ ActiveAdmin.register SavedSearch do
 
   actions :index, :show, :destroy
 
-  filter :user,          as: :select, collection: -> { User.order(:email).map { |u| [u.email, u.id] } }
+  filter :user,          as: :select, collection: -> { User.order(:email).map { |u| [ u.email, u.id ] } }
   filter :name
   filter :alert_enabled, as: :boolean
   filter :created_at

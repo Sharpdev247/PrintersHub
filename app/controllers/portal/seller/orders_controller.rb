@@ -2,7 +2,7 @@ module Portal
   module Seller
     class OrdersController < Portal::BaseController
       before_action :require_sales_or_above
-      before_action :find_order, only: [:show, :update_status, :cancel]
+      before_action :find_order, only: [ :show, :update_status, :cancel ]
 
       def index
         @status_filter = params[:status].presence

@@ -18,7 +18,7 @@ class RevenueReport
       summary:       summary,
       by_period:     by_period,
       by_status:     by_status,
-      top_listings:  top_listings,
+      top_listings:  top_listings
     }
   end
 
@@ -36,14 +36,14 @@ class RevenueReport
       paid_orders:    paid.count,
       total_revenue:  paid.sum(:total).to_f.round(2),
       avg_order:      paid.average(:total)&.to_f&.round(2) || 0,
-      cancelled:      base_orders.where(status: Order.statuses[:cancelled]).count,
+      cancelled:      base_orders.where(status: Order.statuses[:cancelled]).count
     }
   end
 
   def by_period
     fmt = group_by == :month ? "YYYY-MM" : "YYYY-MM-DD"
     rows = ActiveRecord::Base.connection.execute(
-      ActiveRecord::Base.sanitize_sql([<<~SQL, account.id, from, to])
+      ActiveRecord::Base.sanitize_sql([ <<~SQL, account.id, from, to ])
         SELECT
           TO_CHAR(created_at AT TIME ZONE 'UTC', '#{fmt}') AS period,
           COUNT(*)                                          AS order_count,

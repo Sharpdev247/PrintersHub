@@ -21,11 +21,11 @@ class CreatePayments < ActiveRecord::Migration[8.1]
       t.string  :provider_payment_id
       t.text    :failure_reason
       t.datetime :paid_at
-      t.jsonb   :metadata,          null: false, default: {}
+      t.jsonb :metadata,          null: false, default: {}
       t.timestamps
     end
 
-    add_index :payments, [:account_id, :status],
+    add_index :payments, [ :account_id, :status ],
               name: "index_payments_on_account_and_status"
     add_index :payments, :provider_payment_id,
               where: "provider_payment_id IS NOT NULL",

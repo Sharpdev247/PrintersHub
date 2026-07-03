@@ -16,7 +16,7 @@ class CreateFavorites < ActiveRecord::Migration[8.1]
     end
 
     # DB-level uniqueness guard — model validates this too, but the DB is the hard stop.
-    add_index :favorites, [:user_id, :listing_id], unique: true,
+    add_index :favorites, [ :user_id, :listing_id ], unique: true,
               name: "index_favorites_on_user_and_listing"
   end
 end

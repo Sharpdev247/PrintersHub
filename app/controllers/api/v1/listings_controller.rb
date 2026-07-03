@@ -1,5 +1,5 @@
 class Api::V1::ListingsController < Api::V1::BaseController
-  before_action :set_listing, only: [:show, :update, :destroy]
+  before_action :set_listing, only: [ :show, :update, :destroy ]
 
   # GET /api/v1/listings
   def index
@@ -18,7 +18,7 @@ class Api::V1::ListingsController < Api::V1::BaseController
       listings = listings.search_by_title_and_description(params[:q])
     end
 
-    listings = listings.page(params[:page]).per([params[:per_page].to_i, 100].clamp(1, 100))
+    listings = listings.page(params[:page]).per([ params[:per_page].to_i, 100 ].clamp(1, 100))
 
     render json: {
       data:  listings.map { |l| serialize_listing(l) },
@@ -94,7 +94,7 @@ class Api::V1::ListingsController < Api::V1::BaseController
       brand:            listing.brand&.name,
       views_count:      listing.views_count,
       created_at:       listing.created_at,
-      updated_at:       listing.updated_at,
+      updated_at:       listing.updated_at
     }
 
     if detailed
@@ -115,7 +115,7 @@ class Api::V1::ListingsController < Api::V1::BaseController
       current_page:  collection.current_page,
       total_pages:   collection.total_pages,
       total_count:   collection.total_count,
-      per_page:      collection.limit_value,
+      per_page:      collection.limit_value
     }
   end
 end

@@ -1,5 +1,5 @@
 class Api::V1::OrdersController < Api::V1::BaseController
-  before_action :set_order, only: [:show, :update_status, :cancel]
+  before_action :set_order, only: [ :show, :update_status, :cancel ]
 
   # GET /api/v1/orders
   def index
@@ -64,7 +64,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
       currency:       order.currency,
       buyer_account:  order.buyer_account&.name,
       seller_account: order.seller_account&.name,
-      created_at:     order.created_at,
+      created_at:     order.created_at
     }
 
     if detailed
@@ -75,7 +75,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
           title:    snap["title"] || item.listing&.title,
           quantity: item.quantity,
           price:    item.unit_price,
-          subtotal: item.subtotal,
+          subtotal: item.subtotal
         }
       end
     end
@@ -87,7 +87,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
     {
       current_page: collection.current_page,
       total_pages:  collection.total_pages,
-      total_count:  collection.total_count,
+      total_count:  collection.total_count
     }
   end
 end

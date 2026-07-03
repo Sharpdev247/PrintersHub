@@ -3,9 +3,9 @@ ActiveAdmin.register Review do
 
   permit_params :listing_id, :reviewer_id, :reviewee_id, :rating, :body, :status
 
-  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [truncate(l.title, length: 60), l.id] } }
-  filter :status,  as: :select, collection: Review.statuses.keys.map { |s| [s.humanize, s] }
-  filter :rating,  as: :select, collection: (1..5).map { |r| ["#{r} star#{'s' if r > 1}", r] }
+  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [ truncate(l.title, length: 60), l.id ] } }
+  filter :status,  as: :select, collection: Review.statuses.keys.map { |s| [ s.humanize, s ] }
+  filter :rating,  as: :select, collection: (1..5).map { |r| [ "#{r} star#{'s' if r > 1}", r ] }
   filter :created_at
 
   scope :all,          default: true
@@ -51,12 +51,12 @@ ActiveAdmin.register Review do
 
   form do |f|
     f.inputs "Review Details" do
-      f.input :listing,  as: :select, collection: Listing.order(:title).map { |l| [truncate(l.title, length: 60), l.id] }
-      f.input :reviewer, as: :select, collection: User.order(:email).map { |u| [u.email, u.id] }
-      f.input :reviewee, as: :select, collection: User.order(:email).map { |u| [u.email, u.id] }
-      f.input :rating,   as: :select, collection: (1..5).map { |r| ["#{r} star#{'s' if r > 1}", r] }
+      f.input :listing,  as: :select, collection: Listing.order(:title).map { |l| [ truncate(l.title, length: 60), l.id ] }
+      f.input :reviewer, as: :select, collection: User.order(:email).map { |u| [ u.email, u.id ] }
+      f.input :reviewee, as: :select, collection: User.order(:email).map { |u| [ u.email, u.id ] }
+      f.input :rating,   as: :select, collection: (1..5).map { |r| [ "#{r} star#{'s' if r > 1}", r ] }
       f.input :body
-      f.input :status,   as: :select, collection: Review.statuses.keys.map { |s| [s.humanize, s] }
+      f.input :status,   as: :select, collection: Review.statuses.keys.map { |s| [ s.humanize, s ] }
     end
     f.actions
   end

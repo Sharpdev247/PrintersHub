@@ -46,9 +46,9 @@ class CreateOffers < ActiveRecord::Migration[8.1]
     add_foreign_key :offers, :offers, column: :parent_offer_id, on_delete: :nullify
 
     # Primary marketplace query patterns.
-    add_index :offers, [:listing_id, :status], name: "index_offers_on_listing_and_status"
-    add_index :offers, [:buyer_id,   :status], name: "index_offers_on_buyer_and_status"
-    add_index :offers, [:seller_id,  :status], name: "index_offers_on_seller_and_status"
+    add_index :offers, [ :listing_id, :status ], name: "index_offers_on_listing_and_status"
+    add_index :offers, [ :buyer_id,   :status ], name: "index_offers_on_buyer_and_status"
+    add_index :offers, [ :seller_id,  :status ], name: "index_offers_on_seller_and_status"
 
     # Partial index: negotiation chains — only rows that are counter-offers.
     add_index :offers, :parent_offer_id, where: "parent_offer_id IS NOT NULL",

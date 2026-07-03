@@ -16,7 +16,7 @@ class CreateCartItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :cart_items, [:cart_id, :listing_id], unique: true,
+    add_index :cart_items, [ :cart_id, :listing_id ], unique: true,
               name: "index_cart_items_on_cart_and_listing"
 
     add_check_constraint :cart_items, "quantity > 0",                 name: "chk_cart_items_quantity"

@@ -19,7 +19,7 @@ class CreatePaymentTransactions < ActiveRecord::Migration[8.1]
     end
 
     add_index :payment_transactions,
-              [:gateway, :gateway_transaction_id],
+              [ :gateway, :gateway_transaction_id ],
               unique: true,
               where: "gateway_transaction_id IS NOT NULL",
               name: "index_payment_transactions_on_gateway_txn_id"

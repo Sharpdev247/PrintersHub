@@ -5,7 +5,7 @@ ActiveAdmin.register Conversation do
 
   actions :index, :show, :destroy
 
-  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [truncate(l.title, length: 60), l.id] } }
+  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [ truncate(l.title, length: 60), l.id ] } }
   filter :subject
   filter :created_at
   filter :updated_at

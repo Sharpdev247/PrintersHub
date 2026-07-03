@@ -23,7 +23,7 @@ class CreateContacts < ActiveRecord::Migration[8.1]
     add_index :contacts, :contact_type
     add_index :contacts, :status
     add_index :contacts, :discarded_at, where: "discarded_at IS NOT NULL"
-    add_index :contacts, [:account_id, :email], unique: true,
+    add_index :contacts, [ :account_id, :email ], unique: true,
               where: "email IS NOT NULL AND discarded_at IS NULL",
               name: "index_contacts_on_account_and_email"
 

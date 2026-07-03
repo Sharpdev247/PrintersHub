@@ -7,7 +7,7 @@ ActiveAdmin.register Cart do
   scope("Checked Out")  { |s| s.status_checked_out }
 
   filter :account, as: :select, collection: -> { Account.order(:name).pluck(:name, :id) }
-  filter :status, as: :select, collection: Cart.statuses.keys.map { |s| [s.humanize, s] }
+  filter :status, as: :select, collection: Cart.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :currency
   filter :created_at
 
@@ -63,9 +63,9 @@ ActiveAdmin.register Cart do
 
   form do |f|
     f.inputs "Cart Details" do
-      f.input :account,    as: :select, collection: Account.order(:name).map { |a| [a.name, a.id] }
-      f.input :created_by, as: :select, collection: User.order(:email).map { |u| [u.email, u.id] }
-      f.input :status,     as: :select, collection: Cart.statuses.keys.map { |s| [s.humanize, s] }
+      f.input :account,    as: :select, collection: Account.order(:name).map { |a| [ a.name, a.id ] }
+      f.input :created_by, as: :select, collection: User.order(:email).map { |u| [ u.email, u.id ] }
+      f.input :status,     as: :select, collection: Cart.statuses.keys.map { |s| [ s.humanize, s ] }
       f.input :currency
       f.input :expires_at, as: :datetime_picker
       f.input :notes

@@ -11,11 +11,11 @@ ActiveAdmin.register PlanFeature do
 
   # ── Filters ─────────────────────────────────────────────────────────────────
   filter :subscription_plan, as: :select,
-         collection: -> { SubscriptionPlan.order(:name).map { |p| [p.name, p.id] } }
+         collection: -> { SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] } }
   filter :feature_key, as: :select,
-         collection: FEATURE_KEYS.map { |k| [k.humanize, k] }
+         collection: FEATURE_KEYS.map { |k| [ k.humanize, k ] }
   filter :feature_type, as: :select,
-         collection: %w[boolean limit string].map { |t| [t.humanize, t] }
+         collection: %w[boolean limit string].map { |t| [ t.humanize, t ] }
   filter :created_at
 
   # ── Index ───────────────────────────────────────────────────────────────────
@@ -57,13 +57,13 @@ ActiveAdmin.register PlanFeature do
   form do |f|
     f.inputs "Plan Feature" do
       f.input :subscription_plan, as: :select,
-              collection: SubscriptionPlan.order(:name).map { |p| [p.name, p.id] },
+              collection: SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] },
               include_blank: false
       f.input :feature_key, as: :select,
-              collection: FEATURE_KEYS.map { |k| [k.humanize, k] },
+              collection: FEATURE_KEYS.map { |k| [ k.humanize, k ] },
               include_blank: false
       f.input :feature_type, as: :select,
-              collection: %w[boolean limit string].map { |t| [t.humanize, t] },
+              collection: %w[boolean limit string].map { |t| [ t.humanize, t ] },
               include_blank: false
       f.input :value, hint: "e.g. true/false for boolean, a number for limit, or text for string"
     end

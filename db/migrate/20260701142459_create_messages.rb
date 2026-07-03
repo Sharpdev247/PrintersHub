@@ -21,7 +21,7 @@ class CreateMessages < ActiveRecord::Migration[8.1]
     create_table :messages do |t|
       t.references :conversation, null: false, foreign_key: { on_delete: :cascade }
       t.references :user,         null: false, foreign_key: { on_delete: :restrict }
-      t.text    :body,       null: false
+      t.text :body,       null: false
       t.datetime :read_at             # MVP single-user read receipt
       t.datetime :edited_at           # future: message editing
       t.datetime :deleted_at          # future: soft-delete / moderation
@@ -29,11 +29,11 @@ class CreateMessages < ActiveRecord::Migration[8.1]
     end
 
     # Primary query: load messages for a conversation in chronological order.
-    add_index :messages, [:conversation_id, :created_at],
+    add_index :messages, [ :conversation_id, :created_at ],
               name: "index_messages_on_conversation_and_created_at"
 
     # Find all unread messages in a conversation for the recipient.
-    add_index :messages, [:conversation_id, :read_at],
+    add_index :messages, [ :conversation_id, :read_at ],
               where: "read_at IS NULL",
               name: "index_messages_on_conversation_id_unread"
 

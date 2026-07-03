@@ -35,7 +35,7 @@ class CreateInvoices < ActiveRecord::Migration[8.1]
 
     add_index :invoices, :invoice_number, unique: true,
               name: "index_invoices_on_invoice_number"
-    add_index :invoices, [:account_id, :status],
+    add_index :invoices, [ :account_id, :status ],
               name: "index_invoices_on_account_and_status"
     add_index :invoices, :due_at,
               where: "due_at IS NOT NULL AND status IN (1)",

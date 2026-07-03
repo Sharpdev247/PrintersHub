@@ -23,7 +23,7 @@ class CreateSuppliers < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :suppliers, [:account_id, :code], unique: true,
+    add_index :suppliers, [ :account_id, :code ], unique: true,
               name: "index_suppliers_on_account_code"
     add_index :suppliers, :discarded_at, name: "index_suppliers_on_discarded_at"
     add_check_constraint :suppliers, "lead_time_days >= 0",

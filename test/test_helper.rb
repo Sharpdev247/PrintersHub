@@ -12,7 +12,7 @@ module ActiveSupport
 
     # Temporarily set ENV variables for the duration of a block.
     def with_env(vars)
-      old = vars.keys.map { |k| [k.to_s, ENV[k.to_s]] }.to_h
+      old = vars.keys.map { |k| [ k.to_s, ENV[k.to_s] ] }.to_h
       vars.each { |k, v| v.nil? ? ENV.delete(k.to_s) : ENV[k.to_s] = v.to_s }
       yield
     ensure

@@ -73,14 +73,14 @@ class SubscriptionEnforcer
     limit   = feature&.typed_value
 
     used = case feature_key.to_s
-           when "max_listings"      then @account.listings.kept.count
-           when "max_team_members"  then @account.memberships.kept.count
-           when "storage_gb"        then 0  # extend when Active Storage billing lands
-           else 0
-           end
+    when "max_listings"      then @account.listings.kept.count
+    when "max_team_members"  then @account.memberships.kept.count
+    when "storage_gb"        then 0  # extend when Active Storage billing lands
+    else 0
+    end
 
     unlimited = limit == Float::INFINITY || limit.nil?
-    percent   = unlimited ? 0 : limit.zero? ? 100 : [(used.to_f / limit * 100).round, 100].min
+    percent   = unlimited ? 0 : limit.zero? ? 100 : [ (used.to_f / limit * 100).round, 100 ].min
 
     { used: used, limit: unlimited ? nil : limit, unlimited: unlimited, percent: percent }
   end

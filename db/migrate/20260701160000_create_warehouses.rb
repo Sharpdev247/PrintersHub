@@ -20,10 +20,10 @@ class CreateWarehouses < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :warehouses, [:account_id, :code], unique: true,
+    add_index :warehouses, [ :account_id, :code ], unique: true,
               name: "index_warehouses_on_account_code"
     add_index :warehouses, :discarded_at, name: "index_warehouses_on_discarded_at"
-    add_index :warehouses, [:account_id, :is_default],
+    add_index :warehouses, [ :account_id, :is_default ],
               where: "is_default = true",
               name: "index_warehouses_one_default_per_account"
   end

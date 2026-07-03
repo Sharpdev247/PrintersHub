@@ -14,7 +14,7 @@ module Ai
         model:      MODEL,
         max_tokens: max_tokens,
         system:     system_prompt,
-        messages:   [{ role: "user", content: user_message }]
+        messages:   [ { role: "user", content: user_message } ]
       )
       response.content.first.text
     rescue => e

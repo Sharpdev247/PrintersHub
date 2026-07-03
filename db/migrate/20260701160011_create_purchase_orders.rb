@@ -28,7 +28,7 @@ class CreatePurchaseOrders < ActiveRecord::Migration[8.1]
               name: "index_purchase_orders_on_po_number"
     add_index :purchase_orders, :status,
               name: "index_purchase_orders_on_status"
-    add_index :purchase_orders, [:account_id, :status],
+    add_index :purchase_orders, [ :account_id, :status ],
               name: "index_purchase_orders_on_account_status"
     add_index :purchase_orders, :discarded_at,
               name: "index_purchase_orders_on_discarded_at"

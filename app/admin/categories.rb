@@ -62,7 +62,7 @@ ActiveAdmin.register Category do
       f.input :description, as: :text
       f.input :parent,
               as: :select,
-              collection: Category.all.sort_by(&:depth).map { |c| [c.depth_label, c.id] },
+              collection: Category.all.sort_by(&:depth).map { |c| [ c.depth_label, c.id ] },
               include_blank: "— No Parent (Root) —"
       f.input :position, hint: "Lower numbers appear first within the same parent"
       f.input :active

@@ -12,7 +12,7 @@ ActiveAdmin.register Order do
   scope("Completed")       { |s| s.status_completed }
 
   filter :order_number
-  filter :status, as: :select, collection: Order.statuses.keys.map { |s| [s.humanize, s] }
+  filter :status, as: :select, collection: Order.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :buyer_account, as: :select, collection: -> { Account.order(:name).pluck(:name, :id) }
   filter :seller_account, as: :select, collection: -> { Account.order(:name).pluck(:name, :id) }
   filter :currency
@@ -149,9 +149,9 @@ ActiveAdmin.register Order do
 
   form do |f|
     f.inputs "Order Details" do
-      f.input :buyer_account,  as: :select, collection: Account.order(:name).map { |a| [a.name, a.id] }
-      f.input :seller_account, as: :select, collection: Account.order(:name).map { |a| [a.name, a.id] }
-      f.input :status,         as: :select, collection: Order.statuses.keys.map { |s| [s.humanize, s] }
+      f.input :buyer_account,  as: :select, collection: Account.order(:name).map { |a| [ a.name, a.id ] }
+      f.input :seller_account, as: :select, collection: Account.order(:name).map { |a| [ a.name, a.id ] }
+      f.input :status,         as: :select, collection: Order.statuses.keys.map { |s| [ s.humanize, s ] }
       f.input :currency
     end
     f.inputs "Financials" do

@@ -23,7 +23,7 @@ class AccountSubscription < ApplicationRecord
   validates :current_price,    numericality: { greater_than_or_equal_to: 0 }
   validates :currency,         format: { with: /\A[A-Z]{3}\z/ }
 
-  scope :live,      -> { kept.where(status: [statuses[:trialing], statuses[:active], statuses[:past_due]]) }
+  scope :live,      -> { kept.where(status: [ statuses[:trialing], statuses[:active], statuses[:past_due] ]) }
   scope :active,    -> { kept.status_active }
   scope :cancelled, -> { kept.status_cancelled }
 

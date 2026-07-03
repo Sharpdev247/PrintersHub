@@ -17,7 +17,7 @@ class CreateInventoryCounts < ActiveRecord::Migration[8.1]
 
     add_index :inventory_counts, :count_number, unique: true,
               name: "index_inventory_counts_on_count_number"
-    add_index :inventory_counts, [:account_id, :status],
+    add_index :inventory_counts, [ :account_id, :status ],
               name: "index_inventory_counts_on_account_status"
 
     add_check_constraint :inventory_counts,

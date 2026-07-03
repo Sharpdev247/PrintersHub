@@ -9,7 +9,7 @@ ActiveAdmin.register AdminUser do
   scope("Super Admin") { |s| s.super_admins }
 
   filter :email
-  filter :role, as: :select, collection: AdminUser::ROLES.map { |r| [r.humanize, r] }
+  filter :role, as: :select, collection: AdminUser::ROLES.map { |r| [ r.humanize, r ] }
   filter :active
   filter :super_admin
   filter :sign_in_count
@@ -21,7 +21,7 @@ ActiveAdmin.register AdminUser do
     id_column
     column :email
     column :role do |a|
-      tags = [status_tag(a.role.humanize)]
+      tags = [ status_tag(a.role.humanize) ]
       tags << status_tag("Super Admin", class: "orange") if a.super_admin?
       safe_join(tags, " ")
     end
@@ -37,7 +37,7 @@ ActiveAdmin.register AdminUser do
       row :id
       row :email
       row(:role)       { |a| a.role.humanize }
-      row(:super_admin){ |a| status_tag a.super_admin? ? "Yes" : "No", class: a.super_admin? ? "orange" : "grey" }
+      row(:super_admin) { |a| status_tag a.super_admin? ? "Yes" : "No", class: a.super_admin? ? "orange" : "grey" }
       row(:active)     { |a| status_tag a.active? ? "Active" : "Deactivated", class: a.active? ? "green" : "red" }
       row :notes
       row :sign_in_count
@@ -59,7 +59,7 @@ ActiveAdmin.register AdminUser do
       f.input :password_confirmation, hint: "Only required when changing password"
     end
     f.inputs "Access" do
-      f.input :role,        as: :select, collection: AdminUser::ROLES.map { |r| [r.humanize, r] }
+      f.input :role,        as: :select, collection: AdminUser::ROLES.map { |r| [ r.humanize, r ] }
       f.input :super_admin, as: :boolean, label: "Super Admin (full access)"
       f.input :active,      as: :boolean
       f.input :notes,       as: :text, hint: "Internal notes about this admin account"

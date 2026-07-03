@@ -10,7 +10,7 @@ module Portal
           total:     base.count,
           leads:     base.leads.count,
           customers: base.customers.count,
-          active:    base.active.count,
+          active:    base.active.count
         }
 
         @overdue_follow_ups = ContactNote.overdue

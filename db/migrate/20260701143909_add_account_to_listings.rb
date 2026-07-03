@@ -14,7 +14,7 @@ class AddAccountToListings < ActiveRecord::Migration[8.1]
     add_foreign_key :listings, :accounts, column: :account_id, on_delete: :restrict
 
     # Primary query: all listings for an account, filtered by status.
-    add_index :listings, [:account_id, :status],
+    add_index :listings, [ :account_id, :status ],
               where: "account_id IS NOT NULL",
               name: "index_listings_on_account_and_status"
   end

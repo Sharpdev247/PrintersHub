@@ -9,7 +9,7 @@ module Portal
           published:  base.where(status: "published").count,
           draft:      base.where(status: "draft").count,
           sold:       base.where(status: "sold").count,
-          total_views: base.sum(:views_count),
+          total_views: base.sum(:views_count)
         }
 
         @top_by_views = base.where(status: "published")

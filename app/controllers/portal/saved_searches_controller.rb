@@ -1,6 +1,6 @@
 module Portal
   class SavedSearchesController < Portal::BaseController
-    before_action :find_saved_search, only: [:destroy, :toggle_alert]
+    before_action :find_saved_search, only: [ :destroy, :toggle_alert ]
 
     def index
       @saved_searches = current_user.saved_searches.recent
@@ -41,8 +41,8 @@ module Portal
     def saved_search_params
       params.require(:saved_search).permit(
         :name, :alert_enabled,
-        filters: [:q, :type, :condition, :category_id, :brand_id,
-                  :currency, :price_min, :price_max, :city_id, :sort]
+        filters: [ :q, :type, :condition, :category_id, :brand_id,
+                  :currency, :price_min, :price_max, :city_id, :sort ]
       )
     end
   end

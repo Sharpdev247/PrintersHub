@@ -10,8 +10,8 @@ ActiveAdmin.register PaymentTransaction do
   scope("Refunds")    { |s| s.refunds }
 
   filter :gateway
-  filter :transaction_type, as: :select, collection: PaymentTransaction::TRANSACTION_TYPES.map { |t| [t.humanize, t] }
-  filter :status, as: :select, collection: PaymentTransaction.statuses.keys.map { |s| [s.humanize, s] }
+  filter :transaction_type, as: :select, collection: PaymentTransaction::TRANSACTION_TYPES.map { |t| [ t.humanize, t ] }
+  filter :status, as: :select, collection: PaymentTransaction.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :gateway_transaction_id
   filter :created_at
 
@@ -60,11 +60,11 @@ ActiveAdmin.register PaymentTransaction do
 
   form do |f|
     f.inputs "Transaction Details" do
-      f.input :payment, as: :select, collection: Payment.order(id: :desc).limit(100).map { |p| ["Payment ##{p.id} (#{p.amount} #{p.currency})", p.id] }
+      f.input :payment, as: :select, collection: Payment.order(id: :desc).limit(100).map { |p| [ "Payment ##{p.id} (#{p.amount} #{p.currency})", p.id ] }
       f.input :transaction_type, as: :select, collection: PaymentTransaction::TRANSACTION_TYPES
       f.input :gateway,          as: :select, collection: PaymentTransaction::GATEWAYS
       f.input :gateway_transaction_id
-      f.input :status, as: :select, collection: PaymentTransaction.statuses.keys.map { |s| [s.humanize, s] }
+      f.input :status, as: :select, collection: PaymentTransaction.statuses.keys.map { |s| [ s.humanize, s ] }
       f.input :amount
       f.input :currency
       f.input :gateway_message

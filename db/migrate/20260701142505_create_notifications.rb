@@ -36,16 +36,16 @@ class CreateNotifications < ActiveRecord::Migration[8.1]
     end
 
     # Primary inbox query: user's notifications, newest first, paginated.
-    add_index :notifications, [:user_id, :created_at],
+    add_index :notifications, [ :user_id, :created_at ],
               name: "index_notifications_on_user_and_created_at"
 
     # Unread count badge: WHERE user_id = ? AND read_at IS NULL.
-    add_index :notifications, [:user_id, :read_at],
+    add_index :notifications, [ :user_id, :read_at ],
               where: "read_at IS NULL",
               name: "index_notifications_on_user_id_unread"
 
     # Deep-link reverse lookup: find all notifications for a given resource.
-    add_index :notifications, [:notifiable_type, :notifiable_id],
+    add_index :notifications, [ :notifiable_type, :notifiable_id ],
               where: "notifiable_type IS NOT NULL",
               name: "index_notifications_on_notifiable"
 

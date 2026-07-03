@@ -6,7 +6,7 @@ ActiveAdmin.register Message do
   actions :index, :show, :destroy
 
   filter :conversation_id, label: "Conversation ID"
-  filter :user,    as: :select, collection: -> { User.order(:email).map { |u| [u.email, u.id] } }
+  filter :user,    as: :select, collection: -> { User.order(:email).map { |u| [ u.email, u.id ] } }
   filter :read_at, label: "Read At"
   filter :deleted_at
   filter :created_at

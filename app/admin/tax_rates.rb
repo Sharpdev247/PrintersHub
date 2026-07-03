@@ -5,12 +5,12 @@ ActiveAdmin.register TaxRate do
   scope("Active")   { |s| s.active }
   scope("VAT")      { |s| s.tax_type_vat }
   scope("GST")      { |s| s.tax_type_gst }
-  scope("Sales Tax"){ |s| s.tax_type_sales_tax }
+  scope("Sales Tax") { |s| s.tax_type_sales_tax }
 
   filter :name
   filter :country_code
   filter :state_code
-  filter :tax_type, as: :select, collection: TaxRate.tax_types.keys.map { |t| [t.humanize, t] }
+  filter :tax_type, as: :select, collection: TaxRate.tax_types.keys.map { |t| [ t.humanize, t ] }
   filter :active
   filter :rate
 
@@ -52,7 +52,7 @@ ActiveAdmin.register TaxRate do
       f.input :name
       f.input :country_code
       f.input :state_code
-      f.input :tax_type, as: :select, collection: TaxRate.tax_types.keys.map { |t| [t.humanize, t] }
+      f.input :tax_type, as: :select, collection: TaxRate.tax_types.keys.map { |t| [ t.humanize, t ] }
       f.input :rate, hint: "Enter as decimal (e.g. 0.17 for 17%)"
       f.input :active
       f.input :description

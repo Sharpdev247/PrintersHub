@@ -5,8 +5,8 @@ ActiveAdmin.register Favorite do
 
   actions :index, :show, :destroy
 
-  filter :user,    as: :select, collection: -> { User.order(:email).map { |u| [u.email, u.id] } }
-  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [truncate(l.title, length: 60), l.id] } }
+  filter :user,    as: :select, collection: -> { User.order(:email).map { |u| [ u.email, u.id ] } }
+  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [ truncate(l.title, length: 60), l.id ] } }
   filter :created_at
 
   scope :all, default: true

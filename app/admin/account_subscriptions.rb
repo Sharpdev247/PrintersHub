@@ -7,13 +7,13 @@ ActiveAdmin.register AccountSubscription do
 
   # ── Filters ─────────────────────────────────────────────────────────────────
   filter :status, as: :select,
-         collection: AccountSubscription.statuses.keys.map { |s| [s.humanize, s] }
+         collection: AccountSubscription.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :billing_interval, as: :select,
-         collection: %w[monthly yearly].map { |i| [i.humanize, i] }
+         collection: %w[monthly yearly].map { |i| [ i.humanize, i ] }
   filter :account, as: :select,
-         collection: -> { Account.order(:name).map { |a| [a.name, a.id] } }
+         collection: -> { Account.order(:name).map { |a| [ a.name, a.id ] } }
   filter :subscription_plan, as: :select,
-         collection: -> { SubscriptionPlan.order(:name).map { |p| [p.name, p.id] } }
+         collection: -> { SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] } }
   filter :starts_at
   filter :ends_at
   filter :created_at
@@ -99,16 +99,16 @@ ActiveAdmin.register AccountSubscription do
   form do |f|
     f.inputs "Subscription Details" do
       f.input :account, as: :select,
-              collection: Account.order(:name).map { |a| [a.name, a.id] },
+              collection: Account.order(:name).map { |a| [ a.name, a.id ] },
               include_blank: false
       f.input :subscription_plan, as: :select,
-              collection: SubscriptionPlan.order(:name).map { |p| [p.name, p.id] },
+              collection: SubscriptionPlan.order(:name).map { |p| [ p.name, p.id ] },
               include_blank: false
       f.input :status, as: :select,
-              collection: AccountSubscription.statuses.keys.map { |s| [s.humanize, s] },
+              collection: AccountSubscription.statuses.keys.map { |s| [ s.humanize, s ] },
               include_blank: false
       f.input :billing_interval, as: :select,
-              collection: %w[monthly yearly].map { |i| [i.humanize, i] },
+              collection: %w[monthly yearly].map { |i| [ i.humanize, i ] },
               include_blank: false
     end
 

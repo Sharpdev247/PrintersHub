@@ -1,9 +1,9 @@
 class ListingSearch
   SORT_OPTIONS = {
-    "recent"      => -> (s) { s.recent },
-    "price_asc"   => -> (s) { s.by_price_asc },
-    "price_desc"  => -> (s) { s.by_price_desc },
-    "popular"     => -> (s) { s.by_views }
+    "recent"      => ->(s) { s.recent },
+    "price_asc"   => ->(s) { s.by_price_asc },
+    "price_desc"  => ->(s) { s.by_price_desc },
+    "popular"     => ->(s) { s.by_views }
   }.freeze
 
   DEFAULT_SORT = "recent"

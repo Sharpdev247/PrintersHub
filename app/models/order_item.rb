@@ -20,7 +20,7 @@ class OrderItem < ApplicationRecord
   end
 
   def line_total
-    [(line_subtotal + tax_amount - discount_amount), 0].max
+    [ (line_subtotal + tax_amount - discount_amount), 0 ].max
   end
 
   def quantity_shipped
@@ -48,7 +48,7 @@ class OrderItem < ApplicationRecord
   private
 
   def calculate_total
-    self.total = [((unit_price.to_d * quantity.to_i) + tax_amount.to_d - discount_amount.to_d), 0].max
+    self.total = [ ((unit_price.to_d * quantity.to_i) + tax_amount.to_d - discount_amount.to_d), 0 ].max
   end
 
   def capture_listing_snapshot

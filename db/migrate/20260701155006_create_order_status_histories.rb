@@ -13,7 +13,7 @@ class CreateOrderStatusHistories < ActiveRecord::Migration[8.1]
       t.datetime :created_at, null: false
     end
 
-    add_index :order_status_histories, [:order_id, :created_at],
+    add_index :order_status_histories, [ :order_id, :created_at ],
               name: "index_order_status_histories_on_order_and_time"
 
     add_check_constraint :order_status_histories,

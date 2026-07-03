@@ -393,7 +393,7 @@ SAMPLE_LISTINGS = [
     brand:        hp,
     category:     printers_cat,
     printer_model: hp_laserjet,
-    location_city: lahore_city,
+    location_city: lahore_city
   },
   {
     title:        "Canon PIXMA G6020 MegaTank - Barely Used",
@@ -409,7 +409,7 @@ SAMPLE_LISTINGS = [
     brand:        canon,
     category:     printers_cat,
     printer_model: nil,
-    location_city: karachi_city,
+    location_city: karachi_city
   },
   {
     title:        "Epson EcoTank ET-4760 - Good Working Condition",
@@ -425,8 +425,8 @@ SAMPLE_LISTINGS = [
     brand:        epson,
     category:     printers_cat,
     printer_model: nil,
-    location_city: lahore_city,
-  },
+    location_city: lahore_city
+  }
 ].freeze
 
 SAMPLE_LISTINGS.each do |attrs|
@@ -482,7 +482,7 @@ hp_listing = Listing.find_by!(title: "HP LaserJet Pro M404n - Excellent Conditio
 canon_listing = Listing.find_by!(title: "Canon PIXMA G6020 MegaTank - Barely Used")
 
 # ── Favorites ────────────────────────────────────────────────────────────────
-[hp_listing, canon_listing].each do |listing|
+[ hp_listing, canon_listing ].each do |listing|
   unless Favorite.exists?(user: seed_buyer, listing: listing)
     Favorite.create!(user: seed_buyer, listing: listing)
     puts "  [created] Favorite: #{seed_buyer.email} → #{listing.title[0..40]}"
@@ -536,7 +536,7 @@ end
 seed_messages = [
   { user: seed_buyer, body: "Hi! I'm interested in the HP LaserJet. Is the price negotiable?" },
   { user: seed_user,  body: "Hello! Yes, I can consider reasonable offers. What did you have in mind?" },
-  { user: seed_buyer, body: "Could you do 40,000 PKR? I can pick it up this weekend." },
+  { user: seed_buyer, body: "Could you do 40,000 PKR? I can pick it up this weekend." }
 ]
 
 seed_messages.each do |msg_attrs|
@@ -843,7 +843,7 @@ SEED_CURRENCIES = [
   { code: "AED", name: "UAE Dirham",         symbol: "د.إ", exchange_rate: 3.67,   is_default: false, active: true },
   { code: "GBP", name: "British Pound",      symbol: "£",   exchange_rate: 0.79,   is_default: false, active: true },
   { code: "EUR", name: "Euro",               symbol: "€",   exchange_rate: 0.92,   is_default: false, active: true },
-  { code: "SAR", name: "Saudi Riyal",        symbol: "ر.س", exchange_rate: 3.75,   is_default: false, active: false },
+  { code: "SAR", name: "Saudi Riyal",        symbol: "ر.س", exchange_rate: 3.75,   is_default: false, active: false }
 ].freeze
 
 SEED_CURRENCIES.each do |attrs|
@@ -865,7 +865,7 @@ SEED_TAX_RATES = [
   { name: "Pakistan Sales Tax", country_code: "PK", state_code: "SD", tax_type: :sales_tax, rate: 0.175, active: true,  description: "Sindh Sales Tax (SST)" },
   { name: "US No Tax",          country_code: "US", state_code: nil,  tax_type: :sales_tax, rate: 0.0,   active: true,  description: "Default zero tax — US state tax varies" },
   { name: "UAE VAT",            country_code: "AE", state_code: nil,  tax_type: :vat,       rate: 0.05,  active: true,  description: "UAE standard VAT rate" },
-  { name: "UK VAT",             country_code: "GB", state_code: nil,  tax_type: :vat,       rate: 0.20,  active: true,  description: "UK standard VAT rate" },
+  { name: "UK VAT",             country_code: "GB", state_code: nil,  tax_type: :vat,       rate: 0.20,  active: true,  description: "UK standard VAT rate" }
 ].freeze
 
 SEED_TAX_RATES.each do |attrs|
@@ -928,7 +928,7 @@ end
   { warehouse: lahore_wh,  code: "A", name: "Aisle A",   zone_type: "storage" },
   { warehouse: lahore_wh,  code: "R", name: "Receiving", zone_type: "receiving" },
   { warehouse: karachi_wh, code: "A", name: "Aisle A",   zone_type: "storage" },
-  { warehouse: karachi_wh, code: "R", name: "Receiving", zone_type: "receiving" },
+  { warehouse: karachi_wh, code: "R", name: "Receiving", zone_type: "receiving" }
 ].each do |z|
   wz = WarehouseZone.find_or_initialize_by(warehouse: z[:warehouse], code: z[:code])
   if wz.new_record?
@@ -1120,7 +1120,7 @@ end
 [
   { inventory_item: inv1, supplier: sup1, reorder_point: 10, reorder_quantity: 50 },
   { inventory_item: inv2, supplier: sup2, reorder_point: 5,  reorder_quantity: 20 },
-  { inventory_item: inv3, supplier: sup2, reorder_point: 5,  reorder_quantity: 20 },
+  { inventory_item: inv3, supplier: sup2, reorder_point: 5,  reorder_quantity: 20 }
 ].each do |rule|
   rr = ReorderRule.find_or_initialize_by(inventory_item: rule[:inventory_item])
   if rr.new_record?
@@ -1175,8 +1175,8 @@ settings = [
   { key: "platform.name",            value: "PrintersHub",              value_type: "string",  category: "general",     description: "Public platform name" },
   { key: "platform.tagline",         value: "The Printer Parts Marketplace", value_type: "string", category: "general", description: "Marketing tagline" },
   { key: "platform.support_email",   value: "support@printershub.com",  value_type: "string",  category: "general",     description: "Support contact email" },
-  { key: "platform.default_currency",value: "USD",                      value_type: "string",  category: "general",     description: "Default currency code" },
-  { key: "platform.default_timezone",value: "UTC",                      value_type: "string",  category: "general",     description: "Default timezone" },
+  { key: "platform.default_currency", value: "USD",                      value_type: "string",  category: "general",     description: "Default currency code" },
+  { key: "platform.default_timezone", value: "UTC",                      value_type: "string",  category: "general",     description: "Default timezone" },
 
   # Marketplace
   { key: "marketplace.listings_per_page",       value: "24",    value_type: "integer", category: "marketplace", description: "Listings shown per browse page" },
@@ -1209,7 +1209,7 @@ settings = [
 
   # Maintenance
   { key: "maintenance.mode",          value: "false", value_type: "boolean", category: "maintenance", description: "Enable maintenance mode (blocks all user access)" },
-  { key: "maintenance.message",       value: "We are performing scheduled maintenance. Back soon!", value_type: "string", category: "maintenance", description: "Message shown during maintenance" },
+  { key: "maintenance.message",       value: "We are performing scheduled maintenance. Back soon!", value_type: "string", category: "maintenance", description: "Message shown during maintenance" }
 ]
 
 settings.each do |s|

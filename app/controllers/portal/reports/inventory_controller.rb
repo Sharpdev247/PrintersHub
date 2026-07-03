@@ -14,14 +14,14 @@ module Portal
           total_skus:    items.count,
           total_stock:   items.sum(:quantity_on_hand),
           total_value:   total_value,
-          out_of_stock:  items.out_of_stock.count,
+          out_of_stock:  items.out_of_stock.count
         }
 
         @low_stock  = items.low_stock.order(quantity_on_hand: :asc).limit(20)
         @out_of_stock = items.out_of_stock.order(updated_at: :asc).limit(10)
 
         @by_warehouse = Current.account.warehouses.kept
-                               .map { |wh| [wh.name, wh.inventory_items.active.sum(:quantity_on_hand)] }
+                               .map { |wh| [ wh.name, wh.inventory_items.active.sum(:quantity_on_hand) ] }
                                .reject { |_, qty| qty.zero? }
 
         @recent_adjustments = InventoryTransaction

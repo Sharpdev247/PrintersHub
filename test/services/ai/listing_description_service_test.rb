@@ -46,5 +46,4 @@ class Ai::ListingDescriptionServiceTest < ActiveSupport::TestCase
       end
     end
   end
-
 end

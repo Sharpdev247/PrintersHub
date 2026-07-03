@@ -7,9 +7,9 @@ class ApiToken < ApplicationRecord
   TOKEN_TYPES = %w[personal service webhook].freeze
 
   AVAILABLE_SCOPES = %w[
-    read:listings   write:listings
-    read:orders     write:orders
-    read:inventory  write:inventory
+    read:listings write:listings
+    read:orders write:orders
+    read:inventory write:inventory
     read:analytics
     admin
   ].freeze
@@ -47,7 +47,7 @@ class ApiToken < ApplicationRecord
       expires_at:   expires_at
     )
 
-    [token, raw]
+    [ token, raw ]
   end
 
   # ── Lookup ───────────────────────────────────────────────────────────────────

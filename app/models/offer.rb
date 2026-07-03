@@ -33,7 +33,7 @@ class Offer < ApplicationRecord
   before_create :set_seller_from_listing
 
   scope :pending,   -> { where(status: statuses[:pending]) }
-  scope :active,    -> { where(status: [statuses[:pending], statuses[:countered]]) }
+  scope :active,    -> { where(status: [ statuses[:pending], statuses[:countered] ]) }
   scope :for_buyer, ->(user) { where(buyer: user) }
   scope :for_seller, ->(user) { where(seller: user) }
   scope :root,      -> { where(parent_offer_id: nil) }
@@ -55,7 +55,7 @@ class Offer < ApplicationRecord
   def counter!(amount:, proposed_by:, message: nil, expires_at: nil)
     raise ArgumentError, "amount must be positive" unless amount.positive?
     raise ArgumentError, "proposed_by must be buyer or seller" unless
-      [buyer_id, seller_id].include?(proposed_by.id)
+      [ buyer_id, seller_id ].include?(proposed_by.id)
 
     counter = nil
     transaction do
@@ -76,7 +76,7 @@ class Offer < ApplicationRecord
   end
 
   def negotiation_chain
-    chain = [self]
+    chain = [ self ]
     chain.unshift(chain.first.parent_offer) while chain.first.parent_offer_id.present?
     chain
   end
@@ -98,7 +98,7 @@ class Offer < ApplicationRecord
 
   def proposed_by_is_participant
     return unless proposed_by_id.present?
-    unless [buyer_id, seller_id].include?(proposed_by_id)
+    unless [ buyer_id, seller_id ].include?(proposed_by_id)
       errors.add(:proposed_by, "must be either the buyer or seller")
     end
   end

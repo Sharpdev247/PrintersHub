@@ -10,7 +10,7 @@ class CreateStockTransferItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :stock_transfer_items, [:stock_transfer_id, :inventory_item_id], unique: true,
+    add_index :stock_transfer_items, [ :stock_transfer_id, :inventory_item_id ], unique: true,
               name: "index_stock_transfer_items_on_transfer_item"
     add_check_constraint :stock_transfer_items, "quantity_requested > 0",
                          name: "chk_stock_transfer_items_requested"

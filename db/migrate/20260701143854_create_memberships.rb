@@ -27,13 +27,13 @@ class CreateMemberships < ActiveRecord::Migration[8.1]
     end
 
     # One active membership per user per account (soft-deleted ones allowed to remain)
-    add_index :memberships, [:account_id, :user_id],
+    add_index :memberships, [ :account_id, :user_id ],
               unique: true,
               where: "discarded_at IS NULL",
               name: "index_memberships_on_account_and_user_active"
 
     # Admin: all members of an account by role
-    add_index :memberships, [:account_id, :role], name: "index_memberships_on_account_and_role"
+    add_index :memberships, [ :account_id, :role ], name: "index_memberships_on_account_and_role"
 
     add_index :memberships, :discarded_at,
               where: "discarded_at IS NOT NULL",

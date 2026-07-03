@@ -2,8 +2,8 @@ ActiveAdmin.register PurchaseOrder do
   permit_params :account_id, :supplier_id, :warehouse_id, :status,
                 :currency, :payment_terms, :notes, :internal_notes,
                 :expected_at,
-                purchase_order_items_attributes: [:id, :product_variant_id,
-                  :quantity_ordered, :unit_cost, :notes, :_destroy]
+                purchase_order_items_attributes: [ :id, :product_variant_id,
+                  :quantity_ordered, :unit_cost, :notes, :_destroy ]
 
   filter :account
   filter :supplier

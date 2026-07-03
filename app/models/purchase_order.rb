@@ -28,7 +28,7 @@ class PurchaseOrder < ApplicationRecord
   validates :currency,     format: { with: /\A[A-Z]{3}\z/ }
 
   scope :recent,   -> { kept.order(created_at: :desc) }
-  scope :open,     -> { kept.where(status: [:draft, :submitted, :confirmed, :shipped, :partial]) }
+  scope :open,     -> { kept.where(status: [ :draft, :submitted, :confirmed, :shipped, :partial ]) }
 
   def recalculate!
     sub = purchase_order_items.sum(:total_cost)

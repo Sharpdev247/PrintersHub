@@ -23,7 +23,7 @@ class CreatePlanFeatures < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :plan_features, [:subscription_plan_id, :feature_key],
+    add_index :plan_features, [ :subscription_plan_id, :feature_key ],
               unique: true,
               name: "index_plan_features_on_plan_and_key"
 

@@ -2,7 +2,7 @@ module Portal
   module Warehouse
     class InventoryItemsController < Portal::BaseController
       before_action :require_warehouse_access
-      before_action :find_item, only: [:show, :adjust]
+      before_action :find_item, only: [ :show, :adjust ]
 
       def index
         @warehouse = find_scoped_warehouse
@@ -14,10 +14,10 @@ module Portal
         base = base.for_warehouse(@warehouse) if @warehouse
 
         @items = case params[:filter]
-                 when "low_stock"   then base.low_stock
-                 when "out_of_stock" then base.out_of_stock
-                 else base
-                 end
+        when "low_stock"   then base.low_stock
+        when "out_of_stock" then base.out_of_stock
+        else base
+        end
                  .order("quantity_on_hand - reserved_quantity ASC")
                  .page(params[:page]).per(30)
       end

@@ -5,8 +5,8 @@ ActiveAdmin.register Notification do
 
   actions :index, :show, :destroy
 
-  filter :user,              as: :select, collection: -> { User.order(:email).map { |u| [u.email, u.id] } }
-  filter :notification_type, as: :select, collection: Notification::TYPES.map { |t| [t.humanize, t] }
+  filter :user,              as: :select, collection: -> { User.order(:email).map { |u| [ u.email, u.id ] } }
+  filter :notification_type, as: :select, collection: Notification::TYPES.map { |t| [ t.humanize, t ] }
   filter :read_at,           label: "Read At"
   filter :created_at
 

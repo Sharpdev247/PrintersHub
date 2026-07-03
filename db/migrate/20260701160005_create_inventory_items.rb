@@ -19,7 +19,7 @@ class CreateInventoryItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :inventory_items, [:product_variant_id, :warehouse_id], unique: true,
+    add_index :inventory_items, [ :product_variant_id, :warehouse_id ], unique: true,
               name: "index_inventory_items_on_variant_warehouse"
     add_index :inventory_items, :quantity_on_hand,
               name: "index_inventory_items_on_quantity_on_hand"

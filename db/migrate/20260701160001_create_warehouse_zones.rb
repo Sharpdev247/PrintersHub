@@ -10,7 +10,7 @@ class CreateWarehouseZones < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :warehouse_zones, [:warehouse_id, :code], unique: true,
+    add_index :warehouse_zones, [ :warehouse_id, :code ], unique: true,
               name: "index_warehouse_zones_on_warehouse_code"
     add_check_constraint :warehouse_zones,
                          "zone_type IN ('storage','receiving','dispatch','quarantine','returns')",

@@ -14,11 +14,11 @@ class CreateProductVariants < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :product_variants, [:product_id, :variant_sku], unique: true,
+    add_index :product_variants, [ :product_id, :variant_sku ], unique: true,
               name: "index_product_variants_on_product_sku"
     add_index :product_variants, :barcode, name: "index_product_variants_on_barcode"
     add_index :product_variants, :discarded_at, name: "index_product_variants_on_discarded_at"
-    add_index :product_variants, [:product_id, :position],
+    add_index :product_variants, [ :product_id, :position ],
               name: "index_product_variants_on_product_position"
 
     add_check_constraint :product_variants,

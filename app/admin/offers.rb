@@ -4,8 +4,8 @@ ActiveAdmin.register Offer do
   permit_params :listing_id, :buyer_id, :seller_id, :proposed_by_id,
                 :amount, :currency, :status, :message, :expires_at
 
-  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [truncate(l.title, length: 60), l.id] } }
-  filter :status,  as: :select, collection: Offer.statuses.keys.map { |s| [s.humanize, s] }
+  filter :listing, as: :select, collection: -> { Listing.order(:title).map { |l| [ truncate(l.title, length: 60), l.id ] } }
+  filter :status,  as: :select, collection: Offer.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :amount
   filter :currency
   filter :expires_at

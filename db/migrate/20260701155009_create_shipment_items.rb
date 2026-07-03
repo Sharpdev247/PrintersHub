@@ -11,7 +11,7 @@ class CreateShipmentItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :shipment_items, [:shipment_id, :order_item_id],
+    add_index :shipment_items, [ :shipment_id, :order_item_id ],
               unique: true,
               name: "index_shipment_items_on_shipment_and_order_item"
 

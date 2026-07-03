@@ -32,5 +32,4 @@ class Ai::PriceSuggestionServiceTest < ActiveSupport::TestCase
       end
     end
   end
-
 end

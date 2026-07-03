@@ -11,9 +11,9 @@ class CreateTaxRates < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :tax_rates, [:country_code, :state_code, :active],
+    add_index :tax_rates, [ :country_code, :state_code, :active ],
               name: "index_tax_rates_on_country_state_active"
-    add_index :tax_rates, [:country_code, :state_code, :tax_type],
+    add_index :tax_rates, [ :country_code, :state_code, :tax_type ],
               unique: true,
               where: "active = true",
               name: "index_tax_rates_unique_active"

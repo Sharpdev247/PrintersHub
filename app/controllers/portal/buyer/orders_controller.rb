@@ -1,7 +1,7 @@
 module Portal
   module Buyer
     class OrdersController < Portal::BaseController
-      before_action :find_order, only: [:show, :cancel]
+      before_action :find_order, only: [ :show, :cancel ]
 
       def index
         @orders = policy_scope(Order)

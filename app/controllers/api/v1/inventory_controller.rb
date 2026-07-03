@@ -1,5 +1,5 @@
 class Api::V1::InventoryController < Api::V1::BaseController
-  before_action :set_item, only: [:show, :adjust]
+  before_action :set_item, only: [ :show, :adjust ]
 
   # GET /api/v1/inventory
   def index
@@ -82,7 +82,7 @@ class Api::V1::InventoryController < Api::V1::BaseController
       low_stock:         item.low_stock?,
       warehouse:         item.warehouse&.name,
       listing_title:     item.listing&.title,
-      updated_at:        item.updated_at,
+      updated_at:        item.updated_at
     }
 
     if detailed
@@ -96,7 +96,7 @@ class Api::V1::InventoryController < Api::V1::BaseController
             after:   t.quantity_after,
             at:      t.performed_at,
             source:  t.source,
-            notes:   t.notes,
+            notes:   t.notes
           }
         end
     end
@@ -108,7 +108,7 @@ class Api::V1::InventoryController < Api::V1::BaseController
     {
       current_page: collection.current_page,
       total_pages:  collection.total_pages,
-      total_count:  collection.total_count,
+      total_count:  collection.total_count
     }
   end
 end

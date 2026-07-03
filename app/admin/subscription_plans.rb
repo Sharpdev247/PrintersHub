@@ -11,7 +11,7 @@ ActiveAdmin.register SubscriptionPlan do
   # ── Filters ─────────────────────────────────────────────────────────────────
   filter :name
   filter :plan_type, as: :select,
-         collection: SubscriptionPlan.plan_types.keys.map { |t| [t.humanize, t] }
+         collection: SubscriptionPlan.plan_types.keys.map { |t| [ t.humanize, t ] }
   filter :active, as: :boolean
   filter :created_at
 
@@ -81,7 +81,7 @@ ActiveAdmin.register SubscriptionPlan do
     f.inputs "Plan Details" do
       f.input :name
       f.input :plan_type, as: :select,
-              collection: SubscriptionPlan.plan_types.keys.map { |t| [t.humanize, t] },
+              collection: SubscriptionPlan.plan_types.keys.map { |t| [ t.humanize, t ] },
               include_blank: false
       f.input :description
     end

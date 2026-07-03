@@ -7,7 +7,7 @@ ActiveAdmin.register City do
   scope :geocoded
 
   filter :name
-  filter :state,   as: :select, collection: -> { State.includes(:country).order("countries.name, states.name").map { |s| ["#{s.country.flag_emoji} #{s.country.name} — #{s.name}", s.id] } }
+  filter :state,   as: :select, collection: -> { State.includes(:country).order("countries.name, states.name").map { |s| [ "#{s.country.flag_emoji} #{s.country.name} — #{s.name}", s.id ] } }
   filter :created_at
 
   index do
@@ -44,7 +44,7 @@ ActiveAdmin.register City do
     f.inputs "City Details" do
       f.input :state, as: :select,
               collection: State.includes(:country).order("countries.name, states.name").map { |s|
-                ["#{s.country.flag_emoji} #{s.country.name} — #{s.name}", s.id]
+                [ "#{s.country.flag_emoji} #{s.country.name} — #{s.name}", s.id ]
               },
               include_blank: false
       f.input :name

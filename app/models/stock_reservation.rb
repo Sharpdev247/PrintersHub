@@ -14,7 +14,7 @@ class StockReservation < ApplicationRecord
 
   validates :quantity, numericality: { greater_than: 0 }
 
-  scope :active,   -> { where(status: [:pending, :confirmed]) }
+  scope :active,   -> { where(status: [ :pending, :confirmed ]) }
   scope :expired,  -> { where("expires_at < ? AND status IN (0,1)", Time.current) }
 
   def release!

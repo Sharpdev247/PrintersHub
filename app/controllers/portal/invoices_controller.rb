@@ -1,6 +1,6 @@
 module Portal
   class InvoicesController < Portal::BaseController
-    before_action :find_invoice, only: [:show]
+    before_action :find_invoice, only: [ :show ]
 
     def index
       @invoices = Invoice.order_type

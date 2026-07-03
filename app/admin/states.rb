@@ -5,7 +5,7 @@ ActiveAdmin.register State do
 
   filter :name
   filter :code
-  filter :country, as: :select, collection: -> { Country.active.ordered.map { |c| ["#{c.flag_emoji} #{c.name}", c.id] } }
+  filter :country, as: :select, collection: -> { Country.active.ordered.map { |c| [ "#{c.flag_emoji} #{c.name}", c.id ] } }
   filter :created_at
 
   index do
@@ -46,7 +46,7 @@ ActiveAdmin.register State do
   form do |f|
     f.inputs "State Details" do
       f.input :country, as: :select,
-              collection: Country.active.ordered.map { |c| ["#{c.flag_emoji} #{c.name}", c.id] },
+              collection: Country.active.ordered.map { |c| [ "#{c.flag_emoji} #{c.name}", c.id ] },
               include_blank: false
       f.input :name
       f.input :code, hint: "Short code if applicable (e.g. PB for Punjab). Optional."

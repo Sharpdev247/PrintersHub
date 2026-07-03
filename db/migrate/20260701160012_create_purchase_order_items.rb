@@ -13,7 +13,7 @@ class CreatePurchaseOrderItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :purchase_order_items, [:purchase_order_id, :product_variant_id], unique: true,
+    add_index :purchase_order_items, [ :purchase_order_id, :product_variant_id ], unique: true,
               name: "index_po_items_on_po_variant"
     add_check_constraint :purchase_order_items, "quantity_ordered > 0",
                          name: "chk_po_items_quantity_ordered"

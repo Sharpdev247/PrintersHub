@@ -43,13 +43,13 @@ class CreateOrders < ActiveRecord::Migration[8.1]
     add_foreign_key :orders, :users,     column: :cancelled_by_id,     on_delete: :nullify
 
     add_index :orders, :order_number, unique: true, name: "index_orders_on_order_number"
-    add_index :orders, [:buyer_account_id,  :status], name: "index_orders_on_buyer_and_status"
-    add_index :orders, [:seller_account_id, :status], name: "index_orders_on_seller_and_status"
+    add_index :orders, [ :buyer_account_id,  :status ], name: "index_orders_on_buyer_and_status"
+    add_index :orders, [ :seller_account_id, :status ], name: "index_orders_on_seller_and_status"
     add_index :orders, :status,     name: "index_orders_on_status"
     add_index :orders, :created_at, name: "index_orders_on_created_at"
     add_index :orders, :paid_at,    where: "paid_at IS NOT NULL", name: "index_orders_on_paid_at"
-    add_index :orders, [:billing_address_id],  where: "billing_address_id IS NOT NULL",  name: "index_orders_on_billing_address"
-    add_index :orders, [:shipping_address_id], where: "shipping_address_id IS NOT NULL", name: "index_orders_on_shipping_address"
+    add_index :orders, [ :billing_address_id ],  where: "billing_address_id IS NOT NULL",  name: "index_orders_on_billing_address"
+    add_index :orders, [ :shipping_address_id ], where: "shipping_address_id IS NOT NULL", name: "index_orders_on_shipping_address"
 
     add_check_constraint :orders, "subtotal >= 0",        name: "chk_orders_subtotal"
     add_check_constraint :orders, "tax_amount >= 0",      name: "chk_orders_tax_amount"

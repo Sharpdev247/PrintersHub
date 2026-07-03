@@ -50,9 +50,9 @@ ActiveAdmin.register PrinterModel do
 
   form do |f|
     f.inputs "Model Details" do
-      f.input :brand,        as: :select, collection: Brand.active.ordered.map { |b| [b.name, b.id] }
+      f.input :brand,        as: :select, collection: Brand.active.ordered.map { |b| [ b.name, b.id ] }
       f.input :category,     as: :select,
-                             collection: Category.active.sort_by(&:depth).map { |c| [c.depth_label, c.id] },
+                             collection: Category.active.sort_by(&:depth).map { |c| [ c.depth_label, c.id ] },
                              include_blank: "— Uncategorised —"
       f.input :name
       f.input :model_number, hint: "Manufacturer's official part/model number"

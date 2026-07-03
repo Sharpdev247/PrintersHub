@@ -13,7 +13,7 @@ module Portal
           scheduled_today: base.by_status("scheduled").where(scheduled_at: Time.current.beginning_of_day..Time.current.end_of_day).count,
           completed_month: base.by_status("completed").where(completed_at: Time.current.beginning_of_month..).count,
           urgent:          base.open.urgent.count,
-          overdue:         base.overdue.count,
+          overdue:         base.overdue.count
         }
 
         @recent       = base.open.recent.includes(:assigned_to, :printer_model, :customer_account).limit(8)

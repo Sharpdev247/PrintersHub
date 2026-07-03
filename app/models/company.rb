@@ -17,7 +17,7 @@ class Company < ApplicationRecord
   validates :name,     presence: true, length: { maximum: 150 }
   validates :slug,     presence: true, uniqueness: true
   validates :email,    format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
-  validates :website,  format: { with: /\Ahttps?:\/\/.+/, message: "must start with http:// or https://" }, allow_blank: true
+  validates :website,  format: { with: /\Ahttps?:\/\/.+\z/, message: "must start with http:// or https://" }, allow_blank: true
   validates :verified, inclusion: { in: [ true, false ] }
   validate  :verified_at_consistency
 

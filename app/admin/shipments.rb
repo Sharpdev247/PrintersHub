@@ -10,7 +10,7 @@ ActiveAdmin.register Shipment do
 
   filter :tracking_number
   filter :carrier
-  filter :status, as: :select, collection: Shipment.statuses.keys.map { |s| [s.humanize, s] }
+  filter :status, as: :select, collection: Shipment.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :account, as: :select, collection: -> { Account.order(:name).pluck(:name, :id) }
   filter :shipped_at
   filter :delivered_at
@@ -73,11 +73,11 @@ ActiveAdmin.register Shipment do
 
   form do |f|
     f.inputs "Shipment Details" do
-      f.input :order,         as: :select, collection: Order.recent.limit(200).map { |o| [o.order_number, o.id] }
-      f.input :account,       as: :select, collection: Account.order(:name).map { |a| [a.name, a.id] }
+      f.input :order,         as: :select, collection: Order.recent.limit(200).map { |o| [ o.order_number, o.id ] }
+      f.input :account,       as: :select, collection: Account.order(:name).map { |a| [ a.name, a.id ] }
       f.input :tracking_number
       f.input :carrier
-      f.input :status,        as: :select, collection: Shipment.statuses.keys.map { |s| [s.humanize, s] }
+      f.input :status,        as: :select, collection: Shipment.statuses.keys.map { |s| [ s.humanize, s ] }
       f.input :weight
       f.input :weight_unit,   as: :select, collection: Shipment::WEIGHT_UNITS
       f.input :shipping_cost

@@ -43,16 +43,16 @@ class Order < ApplicationRecord
   scope :for_account, ->(account) { where(buyer_account: account).or(where(seller_account: account)) }
   scope :recent,      -> { order(created_at: :desc) }
   scope :paid,       -> { where.not(paid_at: nil) }
-  scope :active,     -> { where(status: [statuses[:pending_payment], statuses[:payment_confirmed],
+  scope :active,     -> { where(status: [ statuses[:pending_payment], statuses[:payment_confirmed],
                                           statuses[:processing], statuses[:partially_shipped],
-                                          statuses[:shipped]]) }
+                                          statuses[:shipped] ]) }
 
   def recalculate!
     items = order_items.reload
     new_subtotal  = items.sum { |i| i.unit_price * i.quantity }
     new_tax       = items.sum(&:tax_amount)
     new_discount  = items.sum(&:discount_amount)
-    new_total     = [new_subtotal + new_tax + shipping_amount - new_discount, 0].max
+    new_total     = [ new_subtotal + new_tax + shipping_amount - new_discount, 0 ].max
     update!(subtotal: new_subtotal, tax_amount: new_tax, discount_amount: new_discount, total: new_total)
   end
 

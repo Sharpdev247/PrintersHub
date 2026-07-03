@@ -12,7 +12,7 @@ ActiveAdmin.register Company do
   filter :name
   filter :slug
   filter :email
-  filter :company_type, as: :select, collection: Company.company_types.keys.map { |k| [k.humanize, k] }
+  filter :company_type, as: :select, collection: Company.company_types.keys.map { |k| [ k.humanize, k ] }
   filter :verified
   filter :user_id, label: "User ID"
   filter :created_at
@@ -66,14 +66,14 @@ ActiveAdmin.register Company do
 
   form do |f|
     f.inputs "Company Details" do
-      f.input :user,         as: :select, collection: User.order(:email).map { |u| [u.email, u.id] }
+      f.input :user,         as: :select, collection: User.order(:email).map { |u| [ u.email, u.id ] }
       f.input :name
       f.input :email
       f.input :phone
       f.input :website,      placeholder: "https://"
       f.input :description,  as: :text
       f.input :tax_number
-      f.input :company_type, as: :select, collection: Company.company_types.keys.map { |k| [k.humanize, k] }
+      f.input :company_type, as: :select, collection: Company.company_types.keys.map { |k| [ k.humanize, k ] }
     end
     f.inputs "Verification" do
       f.input :verified

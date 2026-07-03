@@ -2,7 +2,7 @@ module Portal
   module Crm
     class ContactsController < Portal::BaseController
       before_action :require_sales_access
-      before_action :find_contact, only: [:show, :edit, :update, :destroy]
+      before_action :find_contact, only: [ :show, :edit, :update, :destroy ]
 
       def index
         base = policy_scope(Contact).includes(:owner, :contact_notes)

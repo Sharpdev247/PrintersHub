@@ -12,7 +12,7 @@ class AdminUser < ApplicationRecord
 
   validates :email,  presence: true, uniqueness: { case_sensitive: false }
   validates :role,   inclusion: { in: ROLES }
-  validates :active, inclusion: { in: [true, false] }
+  validates :active, inclusion: { in: [ true, false ] }
 
   scope :active,       -> { where(active: true) }
   scope :super_admins, -> { where(super_admin: true) }

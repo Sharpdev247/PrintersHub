@@ -33,7 +33,7 @@ class Account < ApplicationRecord
 
   # Subscription & billing
   has_many :account_subscriptions, dependent: :restrict_with_error
-  has_one  :active_subscription, -> { kept.where(status: [0, 1, 2]).order(created_at: :desc) },
+  has_one  :active_subscription, -> { kept.where(status: [ 0, 1, 2 ]).order(created_at: :desc) },
            class_name: "AccountSubscription"
   has_many :invoices, dependent: :restrict_with_error
   has_many :payments, dependent: :restrict_with_error
@@ -58,7 +58,7 @@ class Account < ApplicationRecord
   validates :name,  presence: true, length: { minimum: 2, maximum: 150 }
   validates :slug,  presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
-  validates :website, format: { with: /\Ahttps?:\/\/.+/ }, allow_blank: true
+  validates :website, format: { with: /\Ahttps?:\/\/.+\z/ }, allow_blank: true
   validates :phone, format: { with: /\A[\d\s\+\-\(\)\.]{7,20}\z/ }, allow_blank: true
 
   scope :active,    -> { kept.status_active }

@@ -10,7 +10,7 @@ class CreateStockReservations < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :stock_reservations, [:order_item_id, :inventory_item_id], unique: true,
+    add_index :stock_reservations, [ :order_item_id, :inventory_item_id ], unique: true,
               name: "index_stock_reservations_on_order_item_inventory_item"
     add_index :stock_reservations, :status,
               name: "index_stock_reservations_on_status"

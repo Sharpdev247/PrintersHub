@@ -28,7 +28,7 @@ class TaxRate < ApplicationRecord
   def self.applicable_for(country_code:, state_code: nil)
     scope = active.where(country_code: country_code.to_s.upcase)
     if state_code.present?
-      scope.where(state_code: [state_code.to_s.upcase, nil])
+      scope.where(state_code: [ state_code.to_s.upcase, nil ])
            .order(Arel.sql("CASE WHEN state_code IS NOT NULL THEN 0 ELSE 1 END"))
     else
       scope.where(state_code: nil)

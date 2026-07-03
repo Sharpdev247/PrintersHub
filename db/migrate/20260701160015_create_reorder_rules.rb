@@ -13,7 +13,7 @@ class CreateReorderRules < ActiveRecord::Migration[8.1]
 
     add_index :reorder_rules, :inventory_item_id, unique: true,
               name: "index_reorder_rules_on_inventory_item"
-    add_index :reorder_rules, [:active, :auto_order],
+    add_index :reorder_rules, [ :active, :auto_order ],
               name: "index_reorder_rules_on_active_auto_order"
 
     add_check_constraint :reorder_rules, "reorder_point >= 0",

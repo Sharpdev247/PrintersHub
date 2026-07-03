@@ -21,7 +21,7 @@ class CreateInventoryTransactions < ActiveRecord::Migration[8.1]
       t.datetime :created_at, null: false
     end
 
-    add_index :inventory_transactions, [:reference_type, :reference_id],
+    add_index :inventory_transactions, [ :reference_type, :reference_id ],
               name: "index_inventory_transactions_on_reference"
     add_index :inventory_transactions, :transaction_type,
               name: "index_inventory_transactions_on_type"

@@ -19,7 +19,7 @@ class CreateApiTokens < ActiveRecord::Migration[8.1]
 
     add_index :api_tokens, :token_digest, unique: true
     add_index :api_tokens, :prefix
-    add_index :api_tokens, [:account_id, :revoked_at]
+    add_index :api_tokens, [ :account_id, :revoked_at ]
     # Partial index — active tokens only (most common lookup)
     add_index :api_tokens, :account_id,
               where: "revoked_at IS NULL",

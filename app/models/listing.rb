@@ -18,7 +18,7 @@ class Listing < ApplicationRecord
                   },
                   using: {
                     tsearch:  { prefix: true, dictionary: "english" },
-                    trigram:  { threshold: 0.15, only: [:title] }
+                    trigram:  { threshold: 0.15, only: [ :title ] }
                   }
 
   belongs_to :user

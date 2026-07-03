@@ -13,7 +13,7 @@ class CreateInventoryCountItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :inventory_count_items, [:inventory_count_id, :inventory_item_id], unique: true,
+    add_index :inventory_count_items, [ :inventory_count_id, :inventory_item_id ], unique: true,
               name: "index_inventory_count_items_on_count_item"
     add_index :inventory_count_items, :counted,
               name: "index_inventory_count_items_on_counted"

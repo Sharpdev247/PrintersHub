@@ -31,7 +31,7 @@ class CreateConversationParticipants < ActiveRecord::Migration[8.1]
     end
 
     # A user can only appear once per conversation.
-    add_index :conversation_participants, [:conversation_id, :user_id], unique: true,
+    add_index :conversation_participants, [ :conversation_id, :user_id ], unique: true,
               name: "index_conv_participants_on_conv_and_user"
 
     # Inbox query: "all conversations this user is in, newest first".

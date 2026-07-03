@@ -2,7 +2,7 @@ module Portal
   module Settings
     class MembershipsController < Portal::BaseController
       before_action :require_admin
-      before_action :find_membership, only: [:update, :destroy]
+      before_action :find_membership, only: [ :update, :destroy ]
 
       def index
         @memberships = policy_scope(Membership)

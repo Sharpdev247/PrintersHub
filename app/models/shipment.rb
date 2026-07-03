@@ -23,7 +23,7 @@ class Shipment < ApplicationRecord
   validates :shipping_cost, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validate  :tracking_number_length
 
-  scope :active,    -> { where.not(status: [statuses[:delivered], statuses[:returned]]) }
+  scope :active,    -> { where.not(status: [ statuses[:delivered], statuses[:returned] ]) }
   scope :delivered, -> { status_delivered }
   scope :for_order, ->(o) { where(order: o) }
 

@@ -8,9 +8,9 @@ ActiveAdmin.register Invoice do
   # ── Filters ─────────────────────────────────────────────────────────────────
   filter :invoice_number
   filter :status, as: :select,
-         collection: Invoice.statuses.keys.map { |s| [s.humanize, s] }
+         collection: Invoice.statuses.keys.map { |s| [ s.humanize, s ] }
   filter :account, as: :select,
-         collection: -> { Account.order(:name).map { |a| [a.name, a.id] } }
+         collection: -> { Account.order(:name).map { |a| [ a.name, a.id ] } }
   filter :due_date
   filter :paid_at
   filter :created_at
@@ -114,11 +114,11 @@ ActiveAdmin.register Invoice do
   form do |f|
     f.inputs "Invoice Details" do
       f.input :account, as: :select,
-              collection: Account.order(:name).map { |a| [a.name, a.id] },
+              collection: Account.order(:name).map { |a| [ a.name, a.id ] },
               include_blank: false
       f.input :invoice_number
       f.input :status, as: :select,
-              collection: Invoice.statuses.keys.map { |s| [s.humanize, s] },
+              collection: Invoice.statuses.keys.map { |s| [ s.humanize, s ] },
               include_blank: false
       f.input :notes
     end

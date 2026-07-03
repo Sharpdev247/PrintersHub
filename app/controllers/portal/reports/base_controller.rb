@@ -15,13 +15,13 @@ module Portal
       def set_date_range
         @period   = params[:period].presence || "30d"
         @from, @to = case @period
-                     when "7d"   then [7.days.ago,   Time.current]
-                     when "30d"  then [30.days.ago,  Time.current]
-                     when "90d"  then [90.days.ago,  Time.current]
-                     when "12m"  then [12.months.ago, Time.current]
-                     when "ytd"  then [Time.current.beginning_of_year, Time.current]
-                     else             [30.days.ago,  Time.current]
-                     end
+        when "7d"   then [ 7.days.ago,   Time.current ]
+        when "30d"  then [ 30.days.ago,  Time.current ]
+        when "90d"  then [ 90.days.ago,  Time.current ]
+        when "12m"  then [ 12.months.ago, Time.current ]
+        when "ytd"  then [ Time.current.beginning_of_year, Time.current ]
+        else             [ 30.days.ago,  Time.current ]
+        end
       end
 
       def group_by

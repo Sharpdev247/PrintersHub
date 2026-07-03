@@ -28,9 +28,9 @@ ActiveAdmin.register Listing do
   # ── Filters ─────────────────────────────────────────────────────────────────
   filter :title
   filter :account,      as: :select, collection: -> { Account.kept.order(:name).pluck(:name, :id) }
-  filter :status,       as: :select, collection: Listing.statuses.keys.map { |s| [s.humanize, s] }
-  filter :listing_type, as: :select, collection: Listing.listing_types.keys.map { |t| [t.humanize, t] }
-  filter :condition,    as: :select, collection: Listing.conditions.keys.map { |c| [c.humanize.gsub("_", " "), c] }
+  filter :status,       as: :select, collection: Listing.statuses.keys.map { |s| [ s.humanize, s ] }
+  filter :listing_type, as: :select, collection: Listing.listing_types.keys.map { |t| [ t.humanize, t ] }
+  filter :condition,    as: :select, collection: Listing.conditions.keys.map { |c| [ c.humanize.gsub("_", " "), c ] }
   filter :category,     as: :select, collection: -> { Category.order(:name).pluck(:name, :id) }
   filter :brand,        as: :select, collection: -> { Brand.order(:name).pluck(:name, :id) }
   filter :featured,     as: :boolean
@@ -153,10 +153,10 @@ ActiveAdmin.register Listing do
   form do |f|
     f.inputs "Ownership" do
       f.input :account, as: :select,
-              collection: Account.kept.order(:name).map { |a| [a.name, a.id] },
+              collection: Account.kept.order(:name).map { |a| [ a.name, a.id ] },
               include_blank: false
       f.input :user, as: :select,
-              collection: User.order(:email).map { |u| [u.email, u.id] },
+              collection: User.order(:email).map { |u| [ u.email, u.id ] },
               include_blank: false
     end
 
@@ -167,19 +167,19 @@ ActiveAdmin.register Listing do
 
     f.inputs "Classification" do
       f.input :listing_type, as: :select,
-              collection: Listing.listing_types.keys.map { |t| [t.humanize, t] },
+              collection: Listing.listing_types.keys.map { |t| [ t.humanize, t ] },
               include_blank: false
       f.input :condition, as: :select,
-              collection: Listing.conditions.keys.map { |c| [c.humanize.gsub("_", " "), c] },
+              collection: Listing.conditions.keys.map { |c| [ c.humanize.gsub("_", " "), c ] },
               include_blank: false
       f.input :category, as: :select,
-              collection: Category.order(:name).map { |c| [c.name, c.id] },
+              collection: Category.order(:name).map { |c| [ c.name, c.id ] },
               include_blank: false
       f.input :brand, as: :select,
-              collection: Brand.order(:name).map { |b| [b.name, b.id] },
+              collection: Brand.order(:name).map { |b| [ b.name, b.id ] },
               include_blank: false
       f.input :printer_model, as: :select,
-              collection: PrinterModel.order(:name).map { |pm| [pm.name, pm.id] },
+              collection: PrinterModel.order(:name).map { |pm| [ pm.name, pm.id ] },
               include_blank: true
     end
 
@@ -193,13 +193,13 @@ ActiveAdmin.register Listing do
 
     f.inputs "Location" do
       f.input :location_city, as: :select,
-              collection: City.order(:name).map { |c| [c.name, c.id] },
+              collection: City.order(:name).map { |c| [ c.name, c.id ] },
               include_blank: true
     end
 
     f.inputs "Status & Promotion" do
       f.input :status, as: :select,
-              collection: Listing.statuses.keys.map { |s| [s.humanize, s] },
+              collection: Listing.statuses.keys.map { |s| [ s.humanize, s ] },
               include_blank: false
       f.input :featured
       f.input :published_at, as: :datetime_picker,

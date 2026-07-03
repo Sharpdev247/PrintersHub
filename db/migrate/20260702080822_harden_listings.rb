@@ -34,9 +34,9 @@ class HardenListings < ActiveRecord::Migration[8.1]
 
     # 7. Add missing indexes for new string columns
     add_index :listings, :status
-    add_index :listings, [:account_id, :status]
-    add_index :listings, [:category_id, :status]
-    add_index :listings, [:brand_id, :status]
+    add_index :listings, [ :account_id, :status ]
+    add_index :listings, [ :category_id, :status ]
+    add_index :listings, [ :brand_id, :status ]
   end
 
   def down

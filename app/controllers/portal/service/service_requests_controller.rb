@@ -2,7 +2,7 @@ module Portal
   module Service
     class ServiceRequestsController < Portal::BaseController
       before_action :require_service_access
-      before_action :find_request, only: [:show, :edit, :update, :assign, :transition]
+      before_action :find_request, only: [ :show, :edit, :update, :assign, :transition ]
 
       def index
         base = policy_scope(ServiceRequest).includes(:assigned_to, :printer_model, :customer_account)

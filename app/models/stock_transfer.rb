@@ -27,7 +27,7 @@ class StockTransfer < ApplicationRecord
   validate  :different_warehouses
 
   scope :recent,   -> { order(created_at: :desc) }
-  scope :pending,  -> { where(status: [:draft, :requested, :approved, :shipped]) }
+  scope :pending,  -> { where(status: [ :draft, :requested, :approved, :shipped ]) }
 
   def approve!(user)
     update!(status: :approved, approved_by: user, approved_at: Time.current)

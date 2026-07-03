@@ -34,11 +34,11 @@ class CreateReviews < ActiveRecord::Migration[8.1]
     add_foreign_key :reviews, :users, column: :reviewee_id, on_delete: :restrict
 
     # One review per reviewer per listing — enforced at the DB level.
-    add_index :reviews, [:listing_id, :reviewer_id], unique: true,
+    add_index :reviews, [ :listing_id, :reviewer_id ], unique: true,
               name: "index_reviews_on_listing_and_reviewer"
 
     # User profile pages: "all published reviews about this user".
-    add_index :reviews, [:reviewee_id, :status],
+    add_index :reviews, [ :reviewee_id, :status ],
               name: "index_reviews_on_reviewee_and_status"
 
     # Moderation queue: find pending reviews.
