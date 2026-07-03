@@ -115,6 +115,23 @@
         </div>
       </header>
 
+      <%# Subscription limit warning banner %>
+      <% if Current.account %>
+        <%
+          enforcer = SubscriptionEnforcer.new(Current.account)
+          listings_usage = enforcer.usage(:max_listings)
+        %>
+        <% if !listings_usage[:unlimited] && listings_usage[:percent] >= 90 %>
+          <div style="background:#fefce8;border-left:4px solid #f59e0b;padding:.6rem 2rem;font-size:.83rem;color:#92400e;display:flex;align-items:center;justify-content:space-between">
+            <span>
+              ⚠ You've used <strong><%= listings_usage[:used] %></strong> of your <strong><%= listings_usage[:limit] %></strong> listing slots (<%= listings_usage[:percent] %>%).
+            </span>
+            <%= link_to "Upgrade plan →", portal_subscription_plans_path,
+                  style: "font-size:.8rem;font-weight:700;color:#b45309;text-decoration:none;flex-shrink:0" %>
+          </div>
+        <% end %>
+      <% end %>
+
       <%# Flash messages %>
       <% if notice %>
         <div style="background:#f0fdf4;border-left:4px solid #22c55e;padding:.75rem 2rem;font-size:.88rem;color:#15803d">

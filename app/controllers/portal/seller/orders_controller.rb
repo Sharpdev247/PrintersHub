@@ -33,6 +33,7 @@ module Portal
 
         @order.transition_to!(new_status, changed_by: current_user,
                                note: params[:note], source: "seller")
+        OrderNotificationJob.perform_later(@order, changed_by_id: current_user.id)
         redirect_to portal_seller_order_path(@order),
                     notice: "Order moved to #{new_status.humanize}."
       rescue ActiveRecord::RecordInvalid => e
@@ -45,6 +46,7 @@ module Portal
 
         if @order.cancellable?
           @order.cancel!(cancelled_by: current_user, reason: params[:reason])
+          OrderNotificationJob.perform_later(@order, changed_by_id: current_user.id)
           redirect_to portal_seller_order_path(@order), notice: "Order cancelled."
         else
           redirect_to portal_seller_order_path(@order),
