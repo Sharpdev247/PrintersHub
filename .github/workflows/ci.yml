@@ -78,7 +78,7 @@ jobs:
           bundler-cache: true
 
       - name: Cache RuboCop results
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         env:
           DEPS_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', 'Gemfile.lock') }}
         with:
