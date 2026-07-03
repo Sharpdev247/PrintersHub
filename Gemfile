@@ -36,7 +36,7 @@ gem "activeadmin", "~> 3.5"
 gem "friendly_id", "~> 5.5"
 
 # Nested category tree — stores full ancestry path in a single indexed column
-gem "ancestry", "~> 4.0"
+gem "ancestry", "~> 5.1"
 
 # Sass compiler for ActiveAdmin stylesheets (Propshaft serves compiled CSS)
 gem "dartsass-rails", "~> 0.5"
@@ -51,10 +51,10 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
 
 # Soft deletes — explicit discard/undiscard without overriding default_scope
-gem "discard", "~> 1.4"
+gem "discard", "~> 2.0"
 
 # Immutable audit trail — records every create/update/destroy to an audits table
 # audited is Rails 8.x compatible; PaperTrail 16 does not yet support AR 8.1
