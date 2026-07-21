@@ -70,7 +70,7 @@ gem "kaminari", "~> 1.2"
 gem "pundit", "~> 2.4"
 
 # Anthropic Claude SDK — AI features (description generation, price suggestions, search)
-gem "anthropic", "~> 1.0"
+gem "anthropic", "~> 1.56"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
